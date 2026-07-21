@@ -1,0 +1,2589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Reporte Diario de Campo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:#F0F2F5; --surface:#FFFFFF; --surface2:#F7F8FA;
+  --border:#E2E5EA; --border-md:#CBD0D8;
+  --text:#111827; --text2:#4B5563; --text3:#9CA3AF;
+  --blue:#2563EB; --blue-bg:#EFF6FF; --blue-text:#1D4ED8;
+  --green:#16A34A; --green-bg:#F0FDF4; --green-text:#15803D;
+  --amber:#D97706; --amber-bg:#FFFBEB; --amber-text:#92400E;
+  --red:#DC2626; --red-bg:#FEF2F2; --red-text:#991B1B;
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);
+  /* legacy aliases */
+  --color-bg:var(--bg); --color-bg-card:var(--surface); --color-bg-secondary:var(--surface2);
+  --color-border:var(--border); --color-border-strong:var(--border-md);
+  --color-text:var(--text); --color-text-secondary:var(--text2); --color-text-tertiary:var(--text3);
+  --color-info-bg:var(--blue-bg); --color-info-text:var(--blue-text);
+  --color-success-bg:var(--green-bg); --color-success-text:var(--green-text);
+  --color-warning-bg:var(--amber-bg); --color-warning-text:var(--amber-text);
+  --color-danger:var(--red); --accent:var(--blue);
+  --radius-md:var(--r-md); --radius-lg:var(--r-lg); --font-sans:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);padding:12px 12px 80px;font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+.app{max-width:720px;margin:0 auto}
+
+/* HEADER */
+.app-header{text-align:center;padding:18px 0 20px}
+.app-logo{display:inline-flex;align-items:center;gap:10px;background:var(--blue);color:#fff;border-radius:20px;padding:10px 20px 10px 14px;margin-bottom:6px}
+.app-logo i{font-size:22px}
+.app-logo h1{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.app-header p{font-size:12px;color:var(--text3)}
+
+/* TABS */
+.tab-bar{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.tab{flex:1 1 0;min-width:52px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:10px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--text3);white-space:normal;text-align:center;line-height:1.2;transition:all .12s}
+.tab i{font-size:17px}
+.tab:hover{border-color:var(--border-md);color:var(--text2)}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600}
+
+/* SCREENS */
+.screen{display:none}.screen.visible{display:block}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-title,.section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card-title::after,.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:500px){.grid3{grid-template-columns:1fr 1fr}}
+
+/* FIELDS */
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;font-weight:600;color:var(--text2)}
+.field input,.field select,.field textarea{width:100%;font-family:'Inter',inherit;font-size:14px;font-weight:400;color:var(--text);background:var(--surface);border:1.5px solid var(--border-md);border-radius:var(--r-md);padding:9px 11px;transition:border-color .12s,box-shadow .12s;-webkit-appearance:none}
+.field select{cursor:pointer}
+.field textarea{resize:vertical;min-height:72px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3)}
+
+/* BUTTONS */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:'Inter',inherit;font-size:14px;font-weight:600;border-radius:var(--r-md);border:none;cursor:pointer;padding:10px 18px;background:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,.25)}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',inherit;font-size:14px;font-weight:500;border-radius:var(--r-md);border:1.5px solid var(--border-md);cursor:pointer;padding:10px 18px;background:var(--surface);color:var(--text2)}
+.nav-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',inherit;font-size:15px;font-weight:600;border-radius:var(--r-lg);border:none;cursor:pointer;padding:14px;margin-top:4px}
+.nav-btn.primary{background:var(--blue);color:#fff;box-shadow:var(--shadow-md)}
+.nav-btn:not(.primary){background:var(--surface);color:var(--text2);border:1.5px solid var(--border-md)}
+.add-btn{width:100%;background:transparent;border:1.5px dashed var(--border-md);border-radius:var(--r-md);padding:10px;font-family:'Inter',inherit;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.add-btn:hover{background:var(--surface2);border-color:var(--blue);color:var(--blue)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:4px 6px;border-radius:var(--r-sm);display:flex;align-items:center;transition:all .12s}
+.del-btn:hover{color:var(--red);background:var(--red-bg)}
+.export-btn{background:#1D6F42;color:#fff;border:none;border-radius:var(--r-md);padding:11px 18px;font-family:'Inter',inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(29,111,66,.30)}
+.secondary-btn{border:1.5px solid var(--border-md);border-radius:var(--r-md);padding:11px 18px;font-family:'Inter',inherit;font-size:14px;cursor:pointer;background:var(--surface);color:var(--text2);display:flex;align-items:center;gap:6px}
+.ctrl-add-btn{background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);padding:9px 14px;font-family:'Inter',inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+
+/* ALERTS / NOTES */
+.alert{display:flex;gap:10px;padding:11px 13px;border-radius:var(--r-md);font-size:13px;font-weight:500;margin-bottom:12px}
+.alert-amber{background:var(--amber-bg);color:var(--amber-text);border:1px solid #FCD34D}
+.alert-blue{background:var(--blue-bg);color:var(--blue-text);border:1px solid #BFDBFE}
+.alert-green{background:var(--green-bg);color:var(--green-text);border:1px solid #86EFAC}
+.alert-red{background:var(--red-bg);color:var(--red-text);border:1px solid #FCA5A5}
+.note{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.5}
+.empty-msg{font-size:13px;color:var(--text3);padding:12px 0;text-align:center}
+
+/* HITO */
+.hito-row{display:grid;grid-template-columns:1fr 112px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.hito-row:last-child{border-bottom:none}
+.hito-label{font-size:13px;font-weight:500}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:flex-start;gap:10px;font-size:14px;font-weight:500;padding:12px;background:var(--surface2);border-radius:var(--r-md);border:1.5px solid var(--border);cursor:pointer;user-select:none}
+.toggle-row input[type=checkbox]{width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--blue);cursor:pointer}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{font-size:13px;font-weight:500;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border-md);cursor:pointer;color:var(--text2);background:var(--surface);transition:all .12s}
+.chip.on{background:var(--green-bg);color:var(--green-text);border-color:var(--green);font-weight:600}
+
+/* METRICS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center;box-shadow:var(--shadow)}
+.metric .val{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.metric .lbl{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500}
+
+/* SUMMARY TABLE */
+.summary-table{width:100%;border-collapse:collapse;font-size:13px}
+.summary-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--border)}
+.summary-table td{padding:10px;border-bottom:1px solid var(--border)}
+.summary-table tr:last-child td{border-bottom:none}
+.summary-table tbody tr:hover td{background:var(--surface2)}
+
+/* BITÁCORA */
+.bita-row{display:grid;grid-template-columns:90px 1fr 28px;gap:8px;align-items:start;padding:10px 0;border-bottom:1px solid var(--border)}
+.bita-row:last-child{border-bottom:none}
+.bita-quarters{display:grid;grid-template-columns:1fr;gap:4px;margin-top:4px}
+.bita-quarter{display:grid;grid-template-columns:32px 1fr;gap:6px;align-items:center}
+.bita-quarter-label{font-size:10px;font-weight:700;color:var(--text3);text-align:right}
+.bita-quarter input{font-family:'Inter',inherit;font-size:13px;padding:5px 8px;border:1.5px solid var(--border-md);border-radius:var(--r-sm);color:var(--text);background:var(--surface);width:100%}
+.bita-quarter input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.1)}
+
+/* METRADOS */
+.subtitulo-header{margin:16px 0 4px;padding:7px 12px;background:linear-gradient(90deg,var(--blue-bg),transparent);border-left:3px solid var(--blue);border-radius:0 var(--r-md) var(--r-md) 0;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue-text)}
+.partida-card{margin:4px 0;border:1.5px solid var(--border);border-radius:var(--r-md);overflow:hidden;transition:border-color .15s}
+.partida-card.tiene-valor{border-color:var(--green-text)}
+.partida-header{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;background:#fff;user-select:none;transition:background .12s}
+.partida-card.tiene-valor .partida-header{background:var(--green-bg)}
+.partida-nombre{flex:1;font-size:13px;font-weight:500;line-height:1.4;color:var(--text)}
+.partida-um{font-size:10px;font-weight:800;border-radius:20px;padding:3px 9px;white-space:nowrap;flex-shrink:0}
+.partida-valor{font-size:11px;color:var(--text3);flex-shrink:0;transition:all .12s}
+.partida-card.tiene-valor .partida-valor{font-size:13px;font-weight:800;color:var(--green-text)}
+.partida-body{display:none;padding:12px 13px 14px;border-top:1px solid var(--border);background:#fff}
+.partida-card.open .partida-body{display:block}
+
+/* CONTROL ITEMS TABLE */
+.ctrl-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+.ctrl-table thead tr{background:var(--surface2)}
+.ctrl-table th{padding:7px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1.5px solid var(--border)}
+.ctrl-table td{padding:8px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ctrl-table tr:last-child td{border-bottom:none}
+.ctrl-table .total-row{background:var(--green-bg)}
+.ctrl-table .total-row td{font-weight:700;color:var(--green-text);border-top:2px solid var(--border-md);border-bottom:none}
+
+/* CTRL FORM */
+.ctrl-form{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;margin-bottom:8px}
+.ctrl-form-grid{display:grid;gap:8px}
+.ctrl-form-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.ctrl-form-row .field{flex:1;min-width:80px}
+
+/* PROG */
+.prog-row{padding:10px 0;border-bottom:1px solid var(--border)}
+.prog-row:last-child{border-bottom:none}
+
+/* BOTTOM ACTIONS */
+.bottom-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:#111827;color:#fff;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:var(--shadow-md)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="app-logo">
+    <i class="ti ti-clipboard-list"></i>
+    <h1>Reporte Diario de Campo</h1>
+  </div>
+  <p>Sostenimiento y mantenimiento de talud ⛰️</p>
+</header>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('datos')"><i class="ti ti-id-badge"></i>Datos</button>
+  <button class="tab" onclick="showTab('jornada')"><i class="ti ti-checklist"></i>Jornada</button>
+  <button class="tab" onclick="showTab('horas')"><i class="ti ti-clock"></i>Actividades</button>
+  <button class="tab" onclick="showTab('equipos')"><i class="ti ti-truck"></i>Equipos</button>
+  <button class="tab" onclick="showTab('standby')"><i class="ti ti-clock-pause"></i>Stand By</button>
+  <button class="tab" onclick="showTab('metrados')"><i class="ti ti-ruler-measure"></i>Metrados</button>
+  <button class="tab" onclick="showTab('obs')"><i class="ti ti-note"></i>Obs/Req</button>
+  <button class="tab" onclick="showTab('prog')"><i class="ti ti-calendar-event"></i>Prog.</button>
+  <button class="tab" onclick="showTab('resumen')"><i class="ti ti-chart-bar"></i>Resumen</button>
+</div>
+
+<!-- ═══════════════ TAB DATOS ═══════════════ -->
+<div id="tab-datos" class="screen visible">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-file-description"></i>Identificación</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field"><label>Fecha</label><input type="date" id="f-fecha"></div>
+      <div class="field"><label>Sector</label><select id="f-sector" onchange="onSectorChange()"></select></div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field"><label>Frente</label><select id="f-frente" onchange="onFrenteChange()"></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Capataz</label><select id="f-capataz"></select></div>
+      <div class="field"><label>Supervisor</label><select id="f-supervisor"></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-users"></i>Personal presente</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div class="field"><label>Capataz</label><input type="number" id="f-capataces" min="0" value="1"></div>
+      <div class="field"><label>Operarios</label><input type="number" id="f-operarios" min="0" value="0"></div>
+      <div class="field"><label>Oficiales</label><input type="number" id="f-oficiales" min="0" value="0"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Peones</label><input type="number" id="f-peones" min="0" value="0"></div>
+      <div class="field"><label>Vigías</label><input type="number" id="f-vigias" min="0" value="0"></div>
+    </div>
+  </div>
+  <div id="sala-electrica-section" style="display:none">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-building"></i>Personal Sala Eléctrica</div>
+      <p class="note" style="margin-bottom:10px">Personal presente específico del sector Sala Eléctrica.</p>
+      <div class="grid2">
+        <div class="field"><label>Ingeniero residente</label><input type="number" id="f-ing-residente" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Supervisor de campo</label><input type="number" id="f-sup-campo" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Ingenieros de seguridad</label><input type="number" id="f-ing-seguridad" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Ingeniero de calidad</label><input type="number" id="f-ing-calidad" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Topógrafo</label><input type="number" id="f-topografo" min="0" value="0" onchange="saveDraft()"></div>
+      </div>
+    </div>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('jornada')">Inicio de jornada <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB JORNADA ═══════════════ -->
+<div id="tab-jornada" class="screen">
+  <div class="card">
+    <label class="toggle-row" style="margin-bottom:12px">
+      <input type="checkbox" id="f-truckshop" onchange="toggleRestriccion()">
+      <span>⚠️ ¿Tuviste restricciones para llegar a tu frente de trabajo?</span>
+    </label>
+    <div id="restriccion-detalle" style="display:none;margin-bottom:14px">
+      <div class="alert alert-amber" style="margin-bottom:10px"><i class="ti ti-alert-triangle"></i>Completa los datos de la restricción.</div>
+      <div class="field" style="margin-bottom:10px">
+        <label>¿Cuál fue la restricción?</label>
+        <textarea id="f-restriccion-desc" placeholder="Describe la restricción..."></textarea>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Hora inicio</label><input type="time" id="f-restriccion-inicio"></div>
+        <div class="field"><label>Hora fin</label><input type="time" id="f-restriccion-fin"></div>
+      </div>
+    </div>
+    <div class="card-title" style="margin-top:4px"><i class="ti ti-flag"></i>Hitos de inicio de jornada</div>
+    <div id="hitos-rows"></div>
+    <p class="note" style="margin-top:10px">Registra estos hitos una vez al inicio del turno, antes de empezar actividades.</p>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('horas')">Actividades <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB ACTIVIDADES ═══════════════ -->
+<div id="tab-horas" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-writing"></i>Bitácora — <span id="frente-actual" style="text-transform:none;font-weight:400;color:var(--blue-text)">selecciona frente en Datos</span></div>
+    <p class="note" style="margin-bottom:12px">Selecciona la hora y describe lo realizado. Los metrados van en la pestaña <strong>Metrados</strong>.</p>
+    <div id="hora-rows"></div>
+    <button class="add-btn" onclick="addRow()"><i class="ti ti-plus"></i>Agregar hora</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-soup"></i>Refrigerio / Almuerzo</div>
+    <div class="grid2">
+      <div class="field"><label>Salida</label><input type="time" id="f-almuerzo-salida" value="00:00" onchange="saveDraft()"></div>
+      <div class="field"><label>Retorno</label><input type="time" id="f-almuerzo-retorno" value="00:00" onchange="saveDraft()"></div>
+    </div>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('equipos')">Equipos <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB EQUIPOS ═══════════════ -->
+<div id="tab-equipos" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-tool"></i>Equipo y herramientas para perforación</div>
+    <p class="note" style="margin-bottom:10px">Registra la cantidad de equipos utilizados en el frente durante la jornada.</p>
+    <div id="equipos-perforacion-fijos"></div>
+    <div id="equipos-perforacion-manual-rows" style="margin-top:4px"></div>
+    <div style="display:grid;grid-template-columns:1fr 90px 42px;gap:8px;align-items:end;margin-top:10px">
+      <div class="field"><label>Otro (especificar)</label><input type="text" id="eqperf-manual-nombre" placeholder="Nombre del equipo"></div>
+      <div class="field"><label>Cantidad</label><input type="number" min="0" step="1" id="eqperf-manual-cant" placeholder="0" onkeydown="if(event.key==='Enter')addEquipoManual('perforacion')"></div>
+      <button class="ctrl-add-btn" onclick="addEquipoManual('perforacion')" style="height:38px;align-self:end"><i class="ti ti-plus"></i></button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-truck"></i>Equipos de soporte operativo</div>
+    <p class="note" style="margin-bottom:10px">Registra la cantidad de equipos de soporte utilizados en el frente durante la jornada.</p>
+    <div id="equipos-soporte-fijos"></div>
+    <div id="equipos-soporte-manual-rows" style="margin-top:4px"></div>
+    <div style="display:grid;grid-template-columns:1fr 90px 42px;gap:8px;align-items:end;margin-top:10px">
+      <div class="field"><label>Otro (especificar)</label><input type="text" id="eqsop-manual-nombre" placeholder="Nombre del equipo"></div>
+      <div class="field"><label>Cantidad</label><input type="number" min="0" step="1" id="eqsop-manual-cant" placeholder="0" onkeydown="if(event.key==='Enter')addEquipoManual('soporte')"></div>
+      <button class="ctrl-add-btn" onclick="addEquipoManual('soporte')" style="height:38px;align-self:end"><i class="ti ti-plus"></i></button>
+    </div>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('standby')">Stand By <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB STAND BY ═══════════════ -->
+<div id="tab-standby" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-clock-pause"></i>Stand By de la jornada</div>
+    <div class="alert alert-blue">
+      <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+      <span>Registra los <strong>tiempos de paralización (Stand By)</strong> de la jornada: actividad afectada, horario y causa. El total se calcula automáticamente.</span>
+    </div>
+    <div id="standby-rows"></div>
+    <div id="standby-total" style="display:none;margin-top:10px;padding:11px 13px;background:var(--red-bg);border:1px solid #FCA5A5;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red-text)"></div>
+    <button class="add-btn" onclick="addStandbyRow()"><i class="ti ti-plus"></i>Agregar Stand By</button>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('metrados')">Metrados <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB METRADOS ═══════════════ -->
+<div id="tab-metrados" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-ruler-measure"></i>Metrados ejecutados del día</div>
+    <div class="alert alert-amber">
+      <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
+      <span>Registra los <strong>metrados totales del día</strong>. Toca una partida para desplegarla e ingresar la cantidad.</span>
+    </div>
+    <div id="metrados-rows"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-circle-plus"></i>Partidas libres</div>
+    <p class="note" style="margin-bottom:10px">Para actividades que no están en el catálogo del frente.</p>
+    <div id="metrados-manuales-rows"></div>
+    <div style="display:grid;grid-template-columns:1fr 120px 100px 42px;gap:8px;align-items:end;margin-top:8px">
+      <div class="field"><label>Nombre</label><input type="text" id="manual-nombre" placeholder="Nombre de la partida"></div>
+      <div class="field"><label>U.M.</label>
+        <select id="manual-um">
+          <option value="">—</option>
+          <option>ML</option><option>M2</option><option>M3</option><option>UND</option><option>HH</option><option>GLB</option><option>VIAJE</option>
+        </select>
+      </div>
+      <div class="field"><label>Metrado</label><input type="number" min="0" step="0.01" id="manual-met" placeholder="0.00" onkeydown="if(event.key==='Enter')addMetradoManual()"></div>
+      <button class="ctrl-add-btn" onclick="addMetradoManual()" style="height:38px;align-self:end"><i class="ti ti-plus"></i></button>
+    </div>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('obs')">Observaciones <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB OBS ═══════════════ -->
+<div id="tab-obs" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-message-circle"></i>Observaciones</div>
+    <div class="field"><textarea id="f-comentarios" placeholder="Observaciones de campo, calidad, condiciones del frente..."></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-tools"></i>Requerimientos</div>
+    <div class="field"><textarea id="f-requerimientos" placeholder="Materiales, equipos, herramientas, personal o servicios que se necesitan..."></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-shield-exclamation"></i>Restricciones</div>
+    <div class="field"><textarea id="f-restricciones" placeholder="Restricciones operativas, de acceso, clima, permisos..."></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-pencil-exclamation"></i>Modificaciones / Redline</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>¿Hubo modificaciones respecto al plano original?</label>
+      <div class="chips">
+        <span class="chip" id="chip-redline-si" onclick="toggleRedline('si')">✅ Sí, hubo modificaciones</span>
+        
+      </div>
+    </div>
+    <div id="redline-detalle" style="display:none">
+      <div class="field" style="margin-bottom:10px">
+        <label>Supervisor Hegatrux que realizó el Redline</label>
+        <select id="f-redline-supervisor">
+          <option value="">— Seleccionar supervisor —</option>
+          <option>LUIS LOZANO</option>
+          <option>CAMILO CENTENO</option>
+          <option>JUAN RODRIGUEZ</option>
+          <option>JOSE SULLO</option>
+          <option>CRISTHIAN COLCA</option>
+          <option>DEREK ARIAS</option>
+        </select>
+      </div>
+      <div class="field"><label>Descripción del Redline</label><textarea id="f-redline" placeholder="Describir los cambios: ubicación, dimensiones, materiales..."></textarea></div>
+    </div>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('prog')">Programación <i class="ti ti-arrow-right"></i></button>
+</div>
+
+<!-- ═══════════════ TAB PROG ═══════════════ -->
+<div id="tab-prog" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-calendar-plus"></i>Programación — día siguiente</div>
+    <p class="note" style="margin-bottom:12px">Selecciona las partidas que planeas ejecutar mañana.</p>
+    <div id="prog-rows"></div>
+    <button class="add-btn" onclick="addProgRow()"><i class="ti ti-plus"></i>Agregar partida</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-circle-plus"></i>Actividades no programadas</div>
+    <div id="prog-adic-rows"></div>
+    <button class="add-btn" onclick="addProgAdicRow()"><i class="ti ti-plus"></i>Agregar actividad</button>
+  </div>
+  <button class="nav-btn primary" onclick="showTab('resumen')">Ver resumen <i class="ti ti-chart-bar"></i></button>
+</div>
+
+<!-- ═══════════════ TAB RESUMEN ═══════════════ -->
+<div id="tab-resumen" class="screen">
+  <div class="metric-grid" id="metrics-area"></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-ruler"></i>Metrados ejecutados</div>
+    <table class="summary-table"><thead><tr><th>Partida</th><th>Metrado</th><th>U.M.</th></tr></thead>
+    <tbody id="metrado-body"></tbody></table>
+  </div>
+  <div class="card" id="ctrl-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-tool"></i>Control de Sostenimiento</div>
+    <div id="ctrl-resumen-body"></div>
+  </div>
+  <div class="card" id="equipos-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-truck"></i>Equipos y maquinaria</div>
+    <div id="equipos-resumen-body" style="font-size:13px;line-height:1.7"></div>
+  </div>
+  <div class="card" id="standby-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-clock-pause"></i>Stand By de la jornada</div>
+    <table class="summary-table"><thead><tr><th>Item</th><th>Actividad afectada</th><th>Desde</th><th>Hasta</th><th>Total</th><th>Causa</th></tr></thead>
+    <tbody id="standby-resumen-body"></tbody></table>
+  </div>
+  <div class="card" id="obs-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-notes"></i>Comentarios y restricciones</div>
+    <div id="obs-resumen-body" style="font-size:13px;line-height:1.7"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-brand-whatsapp"></i>Reporte WhatsApp</div>
+    <div class="field"><textarea id="texto-wsp" readonly style="min-height:240px;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--surface2)"></textarea></div>
+    <div class="bottom-actions" style="margin-top:10px">
+      <button class="btn-primary" onclick="copiarTextoWsp()" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;font-size:14px;font-weight:600;border:none;border-radius:var(--r-md);cursor:pointer"><i class="ti ti-copy"></i>Copiar</button>
+      <button class="secondary-btn" onclick="compartirTextoWsp()"><i class="ti ti-share"></i>Compartir</button>
+    </div>
+  </div>
+  <div class="bottom-actions">
+    <button class="export-btn" onclick="exportarXLSX()"><i class="ti ti-file-spreadsheet"></i>Excel (.xlsx)</button>
+    <button class="secondary-btn" onclick="exportarCSV()"><i class="ti ti-table-export"></i>.csv</button>
+    <button class="secondary-btn" onclick="exportarJSON()"><i class="ti ti-file-export"></i>.json</button>
+    <button class="secondary-btn" onclick="nuevoReporte()"><i class="ti ti-refresh"></i>Nuevo</button>
+  </div>
+  <div class="alert alert-amber" style="margin-top:10px">
+    <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
+    <span><strong>Recuerda exportar el Excel antes de dar en Nuevo.</strong> Una vez iniciado el nuevo reporte, el borrador anterior se borra.</span>
+  </div>
+</div>
+
+</div><!-- .app -->
+<div class="toast" id="toast"></div>
+
+<script>
+
+// ==================== DATOS ====================
+const SECTORES = {"SECTOR": ["FRENTE"], "A: 2000 - OPB MINA": ["OPB"], "A: 2000 - BY PASS": ["BPN - 32"], "A: 3000 - POZA": ["POZA PC-003", "ACCESO POZA PC-003"], "A: 3000 - VIA MAR II": ["ZCM08", "ZCM09", "VM-08", "VM-07", "VM-06", "VM-05", "VM-04", "VM-01", "VM-16", "VM-13", "VM-12", "VM_10 SP"], "A: 4000 - SALA ELECTRICA": ["PLATAFORMA SALA ELECTRICA", "PLATAFORMA DE OPERACIONES"], "DM2": [], "Otro": []};
+const SUPERVISORES = ["AARON CESPEDES", "BRYAN VENTURA", "DAVID GANAMPA", "GLORIA ARROYO", "JESUS MAMANI", "YEAMPIER PARIENTE", "JUAN TICONA", "YASIR GUEVAR", "MIRO POMA", "ANDREI SALAS", "ALFREDO IPARRAGUIRRE"];
+const CAPATACES = ["DARWIN REYES", "RUBEN GAMARRA", "LUIS SANCHEZ", "ANGEL BARRIGA", "EBER CASTRO", "OLMER GAMARRA", "JAIRO VELASQUEZ"];
+
+// PARTIDAS: n=nombre u=um s=subtitulo e=edt c=control t=tipos sis=sistema zona=zona
+const PARTIDAS = {"ZCM09":[{"n":"Movilización interna","u":"GLB","s":"ZCM09 ACT. PRELIMINARES","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"ZCM09 ACT. PRELIMINARES","e":"1.02"},{"n":"Habilitación de accesos","u":"ML","s":"ZCM09 ACT. PRELIMINARES","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM09 ACT. PRELIMINARES","e":"1.04"},{"n":"Instalacion de Tirolina","u":"UND","s":"ZCM09 ACT. PRELIMINARES","e":"1.05"},{"n":"Línea de vida","u":"ML","s":"ZCM09 ACT. PRELIMINARES","e":"1.06"},{"n":"Traslado de malla por Tirolina","u":"M2","s":"ZCM09 ACT. PRELIMINARES","e":"1.07"},{"n":"Perforación manual de anclajes (41 mm) / Inyeccion - Cabecera","u":"ML","s":"ZCM09 ACTIVO","e":"2.01","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalación de Malla TECCO G65/3","u":"M2","s":"ZCM09 ACTIVO","e":"2.02","c":"malla","sis":"A"},{"n":"Cosido de malla","u":"M2","s":"ZCM09 ACTIVO","e":"2.03"},{"n":"Perforación de anclajes sobre patín (90mm)","u":"ML","s":"ZCM09 ACTIVO","e":"2.04","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Inyección de anclajes (90mm)","u":"ML","s":"ZCM09 ACTIVO","e":"2.05","c":"inyeccion","sis":"A"},{"n":"Perforación manual de anclajes (41 mm) / Inyeccion - Pie - Retencion","u":"ML","s":"ZCM09 ACTIVO","e":"2.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ML","s":"ZCM09 ACTIVO","e":"2.07","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ML","s":"ZCM09 ACTIVO","e":"2.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"UND","s":"ZCM09 ACTIVO","e":"2.09"},{"n":"Ensayo Pull Test (carga 60%)","u":"UND","s":"ZCM09 ACTIVO","e":"2.1","c":"pull test","sis":"A"},{"n":"Perforación manual de  (41 mm) / Inyección (Encapsulado)","u":"ML","s":"ZCM09 PASIVO","e":"3.01","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de cables horizontales 19mm (Encapsulado)","u":"ML","s":"ZCM09 PASIVO","e":"3.02","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Perforación manual de anclajes (41mm) / Inyección - cabecera y laterales","u":"ML","s":"ZCM09 PASIVO","e":"3.03","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Desquinche","u":"M2","s":"ZCM09 PASIVO","e":"3.04"},{"n":"Instalación de Malla Minox 80/3","u":"M2","s":"ZCM09 PASIVO","e":"3.05","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"ZCM09 PASIVO","e":"3.06"},{"n":"Perforación manual de anclajes ( 41 mm) / Inyeccion - Pie","u":"ML","s":"ZCM09 PASIVO","e":"3.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ML","s":"ZCM09 PASIVO","e":"3.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"UND","s":"ZCM09 PASIVO","e":"3.09"},{"n":"Ensayos pull test","u":"UND","s":"ZCM09 PASIVO","e":"3.1","c":"pull test","sis":"P"},{"n":"Desmovilización","u":"GLB","s":"ZCM09 PASIVO","e":"3.11"}],"ZCM08":[{"n":"Movilización de personal, equipos a proyecto","u":"und","s":"ZCM-08 PASIVO 1","e":"1.01"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 1","e":"1.02"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 1","e":"1.04"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 PASIVO 1","e":"1.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.06"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.07"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm (cabecera)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.08","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.09","c":"inyeccion","sis":"P","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.1"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.11","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.12"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (cuerpo)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.13","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.14"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.15","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.16"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cuerpo 2026)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.17","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cuerpo laterales)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.18","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.19","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.2","c":"inyeccion","sis":"P","zona":"1"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.21","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.22","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 1","e":"1.23"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 1","e":"1.24","c":"pull test","sis":"P","zona":"1"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 ACTIVO 1","e":"2.03"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.04"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.06"},{"n":"Instalación de malla Geotextil","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.07","c":"malla","sis":"A","zona":"1"},{"n":"Perforación manual de Garrotas / Inyección","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.08"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cabecera)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.09","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.1"},{"n":"Instalación de malla para sostenimiento TECCO G65/3","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.11","c":"malla","sis":"A","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.12"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm (Cuerpo)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.13","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.14","c":"inyeccion","sis":"A","zona":"1"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Pie)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.15","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.16","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A","zona":"1"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.17","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A","zona":"1"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.18"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.19","c":"pull test","sis":"A","zona":"1"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 3","e":"3.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 3","e":"3.03"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 PASIVO 3","e":"3.04"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Cabecera","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"3"},{"n":"Instalación de malla para sostenimiento TECCO G65/3","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.08","c":"malla","sis":"P","zona":"3"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.09"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Pie","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.1","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"3"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"3"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 3","e":"3.12"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 3","e":"3.13","c":"pull test","sis":"P","zona":"3"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 2","e":"4.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 2","e":"4.03"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Cabecera","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 2","e":"4.06","c":"malla","sis":"P","zona":"2"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 2","e":"4.07"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Pie","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"2"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 2","e":"4.1"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 2","e":"4.11","c":"pull test","sis":"P","zona":"2"},{"n":"Desmovilización de personal, equipos","u":"und","s":"ZCM-08 PASIVO 2","e":"4.12"}],"PLATAFORMA SALA ELECTRICA":[{"n":"Movilización de materiales, equipos y herramientas","u":"GLB","s":"Trabajos Preliminares","e":"01.01.01"},{"n":"Trazo y levantamiento topográfico","u":"GLB","s":"Trabajos Preliminares","e":"01.01.02"},{"n":"Habilitación de facilidades","u":"GLB","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.01"},{"n":"Habilitación de accesos","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.02"},{"n":"Línea de vida","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.03"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.04","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.05","c":"malla","sis":"A-P"},{"n":"Cosido de malla","u":"M2","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A-P"},{"n":"Perforación de anclajes sobre patín (min 76mm) - 1 patin /Inyeccion de anclaje","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.09","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.10"},{"n":"Ensayos pull test","u":"UND","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.11"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.01"},{"n":"Línea de vida","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.02"},{"n":"Desquinche","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.03"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.04","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.05","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.08"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.10"},{"n":"Habilitación de accesos","u":"M","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.01"},{"n":"Traslado de materiales con camión grúa","u":"VJE","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.02"},{"n":"Línea de vida","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.03"},{"n":"Desquinche","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.06","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.07"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.09"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.10","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.11"},{"n":"Tirolina","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.01"},{"n":"Línea de vida","u":"ML","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.02"},{"n":"Perforación de anclajes sobre patín (min 76mm) - 2 patin /Inyeccion de anclaje Activo","u":"ML","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.03","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.04"},{"n":"Ensayos pull test","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.05","c":"pull test","sis":"A"}],"PLATAFORMA DE OPERACIONES":[{"n":"Movilización interna","u":"GLB","s":"Trabajos Preliminares","e":"02.01.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"Trabajos Preliminares","e":"02.01.02"},{"n":"Habilitación de accesos","u":"M","s":"Trabajos Preliminares","e":"02.01.03"},{"n":"Línea de vida","u":"M","s":"Sostenimiento Pasivo","e":"02.02.01"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.02","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.03","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.04"},{"n":"Desquinche","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.05"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Sostenimiento Pasivo","e":"02.02.07"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Sostenimiento Pasivo","e":"02.02.09","c":"pull test","sis":"P"},{"n":"Desmovilización de materiales, equipos y herramientas","u":"GLB","s":"Sostenimiento Pasivo","e":"02.02.10"}],"OPB":[{"n":"Movilización interna","u":"GLB","s":"TRABAJOS PRELIMINARES","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"TRABAJOS PRELIMINARES","e":"1.02"},{"n":"Habilitación de accesos","u":"ML","s":"TRABAJOS PRELIMINARES","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"DIAS","s":"TRABAJOS PRELIMINARES","e":"1.04"},{"n":"Medios de izaje para traslado de materiales","u":"VIAJE","s":"TRABAJOS PRELIMINARES","e":"1.05"},{"n":"Instalación de Tirolinas","u":"UND","s":"TRABAJOS AUXILIARES","e":"2.01"},{"n":"Traslado por tirolinea de equipos y materiales","u":"DIAS","s":"TRABAJOS AUXILIARES","e":"2.02"},{"n":"Línea de vida","u":"ML","s":"TRABAJOS AUXILIARES","e":"2.03"},{"n":"Instalación de Barrera Provisional","u":"ML","s":"TRABAJOS AUXILIARES","e":"2.04"},{"n":"Malla sacrificio para perforación y traslado","u":"M2","s":"TRABAJOS AUXILIARES","e":"2.05","c":"malla"},{"n":"Perforación e inyección de anclajes con Toku (bases de poste)","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.01","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Perforación de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.02","c":"perforacion","t":["BAHE","Autoperforante"]},{"n":"Inyección de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.03","c":"inyeccion"},{"n":"Dados de nivelación 0.30x0.40x0.20m3","u":"UND","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.04"},{"n":"Instalación de barrera dinámica GBE 1000, H5 L=55m (2 tramos L=30m)","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.05"},{"n":"Ensayos Pull Test","u":"UND","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.06","c":"pull test"},{"n":"Perforación e inyección de anclajes con Toku (bases de poste)","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.01","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Perforación de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.02","c":"perforacion","t":["BAHE","Autoperforante"]},{"n":"Inyección de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.03","c":"inyeccion"},{"n":"Dados de nivelación 0.30x0.40x0.20m3","u":"UND","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.04"},{"n":"Instalación de barrera dinámica GBE 1000, H5 L=40m","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.05"},{"n":"Ensayos Pull Test","u":"UND","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.06","c":"pull test"},{"n":"Desmovilización","u":"GLB","s":"DESMOVILIZACIÓN","e":"5.01"}],"VM-08":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Insatalación Malla","u":"M2","e":"1.09","c":"malla"},{"n":"Cosido de malla","u":"M2","e":"1.1"},{"n":"Perforación manual de anclajes (41 mm) / Inyección - pie","u":"ML","e":"1.11","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Limpieza manual en pie de talud","u":"M3","e":"1.12"}],"VM-07":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Desquinche","u":"M2","e":"1.04"},{"n":"Descolmatación","u":"DIAS","e":"1.05"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.06"},{"n":"Insatalación Malla","u":"M2","e":"1.07","c":"malla"},{"n":"Cosido de malla","u":"M2","e":"1.08"},{"n":"Perforación manual de anclajes (41 mm) / Inyección - pie","u":"ML","e":"1.09","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Limpieza manual en pie de talud","u":"M3","e":"1.1"}],"VM-06":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"}],"VM-05":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-04":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-01":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-16":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Desmovilización del proyecto","u":"GLB","e":"1.09"}],"VM-13":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Desquinche","u":"M2","e":"1.04"},{"n":"Descolmatación","u":"DIAS","e":"1.05"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.06"}],"VM-12":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"}],"BPN - 32":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"POZA PC-003":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"ACCESO POZA PC-003":[{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"VM_10 SP":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grua","u":"VJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Perforación/ Inyección de anclajes 25mm/L=3m <45° Cabecera","u":"ML","e":"1.06","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.07","c":"malla"},{"n":"Instalacion de  Geotextil  NWO19M 200gr/m²","u":"M2","e":"1.08","c":"malla"},{"n":"Cosido de mallas","u":"ML","e":"1.09"},{"n":"Instalación de accesorios","u":"UND","e":"1.1"},{"n":"Cable de acero galvanizado D=16mm Cabecera/horizontal","u":"ML","e":"1.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"]},{"n":"Desquinche","u":"M2","e":"1.12"},{"n":"Descolmatación","u":"M3","e":"1.13"}]};
+const HORAS = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+const UNITS = ['','ML','M2','M3','UND','HH','GLB','VIAJE'];
+const HITOS_BASE = ['Llegada a frente de trabajo','Inicio de charla de seguridad','Término de charla de seguridad','Término de llenado de documentos','Firma de PETAR','Inicio de actividades','Término de jornada'];
+const STORAGE_KEY = 'rdc_v38';
+const CAUSAS_STANDBY = ['FACTOR SOCIAL','INSPECCIÓN DE SEGURIDAD','INTERFERENCIA CON OTRO CONTRATISTA','LIBERACIÓN','INGENIERÍA','CLIMÁTICO','ENCAPSULADOS'];
+const EQUIPOS_PERFORACION_FIJOS = ['Compresora','Perforador sobre patín','Estación Hidráulica','Inyectora','Martillo de mano'];
+const EQUIPOS_SOPORTE_FIJOS = ['Retroexcavadora','Camión grúa','Camión Baranda','Camioneta','Minibús'];
+
+// ==================== ESTADO ====================
+let rows = [];
+let rowId = 0;
+let partidaValores = {};
+let cables = [];
+let cableId = 0;
+let controlItems = [];
+let equiposPerforacionManual = [];
+let equiposPerforacionManualId = 0;
+let equiposSoporteManual = [];
+let equiposSoporteManualId = 0;
+let controlId = 0;
+let _controlId = 0;
+let currentHitos = HITOS_BASE;
+let suppressSave = false;
+let redlineEstado = '';
+let progRows = [];
+let progRowId = 0;
+let progAdicRows = [];
+let progAdicId = 0;
+let metradosManuales = [];
+let metradosManualId = 0;
+let standbyRows = [];
+let standbyId = 0;
+
+
+
+// ==================== MOTOR DE METRADOS ====================
+// Estado: partidaValores[i] = { met: number|'', items: [] }
+// items para partidas con control: { id, codigo, tipo, actividad, cantidad, unidad, ... }
+
+
+
+// Telemetría
+const _tele = { inicio: null, tabs: [] };
+let _teleTab = null, _teleTi = null;
+
+
+function _cat(p) {
+  // Determina la categoría de una partida SOLO basándose en la columna 'c' del Excel
+  // Si no tiene 'c' definido → simple (solo campo numérico)
+  const c = (p.c || '').trim().toLowerCase();
+  if (!c) return 'simple';
+  if (c === 'perf-iny') return 'perf-iny';
+  if (c === 'pull test' || c === 'Pull test' || c === 'PULL TEST') return 'pulltest';
+  if (c === 'malla')     return 'm2';
+  if (c === 'perforacion' || c === 'inyeccion' || c === 'cable') return 'ml';
+  return 'simple';
+}
+
+function _tipoML(p) {
+  // Para partidas de tipo 'ml', ¿qué subtipo es?
+  const c = (p.c || '').trim().toLowerCase();
+  if (c === 'cable')    return 'cable';
+  if (c === 'inyeccion') return 'inyeccion';
+  return 'perforacion'; // default
+}
+
+function _ensurePV(i) {
+  if (!partidaValores[i] || typeof partidaValores[i] !== 'object') {
+    partidaValores[i] = { met: '', items: [] };
+  }
+  if (!Array.isArray(partidaValores[i].items)) {
+    partidaValores[i].items = [];
+  }
+}
+
+function _recalc(i) {
+  _ensurePV(i);
+  const items = partidaValores[i].items;
+  if (!items.length) { partidaValores[i].met = ''; return; }
+  const isPullTest = items[0] && items[0].actividad === 'Pull Test';
+  const total = isPullTest
+    ? items.length
+    : items.reduce((s, it) => s + (Number(it.cantidad) || 0), 0);
+  partidaValores[i].met = Math.round(total * 1000) / 1000;
+}
+
+function _umColor(um) {
+  const map = { ML:'#DBEAFE:#1D4ED8', M2:'#DCFCE7:#15803D', M3:'#FEF3C7:#92400E',
+    UND:'#F3F4F6:#374151', GLB:'#F5F3FF:#6D28D9', VIAJE:'#FFF7ED:#C2410C', DIAS:'#FFF7ED:#C2410C' };
+  return (map[(um||'').toUpperCase()] || '#F3F4F6:#374151').split(':');
+}
+
+// ── Construir el formulario de ingreso de un item según categoría ─────────────
+function _buildForm(p, i, cat, tipoML) {
+  // Flatten tipos: split por '/' para soportar 'BAHE/Autoperforante'
+  const tiposRaw = Array.isArray(p.t) && p.t.length ? p.t : [];
+  const tipos = tiposRaw.length ? tiposRaw.flatMap(t => t.split('/').map(s => s.trim()).filter(Boolean)) : null;
+  const tiposOpts = tipos ? tipos.map(t => '<option value="'+t+'">'+t+'<\/option>').join('') : '';
+
+  if (cat === 'perf-iny') {
+    const tipos = Array.isArray(p.t) && p.t.length ? p.t : null;
+    const tiposOpts = tipos ? tipos.map(t => '<option value="'+t+'">'+t+'<\/option>').join('') : '';
+    const tipoSelect = tiposOpts
+      ? '<div class="field" style="min-width:130px"><label style="font-size:11px">Tipo perno</label>'
+        +'<select id="pv-tipo-'+i+'">'+tiposOpts+'<\/select><\/div>'
+      : '';
+    return `
+      <div class="alert alert-blue" style="margin-bottom:10px;padding:8px 10px">
+        <i class="ti ti-info-circle" style="flex-shrink:0"><\/i>
+        <span>Selecciona si vas a registrar <strong>Perforación</strong> o <strong>Inyección</strong>. Puedes agregar ambas en la misma partida.<\/span>
+      <\/div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="_setPerfInyMode(${i},'perforacion')" id="btn-perf-${i}"
+          style="flex:1;padding:8px;border-radius:var(--r-md);border:2px solid var(--blue);background:var(--blue);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          🔩 Perforación<\/button>
+        <button onclick="_setPerfInyMode(${i},'inyeccion')" id="btn-iny-${i}"
+          style="flex:1;padding:8px;border-radius:var(--r-md);border:2px solid var(--border-md);background:#fff;color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          💉 Inyección<\/button>
+      <\/div>
+      <div id="perfiny-form-${i}">
+        <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+          ${tipoSelect}
+          <div class="field" style="flex:1;min-width:90px"><label style="font-size:11px">Código<\/label>
+            <input type="text" id="pv-cod-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+          <\/div>
+          <div class="field" style="min-width:90px"><label style="font-size:11px" id="pv-ml-label-${i}">ML / perno<\/label>
+            <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+          <\/div>
+          <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
+        <\/div>
+      <\/div>
+      ${_buildItemsTable((partidaValores[i]&&partidaValores[i].items?partidaValores[i].items:[]).map(it=>({...it,_partidaIdx:i})),p,'perf-iny','perforacion')}
+    `;
+  }
+
+  if (cat === 'pulltest') {
+    return `
+      <div class="alert alert-blue" style="margin-bottom:8px;padding:8px 10px">
+        <i class="ti ti-microscope" style="flex-shrink:0"><\/i>
+        <span>Ingresa el código del perno ensayado. Cada código = 1 ensayo. El total se calcula automáticamente.<\/span>
+      <\/div>
+      <div style="display:flex;gap:8px;align-items:end">
+        <div class="field" style="flex:1"><label>Código de perno ensayado<\/label>
+          <input type="text" id="pv-pt-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')_addItem(${i})">
+        <\/div>
+        <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;flex-shrink:0"><i class="ti ti-plus"><\/i><\/button>
+      <\/div>`;
+  }
+
+  if (cat === 'm2') {
+    return `
+      <div class="alert alert-blue" style="margin-bottom:8px;padding:8px 10px">
+        <i class="ti ti-info-circle" style="flex-shrink:0"><\/i>
+        <span>Ingresa el código según Sketch. El área M2 se calcula automáticamente con Ancho × Largo.<\/span>
+      <\/div>
+      <div style="display:grid;grid-template-columns:1fr 80px 80px 42px;gap:8px;align-items:end">
+        <div class="field"><label>Código (Sketch)<\/label>
+          <input type="text" id="pv-cod-${i}" placeholder="Ej: M01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ancho-${i}').focus()">
+        <\/div>
+        <div class="field"><label>Ancho (m)<\/label>
+          <input type="number" min="0" step="0.01" id="pv-ancho-${i}" placeholder="0.00" oninput="_previewArea(${i})" onkeydown="if(event.key==='Enter')document.getElementById('pv-largo-${i}').focus()">
+        <\/div>
+        <div class="field"><label>Largo (m)<\/label>
+          <input type="number" min="0" step="0.01" id="pv-largo-${i}" placeholder="0.00" oninput="_previewArea(${i})" onkeydown="if(event.key==='Enter')_addItem(${i})">
+        <\/div>
+        <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
+      <\/div>
+      <div id="pv-area-${i}" style="display:none;margin-top:6px;font-size:13px;font-weight:600;color:var(--green-text)">
+        Área: <span id="pv-area-val-${i}">0.00<\/span> M2
+      <\/div>`;
+  }
+
+  if (cat === 'ml' && tipoML === 'cable') {
+    const tipoCol = tiposOpts ? `<div class="field" style="min-width:100px"><label>Tipo<\/label><select id="pv-tipo-${i}">${tiposOpts}<\/select><\/div>` : '';
+    return `
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end">
+        ${tipoCol}
+        <div class="field" style="min-width:80px"><label>Desde<\/label>
+          <input type="text" id="pv-desde-${i}" placeholder="P10" onkeydown="if(event.key==='Enter')document.getElementById('pv-hasta-${i}').focus()">
+        <\/div>
+        <div style="padding-bottom:10px;font-size:18px;font-weight:700;color:var(--text3)">→<\/div>
+        <div class="field" style="min-width:80px"><label>Hasta<\/label>
+          <input type="text" id="pv-hasta-${i}" placeholder="P20" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+        <\/div>
+        <div class="field" style="min-width:80px"><label>ML cable<\/label>
+          <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+        <\/div>
+        <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
+      <\/div>`;
+  }
+
+  if (cat === 'ml' && tipoML === 'inyeccion') {
+    return `
+      <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:100px"><label>Código perno<\/label>
+          <input type="text" id="pv-cod-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+        <\/div>
+        <div class="field" style="min-width:90px"><label>ML / perno<\/label>
+          <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+        <\/div>
+        <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
+      <\/div>`;
+  }
+
+  // perforacion (default ML)
+  const tipoSelect = tiposOpts
+    ? `<div class="field" style="min-width:130px"><label>Tipo perno<\/label>
+        <select id="pv-tipo-${i}">${tiposOpts}<\/select>
+       <\/div>`
+    : '';
+  return `
+    <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+      ${tipoSelect}
+      <div class="field" style="flex:1;min-width:90px"><label>Código<\/label>
+        <input type="text" id="pv-cod-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+      <\/div>
+      <div class="field" style="min-width:90px"><label>ML / perno<\/label>
+        <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+      <\/div>
+      <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
+    <\/div>`;
+}
+
+// ── Construir tabla de items registrados ───────────────────────────────────
+function _buildItemsTable(items, p, cat, tipoML) {
+  if (!items.length) return '';
+  const isPT = cat === 'pulltest';
+  const isCable = tipoML === 'cable';
+  const isMalla = cat === 'm2';
+  const i = items[0]._partidaIdx;
+
+  let thead = '<tr>';
+  if (isPT) thead += '<th>Código perno<\/th><th style="text-align:right">UND<\/th>';
+  else if (isCable) thead += '<th>Tipo<\/th><th>Tramo<\/th><th style="text-align:right">ML<\/th>';
+  else if (isMalla) thead += '<th>Código<\/th><th>Ancho<\/th><th>Largo<\/th><th style="text-align:right">M2<\/th>';
+  else thead += '<th>Tipo<\/th><th>Código<\/th><th style="text-align:right">ML<\/th>';
+  thead += '<th style="width:28px"><\/th><\/tr>';
+
+  let tbody = '';
+  items.forEach(it => {
+    tbody += '<tr>';
+    if (isPT) tbody += `<td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td style="text-align:right">1<\/td>`;
+    else if (isCable) tbody += `<td>${it.tipo||'—'}<\/td><td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
+    else if (isMalla) tbody += `<td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td>${it.ancho||'—'}<\/td><td>${it.largo||'—'}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
+    else tbody += `<td>${it.tipo||'—'}<\/td><td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
+    tbody += `<td><button class="del-btn" onclick="_removeItem(${it._partidaIdx},${it.id})" style="font-size:13px"><i class="ti ti-x"><\/i><\/button><\/td><\/tr>`;
+  });
+
+  const totalVal = isPT ? items.length : items.reduce((s,it)=>s+(Number(it.cantidad)||0),0);
+  const totalFormatted = Math.round(totalVal*1000)/1000;
+  const totalCols = isPT ? 1 : isCable ? 2 : isMalla ? 3 : 2;
+  const totalUM = isPT ? 'UND' : (isMalla ? 'M2' : 'ML');
+  const totalRow = `<tr class="total-row">
+    <td colspan="${totalCols}">TOTAL AUTOMÁTICO<\/td>
+    <td style="text-align:right;font-size:15px">${totalFormatted} ${totalUM}<\/td>
+    <td><\/td><\/tr>`;
+
+  return `<table class="ctrl-table"><thead>${thead}<\/thead><tbody>${tbody}${totalRow}<\/tbody><\/table>`;
+}
+
+// ── Renderizar una tarjeta individual de partida ──────────────────────────
+function _renderCard(p, i) {
+  _ensurePV(i);
+  const cat    = _cat(p);
+  const tipoML = _tipoML(p);
+  const items  = partidaValores[i].items;
+  const met    = partidaValores[i].met;
+  const [umBg, umTxt] = _umColor(p.u);
+  const tieneValor = met !== '' && met !== null && met !== undefined;
+  const tieneItems = items.length > 0;
+  const isOpen = tieneValor || tieneItems;
+
+  // GLB message
+  const glbMsg = (p.u||'').toUpperCase() === 'GLB'
+    ? `<div class="alert alert-amber" style="margin-bottom:8px;padding:8px 10px"><i class="ti ti-info-circle" style="flex-shrink:0"><\/i><span><strong>Partida porcentual (GLB):<\/strong> Ingresa <strong>1.00<\/strong> solo cuando la partida haya culminado completamente.<\/span><\/div>`
+    : '';
+
+  let bodyHTML = '';
+  if (cat === 'simple') {
+    bodyHTML = glbMsg + `
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="number" min="0" step="0.01"
+          placeholder="${(p.u||'').toUpperCase()==='GLB'?'1.00 al culminar':'Cantidad ejecutada'}"
+          value="${tieneValor ? met : ''}"
+          id="simple-${i}"
+          oninput="_simpleChange(${i},this.value)"
+          style="flex:1;font-family:'Inter',inherit;font-size:14px;font-weight:400;padding:9px 11px;border:1.5px solid var(--border-md);border-radius:var(--r-md);color:var(--text)">
+        <span style="font-size:14px;font-weight:700;color:var(--text2)">${p.u}<\/span>
+      <\/div>`;
+  } else {
+    const form   = _buildForm(p, i, cat, tipoML);
+    const table  = _buildItemsTable(items.map(it=>({...it,_partidaIdx:i})), p, cat, tipoML);
+    bodyHTML = form + table;
+  }
+
+  return `
+  <div class="partida-card${isOpen?' tiene-valor':''}${isOpen?' open':''}" id="pc-${i}">
+    <div class="partida-header" onclick="_toggleCard(${i})">
+      <span class="partida-nombre">${p.n}<\/span>
+      <span class="partida-um" style="background:${umBg};color:${umTxt}">${p.u}<\/span>
+      <span class="partida-valor" id="pv-${i}">${tieneValor ? met+' '+p.u : '— sin dato —'}<\/span>
+      <i class="ti ti-chevron-${isOpen?'up':'down'}" id="chev-${i}" style="color:var(--text3);font-size:13px;flex-shrink:0"><\/i>
+    <\/div>
+    <div class="partida-body" id="pb-${i}">${bodyHTML}<\/div>
+  <\/div>`;
+}
+
+// ── Renderizar todas las partidas del frente ──────────────────────────────
+function renderMetradosPartidas() {
+  const frente    = document.getElementById('f-frente').value;
+  const container = document.getElementById('metrados-rows');
+  if (!container) return;
+  const lista = frente ? (PARTIDAS[frente] || []) : [];
+
+  if (!frente) {
+    container.innerHTML = '<div class="empty-msg">Selecciona primero el sector y frente en la pestaña Datos.<\/div>';
+    return;
+  }
+  if (!lista.length) {
+    container.innerHTML = '<div class="empty-msg">Este frente no tiene partidas catalogadas. Usa la sección de partidas libres.<\/div>';
+    return;
+  }
+
+  let html = '';
+  let lastSub = null;
+  lista.forEach((p, i) => {
+    _ensurePV(i);
+    if (p.s && p.s !== lastSub) {
+      lastSub = p.s;
+      html += `<div class="subtitulo-header">${p.s}<\/div>`;
+    }
+    html += _renderCard(p, i);
+  });
+  container.innerHTML = html;
+}
+
+// ── Acciones sobre las tarjetas ────────────────────────────────────────────
+function _toggleCard(i) {
+  const card = document.getElementById('pc-'+i);
+  const body = document.getElementById('pb-'+i);
+  const chev = document.getElementById('chev-'+i);
+  if (!card||!body) return;
+  const open = body.style.display !== 'none' && body.style.display !== '';
+  // La clase open controla display via CSS
+  if (card.classList.contains('open')) {
+    card.classList.remove('open');
+    if(chev) chev.className='ti ti-chevron-down';
+  } else {
+    card.classList.add('open');
+    if(chev) chev.className='ti ti-chevron-up';
+    // Focus first input
+    setTimeout(() => {
+      const inp = body.querySelector('input');
+      if(inp) {inp.focus(); if(inp.select) inp.select();}
+    }, 50);
+  }
+}
+
+function _updateCardUI(i) {
+  _ensurePV(i);
+  const frente = document.getElementById('f-frente').value;
+  const lista  = PARTIDAS[frente] || [];
+  const p      = lista[i];
+  if (!p) return;
+  const met     = partidaValores[i].met;
+  const tieneV  = met !== '' && met !== null && met !== undefined;
+  const card    = document.getElementById('pc-'+i);
+  const valEl   = document.getElementById('pv-'+i);
+  if (card) {
+    card.classList.toggle('tiene-valor', tieneV);
+  }
+  if (valEl) {
+    valEl.textContent = tieneV ? met+' '+p.u : '— sin dato —';
+  }
+}
+
+function _simpleChange(i, val) {
+  _ensurePV(i);
+  partidaValores[i].met = val !== '' ? Number(val) : '';
+  _updateCardUI(i);
+  saveDraft();
+}
+
+function _previewArea(i) {
+  const ancho = parseFloat((document.getElementById('pv-ancho-'+i)||{}).value)||0;
+  const largo = parseFloat((document.getElementById('pv-largo-'+i)||{}).value)||0;
+  const prev  = document.getElementById('pv-area-'+i);
+  const val   = document.getElementById('pv-area-val-'+i);
+  if (prev && val) {
+    if (ancho>0 && largo>0) {
+      prev.style.display='block';
+      val.textContent = (Math.round(ancho*largo*1000)/1000).toFixed(3);
+    } else {
+      prev.style.display='none';
+    }
+  }
+}
+
+const _perfInyMode = {}; // {partidaIdx: 'perforacion'|'inyeccion'}
+function _setPerfInyMode(i, mode) {
+  _perfInyMode[i] = mode;
+  const btnP = document.getElementById('btn-perf-'+i);
+  const btnI = document.getElementById('btn-iny-'+i);
+  const lbl  = document.getElementById('pv-ml-label-'+i);
+  if (btnP) { btnP.style.background = mode==='perforacion'?'var(--blue)':'#fff'; btnP.style.color = mode==='perforacion'?'#fff':'var(--text2)'; btnP.style.borderColor = 'var(--blue)'; }
+  if (btnI) { btnI.style.background = mode==='inyeccion'?'var(--blue)':'#fff'; btnI.style.color = mode==='inyeccion'?'#fff':'var(--text2)'; btnI.style.borderColor = mode==='inyeccion'?'var(--blue)':'var(--border-md)'; }
+  if (lbl) lbl.textContent = mode==='perforacion'?'ML perforados':'ML inyectados';
+  const codEl = document.getElementById('pv-cod-'+i);
+  if (codEl) codEl.focus();
+}
+
+function _addItem(i) {
+  const frente = document.getElementById('f-frente').value;
+  const lista  = PARTIDAS[frente] || [];
+  const p      = lista[i];
+  if (!p) return;
+  const cat    = _cat(p);
+  const tipoML = _tipoML(p);
+  const meta   = getMeta();
+  _ensurePV(i);
+
+  let item = {
+    id: _controlId++,
+    _partidaIdx: i,
+    fecha:  meta.fecha||'',
+    frente: meta.frente||'',
+    sistema: p.sis||'',
+    zona:    p.zona||'',
+    sub:     p.s||'',
+    elemento:'', tipo:'', actividad:'',
+    codigo:'', cantidad:0, unidad: p.u,
+    ancho:'', largo:''
+  };
+
+  if (cat === 'pulltest') {
+    const el = document.getElementById('pv-pt-'+i);
+    const cod = el ? el.value.trim() : '';
+    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
+    item = {...item, elemento:'Perno', tipo:'Ensayo', actividad:'Pull Test', codigo:cod, cantidad:1, unidad:'UND'};
+    if(el) el.value='';
+    if(el) el.focus();
+  }
+  else if (cat === 'm2') {
+    const codEl   = document.getElementById('pv-cod-'+i);
+    const anchoEl = document.getElementById('pv-ancho-'+i);
+    const largoEl = document.getElementById('pv-largo-'+i);
+    const cod   = codEl   ? codEl.value.trim() : '';
+    const ancho = anchoEl ? parseFloat(anchoEl.value)||0 : 0;
+    const largo = largoEl ? parseFloat(largoEl.value)||0 : 0;
+    if (!cod)         { showToast('Ingresa el código de malla ⚠️'); return; }
+    if (!ancho||!largo){ showToast('Ingresa ancho y largo ⚠️'); return; }
+    const area = Math.round(ancho*largo*1000)/1000;
+    item = {...item, elemento:'Malla', tipo:'Malla', actividad:'Instalación', codigo:cod, cantidad:area, unidad:'M2', ancho, largo};
+    if(codEl) codEl.value='';
+    if(anchoEl) anchoEl.value='';
+    if(largoEl) largoEl.value='';
+    const prev = document.getElementById('pv-area-'+i);
+    if(prev) prev.style.display='none';
+    if(codEl) codEl.focus();
+  }
+  else if (cat === 'ml' && tipoML === 'cable') {
+    const tipoEl  = document.getElementById('pv-tipo-'+i);
+    const desdeEl = document.getElementById('pv-desde-'+i);
+    const hastaEl = document.getElementById('pv-hasta-'+i);
+    const mlEl    = document.getElementById('pv-ml-'+i);
+    const desde = desdeEl ? desdeEl.value.trim() : '';
+    const hasta = hastaEl ? hastaEl.value.trim() : '';
+    const ml    = mlEl    ? parseFloat(mlEl.value)||0 : 0;
+    const tipo  = tipoEl  ? tipoEl.value : '';
+    if (!desde||!hasta){ showToast('Ingresa punto inicio y fin ⚠️'); return; }
+    if (!ml)           { showToast('Ingresa los ML de cable ⚠️'); return; }
+    item = {...item, elemento:'Cable', tipo: tipo||'Cable Bolt', actividad:'Instalación', codigo: desde+' - '+hasta, cantidad:ml, unidad:'ML'};
+    if(desdeEl) desdeEl.value='';
+    if(hastaEl) hastaEl.value='';
+    if(mlEl)    mlEl.value='';
+    if(desdeEl) desdeEl.focus();
+  }
+  else if (cat === 'ml' && tipoML === 'inyeccion') {
+    const codEl = document.getElementById('pv-cod-'+i);
+    const mlEl  = document.getElementById('pv-ml-'+i);
+    const cod   = codEl ? codEl.value.trim() : '';
+    const ml    = mlEl  ? parseFloat(mlEl.value)||0 : 0;
+    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
+    if (!ml)  { showToast('Ingresa los ML ⚠️'); return; }
+    item = {...item, elemento:'Perno', tipo:'Inyección', actividad:'Inyección', codigo:cod, cantidad:ml, unidad:'ML'};
+    if(codEl) codEl.value='';
+    if(mlEl)  mlEl.value='';
+    if(codEl) codEl.focus();
+  }
+  else if (cat === 'perf-iny') {
+    const mode   = _perfInyMode[i] || 'perforacion';
+    const tipoEl = document.getElementById('pv-tipo-'+i);
+    const codEl  = document.getElementById('pv-cod-'+i);
+    const mlEl   = document.getElementById('pv-ml-'+i);
+    const tipo   = tipoEl ? tipoEl.value : 'BAHE';
+    const cod    = codEl  ? codEl.value.trim() : '';
+    const ml     = mlEl   ? parseFloat(mlEl.value)||0 : 0;
+    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
+    if (!ml)  { showToast('Ingresa los ML ⚠️'); return; }
+    const esPerf = mode === 'perforacion';
+    item = {...item, elemento:'Perno', tipo: esPerf?tipo:'Inyección', actividad: esPerf?'Perforación':'Inyección', codigo:cod, cantidad:ml, unidad:'ML'};
+    if(codEl) codEl.value='';
+    if(mlEl)  mlEl.value='';
+    if(codEl) codEl.focus();
+  }
+  else { // perforacion
+    const tipoEl = document.getElementById('pv-tipo-'+i);
+    const codEl  = document.getElementById('pv-cod-'+i);
+    const mlEl   = document.getElementById('pv-ml-'+i);
+    const tipo   = tipoEl ? tipoEl.value : '';
+    const cod    = codEl  ? codEl.value.trim() : '';
+    const ml     = mlEl   ? parseFloat(mlEl.value)||0 : 0;
+    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
+    if (!ml)  { showToast('Ingresa los ML perforados ⚠️'); return; }
+    item = {...item, elemento:'Perno', tipo: tipo||'BAHE', actividad:'Perforación', codigo:cod, cantidad:ml, unidad:'ML'};
+    if(codEl) codEl.value='';
+    if(mlEl)  mlEl.value='';
+    if(codEl) codEl.focus();
+  }
+
+  partidaValores[i].items.push(item);
+  _recalc(i);
+  saveDraft();
+
+  // Rerenderizar solo el body de esta tarjeta
+  const lista2 = PARTIDAS[document.getElementById('f-frente').value]||[];
+  const p2 = lista2[i];
+  if (p2) {
+    const body = document.getElementById('pb-'+i);
+    if (body) {
+      // perf-iny: _buildForm already includes items table inside
+      if (cat === 'perf-iny') {
+        body.innerHTML = _buildForm(p2, i, cat, tipoML);
+        // Restore current mode so buttons don't reset
+        const _curMode = _perfInyMode[i] || 'perforacion';
+        setTimeout(() => _setPerfInyMode(i, _curMode), 0);
+      } else {
+        body.innerHTML = _buildForm(p2,i,cat,tipoML) + _buildItemsTable(partidaValores[i].items.map(it=>({...it,_partidaIdx:i})),p2,cat,tipoML);
+      }
+    }
+    _updateCardUI(i);
+  }
+  showToast(item.codigo + ' agregado ✅');
+}
+
+function _removeItem(i, itemId) {
+  _ensurePV(i);
+  partidaValores[i].items = partidaValores[i].items.filter(it => it.id !== itemId);
+  _recalc(i);
+  saveDraft();
+  const frente = document.getElementById('f-frente').value;
+  const lista  = PARTIDAS[frente]||[];
+  const p      = lista[i];
+  if (p) {
+    const cat    = _cat(p);
+    const tipoML = _tipoML(p);
+    const body   = document.getElementById('pb-'+i);
+    if (body) {
+      body.innerHTML = _buildForm(p,i,cat,tipoML) + _buildItemsTable(partidaValores[i].items.map(it=>({...it,_partidaIdx:i})),p,cat,tipoML);
+    }
+    _updateCardUI(i);
+  }
+}
+
+// ── Reconstruir controlItems global desde los items de partidas (para exports) ──
+function rebuildControlItems() {
+  const meta   = getMeta();
+  const frente = meta.frente||'';
+  const lista  = PARTIDAS[frente]||[];
+  const all    = [];
+  lista.forEach((p, i) => {
+    if (!partidaValores[i]||!partidaValores[i].items) return;
+    partidaValores[i].items.forEach(it => {
+      all.push({
+        ...it,
+        fecha:  it.fecha  || meta.fecha  || '',
+        frente: it.frente || frente
+      });
+    });
+  });
+  controlItems = all;
+}
+// ==================== FIN MOTOR DE METRADOS ====================
+
+
+// ==================== MÓDULO STAND BY ====================
+// standbyRows[i] = { id, actividad, desde, hasta, causa }
+function _sbMinutos(desde, hasta) {
+  // Devuelve minutos entre desde y hasta (HH:MM). Si hasta < desde asume cruce de medianoche.
+  if (!desde || !hasta) return null;
+  const [h1,m1] = desde.split(':').map(Number);
+  const [h2,m2] = hasta.split(':').map(Number);
+  if ([h1,m1,h2,m2].some(v=>isNaN(v))) return null;
+  let diff = (h2*60+m2) - (h1*60+m1);
+  if (diff < 0) diff += 24*60;
+  return diff;
+}
+function _sbFmt(min) {
+  // 95 → "1h 35m" / 95 → también "01:35" para exports
+  if (min === null || min === undefined) return '—';
+  const h = Math.floor(min/60), m = min%60;
+  return h + 'h ' + String(m).padStart(2,'0') + 'm';
+}
+function _sbFmtHHMM(min) {
+  if (min === null || min === undefined) return '';
+  const h = Math.floor(min/60), m = min%60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+function _sbCausaEfectiva(r) {
+  if (r.causa === 'OTRO') {
+    const otro = (r.causaOtro||'').trim();
+    return otro ? 'OTRO: ' + otro.toUpperCase() : 'OTRO';
+  }
+  return r.causa || '';
+}
+function getStandbyRegistrados() {
+  // Solo filas con al menos actividad, causa, horario o comentario ingresado
+  return standbyRows
+    .filter(r => (r.actividad && r.actividad.trim()) || r.causa || r.desde || r.hasta || (r.comentario && r.comentario.trim()))
+    .map((r, idx) => ({
+      item: idx + 1,
+      actividad: (r.actividad||'').trim(),
+      desde: r.desde || '',
+      hasta: r.hasta || '',
+      minutos: _sbMinutos(r.desde, r.hasta),
+      causa: _sbCausaEfectiva(r),
+      comentario: (r.comentario||'').trim()
+    }));
+}
+function getStandbyTotalMin() {
+  return getStandbyRegistrados().reduce((s,r) => s + (r.minutos||0), 0);
+}
+function addStandbyRow() {
+  standbyRows.push({ id: standbyId++, actividad:'', desde:'', hasta:'', causa:'', causaOtro:'', comentario:'' });
+  renderStandbyRows();
+  saveDraft();
+}
+function removeStandbyRow(id) {
+  standbyRows = standbyRows.filter(r => r.id !== id);
+  renderStandbyRows();
+  saveDraft();
+}
+function updateStandby(id, field, val) {
+  const r = standbyRows.find(x => x.id === id);
+  if (!r) return;
+  r[field] = val;
+  // Actualizar solo el total de esa fila y el total general (sin re-render completo)
+  const totEl = document.getElementById('sb-tot-'+id);
+  if (totEl) {
+    const min = _sbMinutos(r.desde, r.hasta);
+    totEl.textContent = _sbFmt(min);
+    totEl.style.color = (min !== null && min > 0) ? 'var(--red-text)' : 'var(--text3)';
+  }
+  // Mostrar/ocultar el campo de causa "OTRO"
+  if (field === 'causa') {
+    const otroEl = document.getElementById('sb-otro-'+id);
+    if (otroEl) {
+      otroEl.style.display = (val === 'OTRO') ? '' : 'none';
+      if (val === 'OTRO') {
+        const inp = otroEl.querySelector('input');
+        if (inp) setTimeout(()=>inp.focus(), 50);
+      } else {
+        r.causaOtro = '';
+        const inp = otroEl.querySelector('input');
+        if (inp) inp.value = '';
+      }
+    }
+  }
+  _renderStandbyTotal();
+  saveDraft();
+}
+function _renderStandbyTotal() {
+  const box = document.getElementById('standby-total');
+  if (!box) return;
+  const regs = getStandbyRegistrados().filter(r => r.minutos !== null);
+  const tot = getStandbyTotalMin();
+  if (regs.length && tot > 0) {
+    box.style.display = 'block';
+    box.innerHTML = '<i class="ti ti-clock-x"></i> TOTAL STAND BY DE LA JORNADA: ' + _sbFmt(tot) + ' (' + regs.length + ' evento' + (regs.length>1?'s':'') + ')';
+  } else {
+    box.style.display = 'none';
+  }
+}
+function renderStandbyRows() {
+  const container = document.getElementById('standby-rows');
+  if (!container) return;
+  if (standbyRows.length === 0) {
+    container.innerHTML = '<div class="empty-msg">Sin Stand By registrados. Presiona el botón para agregar.</div>';
+    _renderStandbyTotal();
+    return;
+  }
+  container.innerHTML = '';
+  standbyRows.forEach((r, idx) => {
+    const min = _sbMinutos(r.desde, r.hasta);
+    const causasOpts = CAUSAS_STANDBY.map(c => `<option ${r.causa===c?'selected':''}>${c}</option>`).join('');
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:12px;border:1.5px solid var(--border);border-radius:var(--r-md);margin-bottom:10px;background:var(--surface2)';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:800;background:var(--red-bg);color:var(--red-text);border-radius:20px;padding:3px 10px">ITEM ${idx+1}</span>
+        <span style="flex:1"></span>
+        <button class="del-btn" onclick="removeStandbyRow(${r.id})" aria-label="Eliminar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Actividad afectada</label>
+        <input type="text" placeholder="Ej: Perforación de pernos, instalación de malla..." value="${(r.actividad||'').replace(/"/g,'&quot;')}" onchange="updateStandby(${r.id},'actividad',this.value)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="field"><label>Desde</label><input type="time" value="${r.desde||''}" onchange="updateStandby(${r.id},'desde',this.value)"></div>
+        <div class="field"><label>Hasta</label><input type="time" value="${r.hasta||''}" onchange="updateStandby(${r.id},'hasta',this.value)"></div>
+        <div class="field"><label>Total</label>
+          <div id="sb-tot-${r.id}" style="display:flex;align-items:center;height:38px;padding:0 11px;border:1.5px dashed var(--border-md);border-radius:var(--r-md);font-size:14px;font-weight:700;color:${(min!==null&&min>0)?'var(--red-text)':'var(--text3)'}">${_sbFmt(min)}</div>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Causa</label>
+        <select onchange="updateStandby(${r.id},'causa',this.value)">
+          <option value="">— Seleccionar causa —</option>
+          ${causasOpts}
+          <option value="OTRO" ${r.causa==='OTRO'?'selected':''}>OTRO (especificar)</option>
+        </select>
+      </div>
+      <div class="field" id="sb-otro-${r.id}" style="margin-bottom:8px;${r.causa==='OTRO'?'':'display:none'}">
+        <label>Especificar otra causa</label>
+        <input type="text" placeholder="Describe la causa del Stand By..." value="${(r.causaOtro||'').replace(/"/g,'&quot;')}" onchange="updateStandby(${r.id},'causaOtro',this.value)">
+      </div>
+      <div class="field">
+        <label>Comentarios <span style="font-weight:400;color:var(--text3)">(opcional)</span></label>
+        <textarea placeholder="Detalles adicionales del Stand By: qué ocurrió, quién intervino, acuerdos..." style="min-height:52px" onchange="updateStandby(${r.id},'comentario',this.value)">${(r.comentario||'').replace(/</g,'&lt;')}</textarea>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  _renderStandbyTotal();
+}
+// ==================== FIN MÓDULO STAND BY ====================
+
+function toggleRestriccion() {
+  const checked = document.getElementById('f-truckshop').checked;
+  document.getElementById('restriccion-detalle').style.display = checked ? 'block' : 'none';
+}
+function initSelects() {
+  const secSel = document.getElementById('f-sector');
+  secSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + Object.keys(SECTORES).map(s=>`<option>${s}<\/option>`).join('');
+
+  const capSel = document.getElementById('f-capataz');
+  capSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + CAPATACES.map(c=>`<option>${c}<\/option>`).join('');
+
+  const supSel = document.getElementById('f-supervisor');
+  supSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + SUPERVISORES.map(s=>`<option>${s}<\/option>`).join('');
+}
+function onSectorChange() {
+  const _salaSec = document.getElementById("sala-electrica-section");
+  if (_salaSec) _salaSec.style.display = (document.getElementById("f-sector").value === "A: 4000 - SALA ELECTRICA") ? "" : "none";
+
+  const sector = document.getElementById('f-sector').value;
+  const frenteSel = document.getElementById('f-frente');
+  const opts = SECTORES[sector] || [];
+  if (opts.length === 0) {
+    frenteSel.innerHTML = '<option value="">— Sin frentes predefinidos —<\/option>';
+    frenteSel.disabled = true;
+  } else {
+    frenteSel.disabled = false;
+    frenteSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + opts.map(f=>`<option>${f}<\/option>`).join('');
+  }
+  onFrenteChange();
+}
+function onFrenteChange() {
+  partidaValores = {};
+  renderMetradosPartidas();
+  saveDraft();
+}
+function renderHitos(preserve) {
+  const prevVals = {};
+  if (preserve !== false) {
+    currentHitos.forEach((h,i)=>{
+      const el = document.getElementById('hito-'+i);
+      if (el) prevVals[h] = el.value;
+    });
+  }
+  currentHitos = HITOS_BASE;
+  document.getElementById('hitos-rows').innerHTML = currentHitos.map((h,i)=>`
+    <div class="hito-row">
+      <span class="hito-label">${h}<\/span>
+      <input type="time" id="hito-${i}" value="${prevVals[h]||''}" onchange="saveDraft()">
+    <\/div>
+  `).join('');
+}
+function addMetradoManual() {
+  const nombre = document.getElementById('manual-nombre').value.trim();
+  const um = document.getElementById('manual-um').value;
+  const met = document.getElementById('manual-met').value;
+  if (!nombre) { showToast('Ingresa el nombre de la partida ⚠️'); return; }
+  if (!met)    { showToast('Ingresa el metrado ejecutado ⚠️'); return; }
+
+  metradosManuales.push({ id: metradosManualId++, nombre, um, met: Number(met) });
+
+  document.getElementById('manual-nombre').value = '';
+  document.getElementById('manual-um').value = '';
+  document.getElementById('manual-met').value = '';
+  document.getElementById('manual-nombre').focus();
+
+  renderMetradosManuales();
+  saveDraft();
+  showToast('Partida agregada ✅');
+}
+function removeMetradoManual(id) {
+  metradosManuales = metradosManuales.filter(m => m.id !== id);
+  renderMetradosManuales();
+  saveDraft();
+}
+function renderMetradosManuales() {
+  const container = document.getElementById('metrados-manuales-rows');
+  if (!container) return;
+  if (metradosManuales.length === 0) {
+    container.innerHTML = '<div class="empty-msg">Sin partidas nuevas agregadas.<\/div>';
+    return;
+  }
+  container.innerHTML = metradosManuales.map(m => `
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--color-border)">
+      <span style="flex:1;font-size:13px;line-height:1.4">${m.nombre}<\/span>
+      <span style="font-size:14px;font-weight:800;color:var(--color-success-text);white-space:nowrap">${m.met}<\/span>
+      <span style="font-size:11px;font-weight:700;background:var(--color-bg-secondary);border-radius:20px;padding:3px 8px;color:var(--color-text-secondary);white-space:nowrap">${m.um||'—'}<\/span>
+      <button class="del-btn" onclick="removeMetradoManual(${m.id})" aria-label="Eliminar"><i class="ti ti-x"><\/i><\/button>
+    <\/div>
+  `).join('');
+}
+function renderEquiposFijos() {
+  const contPerf = document.getElementById('equipos-perforacion-fijos');
+  if (contPerf) {
+    contPerf.innerHTML = EQUIPOS_PERFORACION_FIJOS.map((n,i) => `
+      <div class="hito-row">
+        <span class="hito-label">${n}<\/span>
+        <input type="number" min="0" step="1" id="eqp-perf-${i}" placeholder="0" onchange="saveDraft()">
+      <\/div>
+    `).join('');
+  }
+  const contSop = document.getElementById('equipos-soporte-fijos');
+  if (contSop) {
+    contSop.innerHTML = EQUIPOS_SOPORTE_FIJOS.map((n,i) => `
+      <div class="hito-row">
+        <span class="hito-label">${n}<\/span>
+        <input type="number" min="0" step="1" id="eqp-sop-${i}" placeholder="0" onchange="saveDraft()">
+      <\/div>
+    `).join('');
+  }
+}
+function addEquipoManual(tipo) {
+  const nombreId = tipo === 'perforacion' ? 'eqperf-manual-nombre' : 'eqsop-manual-nombre';
+  const cantId = tipo === 'perforacion' ? 'eqperf-manual-cant' : 'eqsop-manual-cant';
+  const nombre = document.getElementById(nombreId).value.trim();
+  const cant = document.getElementById(cantId).value;
+  if (!nombre) { showToast('Ingresa el nombre del equipo ⚠️'); return; }
+  if (!cant)   { showToast('Ingresa la cantidad ⚠️'); return; }
+
+  if (tipo === 'perforacion') {
+    equiposPerforacionManual.push({ id: equiposPerforacionManualId++, nombre, cantidad: Number(cant) });
+  } else {
+    equiposSoporteManual.push({ id: equiposSoporteManualId++, nombre, cantidad: Number(cant) });
+  }
+
+  document.getElementById(nombreId).value = '';
+  document.getElementById(cantId).value = '';
+  document.getElementById(nombreId).focus();
+
+  renderEquiposManuales();
+  saveDraft();
+  showToast('Equipo agregado ✅');
+}
+function removeEquipoManual(tipo, id) {
+  if (tipo === 'perforacion') {
+    equiposPerforacionManual = equiposPerforacionManual.filter(m => m.id !== id);
+  } else {
+    equiposSoporteManual = equiposSoporteManual.filter(m => m.id !== id);
+  }
+  renderEquiposManuales();
+  saveDraft();
+}
+function renderEquiposManuales() {
+  const contPerf = document.getElementById('equipos-perforacion-manual-rows');
+  if (contPerf) {
+    contPerf.innerHTML = equiposPerforacionManual.map(m => `
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--color-border)">
+        <span style="flex:1;font-size:13px;line-height:1.4">${m.nombre}<\/span>
+        <span style="font-size:14px;font-weight:800;color:var(--color-success-text);white-space:nowrap">${m.cantidad}<\/span>
+        <button class="del-btn" onclick="removeEquipoManual('perforacion',${m.id})" aria-label="Eliminar"><i class="ti ti-x"><\/i><\/button>
+      <\/div>
+    `).join('');
+  }
+  const contSop = document.getElementById('equipos-soporte-manual-rows');
+  if (contSop) {
+    contSop.innerHTML = equiposSoporteManual.map(m => `
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--color-border)">
+        <span style="flex:1;font-size:13px;line-height:1.4">${m.nombre}<\/span>
+        <span style="font-size:14px;font-weight:800;color:var(--color-success-text);white-space:nowrap">${m.cantidad}<\/span>
+        <button class="del-btn" onclick="removeEquipoManual('soporte',${m.id})" aria-label="Eliminar"><i class="ti ti-x"><\/i><\/button>
+      <\/div>
+    `).join('');
+  }
+}
+function getEquiposRegistrados() {
+  const perf = [];
+  EQUIPOS_PERFORACION_FIJOS.forEach((n,i) => {
+    const el = document.getElementById('eqp-perf-'+i);
+    const v = el ? el.value : '';
+    if (v !== '' && Number(v) > 0) perf.push({ nombre: n, cantidad: Number(v) });
+  });
+  equiposPerforacionManual.forEach(m => perf.push({ nombre: m.nombre, cantidad: m.cantidad }));
+
+  const sop = [];
+  EQUIPOS_SOPORTE_FIJOS.forEach((n,i) => {
+    const el = document.getElementById('eqp-sop-'+i);
+    const v = el ? el.value : '';
+    if (v !== '' && Number(v) > 0) sop.push({ nombre: n, cantidad: Number(v) });
+  });
+  equiposSoporteManual.forEach(m => sop.push({ nombre: m.nombre, cantidad: m.cantidad }));
+
+  return { perforacion: perf, soporte: sop };
+}
+function getPartidasEjecutadas() {
+  const frente = document.getElementById('f-frente').value;
+  const lista = PARTIDAS[frente] || [];
+  const out = [];
+  lista.forEach((p,i) => {
+    const v = partidaValores[i];
+    if (v && v.met) out.push({nombre:p.n, met:Number(v.met), um:p.u, edt:p.e||'', sub:p.s||'', manual:false});
+  });
+  metradosManuales.forEach(m => {
+    out.push({nombre:m.nombre, met:Number(m.met), um:m.um||'', edt:'', sub:'', manual:true});
+  });
+  return out;
+}
+function addRow(hora='', desc='') {
+  const id = rowId++;
+  rows.push({id, hora, descs:['','','','']});
+  renderRows();
+  saveDraft();
+}
+function removeRow(id) {
+  rows = rows.filter(r => r.id !== id);
+  renderRows();
+  saveDraft();
+}
+function quarterLabels(hora) {
+  if (!hora) return ['','','',''];
+  const hh = hora.split(':')[0];
+  return [`${hh}:00`, `${hh}:15`, `${hh}:30`, `${hh}:45`];
+}
+function rowsActivityCount() {
+  return rows.reduce((s,r)=> s + ((r.descs||[]).filter(d=>d && d.trim()!=='').length), 0);
+}
+function renderRows() {
+  const container = document.getElementById('hora-rows');
+  if (!container) return;
+  if (rows.length === 0) {
+    container.innerHTML = '<div class="empty-msg">Sin actividades registradas. Presiona el botón para agregar.<\/div>';
+    return;
+  }
+  container.innerHTML = '';
+  rows.forEach(r => {
+    if (!r.descs) r.descs = ['','','',''];
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:9px 0;border-bottom:1px solid var(--color-border)';
+    const labels = quarterLabels(r.hora);
+    let quartersHtml = '';
+    if (r.hora) {
+      quartersHtml = `<div style="margin-top:6px;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden">` +
+        [0,1,2,3].map(i => `
+          <div style="display:grid;grid-template-columns:56px 1fr;align-items:center;${i<3?'border-bottom:1px solid var(--color-border);':''}">
+            <div style="background:var(--color-bg-secondary);color:var(--color-text-tertiary);font-size:11px;text-align:center;padding:8px 2px">${labels[i]}<\/div>
+            <input type="text" placeholder="Actividad..." value="${(r.descs[i]||'').replace(/"/g,'&quot;')}" onchange="updateRowQuarter(${r.id},${i},this.value)" style="border:none;background:transparent;font-size:13px;padding:8px 8px;width:100%">
+          <\/div>`).join('') +
+        `<\/div>`;
+    }
+    div.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 28px;gap:8px;align-items:center">
+        <select onchange="updateRow(${r.id},'hora',this.value)" style="font-size:13px;padding:6px 8px">
+          <option value="">--:--<\/option>
+          ${HORAS.map(h=>`<option ${r.hora===h?'selected':''}>${h}<\/option>`).join('')}
+        <\/select>
+        <button class="del-btn" onclick="removeRow(${r.id})" aria-label="Eliminar"><i class="ti ti-x"><\/i><\/button>
+      <\/div>
+      ${quartersHtml}
+    `;
+    container.appendChild(div);
+  });
+}
+function updateRow(id, field, val) {
+  const r = rows.find(x => x.id === id);
+  if (r) r[field] = val;
+  renderRows();
+  saveDraft();
+}
+function updateRowQuarter(id, idx, val) {
+  const r = rows.find(x => x.id === id);
+  if (r) {
+    if (!r.descs) r.descs = ['','','',''];
+    r.descs[idx] = val;
+    saveDraft();
+  }
+}
+function showTab(tab) {
+  const _now = new Date();
+  if (_teleTab && _teleTi) { _tele.tabs.push({tab:_teleTab, entrada:_teleTi.toTimeString().slice(0,8), salida:_now.toTimeString().slice(0,8), seg:Math.round((_now-_teleTi)/1000)}); }
+  _teleTab = tab; _teleTi = _now;
+  if (!_tele.inicio) _tele.inicio = _now;
+  const tabs = ['datos','jornada','horas','equipos','standby','metrados','obs','prog','resumen'];
+  tabs.forEach(t => document.getElementById('tab-'+t).classList.toggle('visible', t===tab));
+  document.querySelectorAll('.tab-bar .tab').forEach((btn,i) => btn.classList.toggle('active', tabs[i] === tab));
+  if (tab === 'resumen') { rebuildControlItems(); buildResumen(); }
+  if (tab === 'prog') renderProgRows();
+  if (tab === 'metrados') { renderMetradosPartidas(); renderMetradosManuales(); }
+  if (tab === 'standby') renderStandbyRows();
+  if (tab === 'horas') {
+    const frente = document.getElementById('f-frente').value;
+    document.getElementById('frente-actual').textContent = frente || 'selecciona un frente en "Datos"';
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function _standbyTotalCompleto() {
+  let total = 0;
+  // 1. Restricción de acceso al frente
+  if (document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked) {
+    const rD = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
+    const rH = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    total += _sbMinutos(rD, rH);
+  }
+  // 2. Registro documentario (hito 0 Llegada → hito 3 Término llenado docs)
+  const h0 = document.getElementById('hito-0') ? document.getElementById('hito-0').value : '';
+  const h3 = document.getElementById('hito-3') ? document.getElementById('hito-3').value : '';
+  if (h0 && h3) total += _sbMinutos(h0, h3);
+  // 3. Items manuales del módulo Stand By
+  total += getStandbyTotalMin();
+  return total;
+}
+
+function _tiempoEfectivo() {
+  // Tiempo efectivo = Término de jornada (hito 6) − Inicio de actividades (hito 5) − Stand By total
+  const inicioEl  = document.getElementById('hito-5');
+  const terminoEl = document.getElementById('hito-6');
+  const inicio  = inicioEl  ? inicioEl.value  : '';
+  const termino = terminoEl ? terminoEl.value : '';
+  if (!inicio || !termino) return '—';
+  const [hi, mi] = inicio.split(':').map(Number);
+  const [ht, mt] = termino.split(':').map(Number);
+  const totalMin = (ht * 60 + mt) - (hi * 60 + mi);
+  if (totalMin <= 0) return '—';
+  const efectMin = Math.max(0, totalMin - _standbyTotalCompleto());
+  return _sbFmt(efectMin);
+}
+
+function _totalPersonal() {
+  const ids = ['f-capataces','f-operarios','f-oficiales','f-peones','f-vigias'];
+  return ids.reduce((s,id) => { const el=document.getElementById(id); return s+(el?parseInt(el.value)||0:0); }, 0);
+}
+
+function buildResumen() {
+  rebuildControlItems();
+  const meta = getMeta();
+  const frente = document.getElementById('f-frente').value;
+  const lista = PARTIDAS[frente] || [];
+  const ejecutadas = getPartidasEjecutadas();
+
+  const partidasConMetrado = ejecutadas.length;
+  document.getElementById('metrics-area').innerHTML = `
+    <div style="grid-column:1/-1;background:var(--blue-bg);border-radius:var(--r-md);padding:10px 14px;margin-bottom:4px;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:center;text-align:center">
+      <span style="font-size:13px;font-weight:600;color:var(--blue-text)">${meta.fecha||'—'}</span>
+      <span style="font-size:12px;color:var(--blue-text);opacity:.6">•</span>
+      <span style="font-size:13.65px;font-weight:800;color:var(--blue-text)">${meta.frente||'—'}</span>
+      <span style="font-size:12px;color:var(--blue-text);opacity:.6">•</span>
+      <span style="font-size:13px;font-weight:600;color:var(--blue-text)">${meta.supervisor||'—'}</span>
+    </div>
+    <div class="metric"><div class="val">${_totalPersonal()}<\/div><div class="lbl">Personal<\/div><\/div>
+    <div class="metric"><div class="val" style="color:var(--red-text);font-size:22px">${_sbFmt(_standbyTotalCompleto())}<\/div><div class="lbl">Stand By total<\/div><\/div>
+    <div class="metric"><div class="val" style="color:var(--green-text);font-size:22px">${_tiempoEfectivo()}<\/div><div class="lbl">Tiempo efectivo<\/div><\/div>
+    <div class="metric"><div class="val">${partidasConMetrado}<\/div><div class="lbl">Partidas con avance<\/div><\/div>
+  `;
+
+  let bodyHtml = '';
+  let _lastSub = null;
+  ejecutadas.forEach(p=>{
+    if (p.sub && p.sub !== _lastSub) {
+      _lastSub = p.sub;
+      bodyHtml += '<tr><td colspan="3" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-text);background:var(--blue-bg);padding:5px 10px">'+p.sub+'<\/td><\/tr>';
+    }
+    bodyHtml += `<tr><td style="font-size:13px">${p.nombre||p.n}${p.manual ? ' <span style="font-size:10px;color:var(--color-info-text);background:var(--color-info-bg);border-radius:20px;padding:2px 6px;margin-left:4px">NUEVA<\/span>' : ''}<\/td><td style="font-size:14px;font-weight:600">${p.met}<\/td><td style="font-size:13px;color:var(--color-text-secondary)">${p.u||p.um||'—'}<\/td><\/tr>`;
+  });
+  document.getElementById('metrado-body').innerHTML = bodyHtml || '<tr><td colspan="3" style="color:var(--color-text-tertiary);text-align:center;padding:16px">Sin metrados ingresados aún — ve a la pestaña Metrados<\/td><\/tr>';
+
+  // Control de Sostenimiento resumen
+  const codSection = document.getElementById('ctrl-resumen-section');
+  if (controlItems.length > 0) {
+    codSection.style.display = '';
+    const byTipo = {};
+    controlItems.forEach(c => {
+      const key = c.actividad + (c.tipo ? ' — ' + c.tipo : '');
+      if (!byTipo[key]) byTipo[key] = { items: [], codigos: [], sub: c.sub||'' };
+      byTipo[key].items.push(c);
+      byTipo[key].codigos.push(c.codigo);
+    });
+    let codHtml = '';
+    let _lastSubCtrl = null;
+    Object.entries(byTipo).forEach(([key, grupo]) => {
+      const _si = grupo.items[0];
+      const _sz = _si ? [_si.sistema, _si.zona].filter(Boolean).join('-Z') : '';
+      const _ssub = grupo.sub || '';
+      if (_ssub && _ssub !== _lastSubCtrl) {
+        _lastSubCtrl = _ssub;
+        codHtml += '<div style="margin:10px 0 4px;padding:4px 8px;background:linear-gradient(90deg,var(--blue-bg),transparent);border-left:2px solid var(--blue);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-text)">'+_ssub+'<\/div>';
+      }
+      codHtml += '<div style="margin-bottom:8px">'+'<strong style="font-size:13px">'+key+(_sz?' ('+_sz+')':'')+':<\/strong> '+'<span style="font-size:13px;font-family:ui-monospace,Menlo,monospace">'+grupo.codigos.join(', ')+'<\/span><\/div>';
+    });
+    codHtml += `<div style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px">${controlItems.length} elemento(s) total<\/div>`;
+    document.getElementById('ctrl-resumen-body').innerHTML = codHtml;
+  } else {
+    codSection.style.display = 'none';
+  }
+
+  // Alerta diferencias metrado vs control
+
+  // Equipos y maquinaria
+  const eqSection = document.getElementById('equipos-resumen-section');
+  const equiposResumen = getEquiposRegistrados();
+  if (equiposResumen.perforacion.length || equiposResumen.soporte.length) {
+    if (eqSection) eqSection.style.display = '';
+    let eqHtml = '';
+    if (equiposResumen.perforacion.length) {
+      eqHtml += '<div style="margin-bottom:8px"><strong>Perforación:</strong> ' + equiposResumen.perforacion.map(e=>`${e.nombre} (${e.cantidad})`).join(', ') + '</div>';
+    }
+    if (equiposResumen.soporte.length) {
+      eqHtml += '<div><strong>Soporte operativo:</strong> ' + equiposResumen.soporte.map(e=>`${e.nombre} (${e.cantidad})`).join(', ') + '</div>';
+    }
+    const eqBody = document.getElementById('equipos-resumen-body');
+    if (eqBody) eqBody.innerHTML = eqHtml;
+  } else {
+    if (eqSection) eqSection.style.display = 'none';
+  }
+
+  // Stand By
+  const sbSection = document.getElementById('standby-resumen-section');
+  const sbRegs = getStandbyRegistrados();
+  if (sbRegs.length) {
+    if (sbSection) sbSection.style.display = '';
+    let sbHtml = '';
+    sbRegs.forEach(r => {
+      sbHtml += `<tr>
+        <td style="font-weight:700">${r.item}</td>
+        <td style="font-size:13px">${r.actividad||'—'}</td>
+        <td style="font-size:13px">${r.desde||'—'}</td>
+        <td style="font-size:13px">${r.hasta||'—'}</td>
+        <td style="font-size:13px;font-weight:700;color:var(--red-text)">${_sbFmt(r.minutos)}</td>
+        <td style="font-size:12px">${r.causa||'—'}${r.comentario ? '<div style="font-size:11px;color:var(--text3);margin-top:2px">💬 '+r.comentario+'</div>' : ''}</td>
+      </tr>`;
+    });
+    const sbTot = getStandbyTotalMin();
+    sbHtml += `<tr><td colspan="4" style="font-weight:700">TOTAL STAND BY</td><td style="font-weight:800;color:var(--red-text)">${_sbFmt(sbTot)}</td><td></td></tr>`;
+    const sbBody = document.getElementById('standby-resumen-body');
+    if (sbBody) sbBody.innerHTML = sbHtml;
+  } else {
+    if (sbSection) sbSection.style.display = 'none';
+  }
+
+  // Obs/Req/Restricciones
+  const obsSection = document.getElementById('obs-resumen-section');
+  const obsComentarios = document.getElementById('f-comentarios') ? document.getElementById('f-comentarios').value : '';
+  const obsReq = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value : '';
+  const obsRest = document.getElementById('f-restricciones') ? document.getElementById('f-restricciones').value : '';
+  if (obsComentarios || obsReq || obsRest) {
+    if(obsSection) obsSection.style.display = '';
+    let obsHtml = '';
+    if (obsComentarios) obsHtml += `<div style="margin-bottom:8px"><strong>Observaciones:</strong> ${obsComentarios}<\/div>`;
+    if (obsReq)         obsHtml += `<div style="margin-bottom:8px"><strong>Requerimientos:</strong> ${obsReq}<\/div>`;
+    if (obsRest)        obsHtml += `<div><strong>Restricciones:</strong> ${obsRest}<\/div>`;
+    const obsBody = document.getElementById('obs-resumen-body');
+    if(obsBody) obsBody.innerHTML = obsHtml;
+  } else {
+    if(obsSection) obsSection.style.display = 'none';
+  }
+
+  buildTextoWsp();
+}
+function buildTextoWsp() {
+  const meta = getMeta();
+  const frente = meta.frente || '—';
+  const lista = PARTIDAS[meta.frente] || [];
+  const fechaFmt = meta.fecha ? meta.fecha.split('-').reverse().join('/') : '—';
+  let t = '';
+
+  t += `*REPORTE DIARIO DE CAMPO* 👷\n`;
+  t += `Sostenimiento y mantenimiento de talud ⛰️\n`;
+  t += `------------------------------\n`;
+  t += `📅 Fecha: ${fechaFmt}\n`;
+  t += `📍 Sector: ${meta.sector || '—'}\n`;
+  t += `🚧 Frente: ${frente}\n`;
+  t += `👷 Capataz: ${meta.capataz || '—'}\n`;
+  t += `🦺 Supervisor: ${meta.supervisor || '—'}\n\n`;
+
+  // Restricción para llegar al frente (Inicio de jornada)
+  const tuvoRestriccionAcceso = document.getElementById('f-truckshop').checked;
+  if (tuvoRestriccionAcceso) {
+    const descAcceso = (document.getElementById('f-restriccion-desc').value || '').trim();
+    const horaInicioAcceso = document.getElementById('f-restriccion-inicio').value || '';
+    const horaFinAcceso = document.getElementById('f-restriccion-fin').value || '';
+    t += `*RESTRICCIÓN PARA LLEGAR AL FRENTE* 🚧\n`;
+    if (descAcceso) t += `• ${descAcceso}\n`;
+    if (horaInicioAcceso || horaFinAcceso) t += `• Horario: ${horaInicioAcceso||'—'} a ${horaFinAcceso||'—'}\n`;
+    t += `\n`;
+  }
+
+  t += `*AVANCE DE PARTIDAS* ✅\n`;
+  const ejecutadasWsp = getPartidasEjecutadas();
+  if (ejecutadasWsp.length) {
+    let _lsw = null;
+    ejecutadasWsp.forEach(p=>{
+      if (p.sub && p.sub !== _lsw) { _lsw = p.sub; t += '_'+p.sub+'_\n'; }
+      t += '• '+(p.edt?p.edt+' ':'')+( p.nombre||p.n)+(p.manual?' (nueva)':'')+': *'+p.met+' '+(p.um||p.u||'')+'*\n';
+    });
+  } else {
+    t += 'Sin metrados registrados.\n';
+  }
+  t += `\n`;
+
+  // Equipos y maquinaria
+  const equiposWsp = getEquiposRegistrados();
+  if (equiposWsp.perforacion.length || equiposWsp.soporte.length) {
+    t += `*EQUIPOS Y MAQUINARIA* 🛠️\n`;
+    if (equiposWsp.perforacion.length) {
+      t += `_Perforación:_\n`;
+      equiposWsp.perforacion.forEach(e => { t += `• ${e.nombre}: *${e.cantidad}*\n`; });
+    }
+    if (equiposWsp.soporte.length) {
+      t += `_Soporte operativo:_\n`;
+      equiposWsp.soporte.forEach(e => { t += `• ${e.nombre}: *${e.cantidad}*\n`; });
+    }
+    t += `\n`;
+  }
+
+  // Bitácora de actividades (con separación cada 15 min)
+  const lineasBitacora = [];
+  rows.forEach(r=>{
+    if (!r.hora) return;
+    const labels = quarterLabels(r.hora);
+    (r.descs||[]).forEach((d,idx)=>{
+      if (d && d.trim()) lineasBitacora.push(`${labels[idx]} — ${d.trim()}`);
+    });
+  });
+  if (lineasBitacora.length) {
+    t += `*BITÁCORA DE ACTIVIDADES* 📝\n`;
+    lineasBitacora.forEach(l => { t += `• ${l}\n`; });
+    t += `\n`;
+  }
+
+  const almSalida = document.getElementById('f-almuerzo-salida').value;
+  const almRetorno = document.getElementById('f-almuerzo-retorno').value;
+  if (almSalida || almRetorno) {
+    t += `*REFRIGERIO* 🍽️\n`;
+    if (almSalida) t += `• Salida: ${almSalida}\n`;
+    if (almRetorno) t += `• Retorno: ${almRetorno}\n`;
+    t += `\n`;
+  }
+
+  // Programación - solo partida y descripción (sin metrado)
+  const progConDatos = progRows.filter(r => r.partidaIdx !== '' && r.partidaIdx !== undefined);
+  const progAdicConDatos = progAdicRows.filter(r => r.desc && r.desc.trim() !== '');
+  if (progConDatos.length || progAdicConDatos.length) {
+    t += `*PROGRAMACIÓN MAÑANA* 📅\n`;
+    progConDatos.forEach(r => {
+      const p = lista[Number(r.partidaIdx)];
+      if (p) t += `• ${p.n}${r.desc && r.desc.trim() ? ' — ' + r.desc.trim() : ''}\n`;
+    });
+    progAdicConDatos.forEach(r => {
+      t += `• ${r.desc.trim()}${r.nota && r.nota.trim() ? ' — ' + r.nota.trim() : ''}\n`;
+    });
+    t += `\n`;
+  }
+
+  // Control de Sostenimiento en WhatsApp
+  if (controlItems.length > 0) {
+    const byTipo = {};
+    controlItems.forEach(c => {
+      const key = c.actividad + (c.tipo ? ' — ' + c.tipo : '');
+      if (!byTipo[key]) byTipo[key] = { items: [], codigos: [] };
+      const cantTxt = (c.cantidad !== '' && c.cantidad !== undefined) ? ' ('+c.cantidad+(c.unidad?' '+c.unidad:'')+')' : '';
+      byTipo[key].items.push(c);
+      byTipo[key].codigos.push(c.codigo+cantTxt);
+    });
+    t += '*CONTROL DE SOSTENIMIENTO* 🔩\n';
+    let _lastSubWsp = null;
+    Object.entries(byTipo).forEach(([key, grupo]) => {
+      const _ws = grupo.items[0];
+      const _wsz = _ws ? [_ws.sistema, _ws.zona].filter(Boolean).join('-Z') : '';
+      const _wsub = grupo.sub || '';
+      if (_wsub && _wsub !== _lastSubWsp) { _lastSubWsp = _wsub; t += '_'+_wsub+'_\n'; }
+      t += '• '+key+(_wsz?' ('+_wsz+')':'')+': '+grupo.codigos.join(', ')+'\n';
+    });
+    t += `\n`;
+  }
+
+  // Stand By de la jornada
+  const sbWsp = getStandbyRegistrados();
+  if (sbWsp.length) {
+    t += `*STAND BY DE LA JORNADA* ⏸️\n`;
+    sbWsp.forEach(r => {
+      t += `${r.item}. ${r.actividad||'—'}\n`;
+      t += `   ⏱️ ${r.desde||'—'} a ${r.hasta||'—'} (*${_sbFmt(r.minutos)}*)\n`;
+      if (r.causa) t += `   📌 Causa: ${r.causa}\n`;
+      if (r.comentario) t += `   💬 ${r.comentario}\n`;
+    });
+    t += `⏰ *Total Stand By: ${_sbFmt(_standbyTotalCompleto())}*\n\n`;
+  }
+
+  // Alerta de diferencias Metrado vs Control
+
+  const obsComentarios = document.getElementById('f-comentarios').value;
+  const requerimientos = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value : '';
+  const restricciones = document.getElementById('f-restricciones').value;
+  if (obsComentarios || requerimientos || restricciones) {
+    t += `*OBSERVACIONES / REQUERIMIENTOS* ⚠️\n`;
+    if (obsComentarios) t += `📋 Observaciones: ${obsComentarios}\n`;
+    if (requerimientos) t += `🔧 Requerimientos: ${requerimientos}\n`;
+    if (restricciones) t += `🚫 Restricciones: ${restricciones}\n`;
+    t += `\n`;
+  }
+
+  document.getElementById('texto-wsp').value = t.trim();
+}
+function copiarTextoWsp() {
+  const ta = document.getElementById('texto-wsp');
+  ta.select();
+  ta.setSelectionRange(0, 999999);
+  try {
+    navigator.clipboard.writeText(ta.value).then(()=>showToast('Texto copiado 📋✅'));
+  } catch(e) {
+    document.execCommand('copy');
+    showToast('Texto copiado 📋✅');
+  }
+}
+function compartirTextoWsp() {
+  const texto = document.getElementById('texto-wsp').value;
+  if (navigator.share) {
+    navigator.share({text: texto}).catch(()=>{});
+  } else {
+    copiarTextoWsp();
+  }
+}
+function toggleRedline(opcion) {
+  redlineEstado = (redlineEstado === opcion) ? '' : opcion;
+  document.getElementById('chip-redline-si').classList.toggle('on', redlineEstado === 'si');
+  const noel = document.getElementById('chip-redline-no'); if(noel) noel.classList.toggle('on', redlineEstado === 'no');
+  document.getElementById('redline-detalle').style.display = (redlineEstado === 'si') ? '' : 'none';
+  saveDraft();
+}
+function addProgRow() {
+  const frente = document.getElementById('f-frente').value;
+  const lista = PARTIDAS[frente] || [];
+  if (lista.length === 0) { showToast('Selecciona primero el frente en Datos 👆'); return; }
+  const id = progRowId++;
+  progRows.push({id, partidaIdx:'', desc:''});
+  renderProgRows();
+  saveDraft();
+}
+function removeProgRow(id) {
+  progRows = progRows.filter(r=>r.id!==id);
+  renderProgRows();
+  saveDraft();
+}
+function updateProg(id, field, val) {
+  const r = progRows.find(x=>x.id===id);
+  if (r) { r[field] = val; saveDraft(); }
+}
+function addProgAdicRow() {
+  const id = progAdicId++;
+  progAdicRows.push({id, desc:'', nota:''});
+  renderProgAdicRows();
+  saveDraft();
+}
+function removeProgAdicRow(id) {
+  progAdicRows = progAdicRows.filter(r=>r.id!==id);
+  renderProgAdicRows();
+  saveDraft();
+}
+function updateProgAdic(id, field, val) {
+  const r = progAdicRows.find(x=>x.id===id);
+  if (r) { r[field] = val; saveDraft(); }
+}
+function buildPartidaOptions(lista, selectedIdx) {
+  let html = '';
+  let subtituloAbierto = null;
+  lista.forEach((p, i) => {
+    const sub = p.s || '';
+    if (sub !== subtituloAbierto) {
+      if (subtituloAbierto !== null) html += '<\/optgroup>';
+      html += `<optgroup label="${sub}">`;
+      subtituloAbierto = sub;
+    }
+    html += `<option value="${i}" ${selectedIdx===String(i)?'selected':''}>${p.n} (${p.u})<\/option>`;
+  });
+  if (subtituloAbierto !== null) html += '<\/optgroup>';
+  return html;
+}
+function renderProgRows() {
+  const frente = document.getElementById('f-frente').value;
+  const lista = PARTIDAS[frente] || [];
+  const container = document.getElementById('prog-rows');
+  if (!container) return;
+  if (progRows.length === 0) {
+    container.innerHTML = '<div class="empty-msg">Sin partidas programadas. Presiona el botón para agregar.<\/div>';
+    return;
+  }
+  container.innerHTML = '';
+  progRows.forEach(r => {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:10px 0;border-bottom:1px solid var(--color-border)';
+    div.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 28px;gap:8px;align-items:center;margin-bottom:6px">
+        <select onchange="updateProg(${r.id},'partidaIdx',this.value)" style="font-size:12px;padding:6px">
+          <option value="">— Seleccionar partida —<\/option>
+          ${buildPartidaOptions(lista, r.partidaIdx)}
+        <\/select>
+        <button class="del-btn" onclick="removeProgRow(${r.id})"><i class="ti ti-x"><\/i><\/button>
+      <\/div>
+      <input type="text" placeholder="Descripción opcional (ej: zona norte, de P15 a P25...)" value="${(r.desc||'').replace(/"/g,'&quot;')}" onchange="updateProg(${r.id},'desc',this.value)" style="font-size:12px;padding:6px 8px;width:100%;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);color:var(--color-text-secondary)">
+    `;
+    container.appendChild(div);
+  });
+}
+function renderProgAdicRows() {
+  const container = document.getElementById('prog-adic-rows');
+  if (!container) return;
+  if (progAdicRows.length === 0) {
+    container.innerHTML = '<div class="empty-msg">Sin actividades adicionales programadas.<\/div>';
+    return;
+  }
+  container.innerHTML = '';
+  progAdicRows.forEach(r => {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:10px 0;border-bottom:1px solid var(--color-border)';
+    div.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 28px;gap:8px;align-items:center;margin-bottom:6px">
+        <input type="text" placeholder="Descripción de la actividad" value="${(r.desc||'').replace(/"/g,'&quot;')}" onchange="updateProgAdic(${r.id},'desc',this.value)" style="font-size:13px;padding:6px">
+        <button class="del-btn" onclick="removeProgAdicRow(${r.id})"><i class="ti ti-x"><\/i><\/button>
+      <\/div>
+      <input type="text" placeholder="Nota adicional (ej: sector sur, pernos cortos, etc.)" value="${(r.nota||'').replace(/"/g,'&quot;')}" onchange="updateProgAdic(${r.id},'nota',this.value)" style="font-size:12px;padding:6px 8px;width:100%;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);color:var(--color-text-secondary)">
+    `;
+    container.appendChild(div);
+  });
+}
+function getMeta() {
+  return {
+    fecha: document.getElementById('f-fecha').value,
+    sector: document.getElementById('f-sector').value,
+    frente: document.getElementById('f-frente').value,
+    cuadrilla: '',
+    capataz: document.getElementById('f-capataz').value,
+    supervisor: document.getElementById('f-supervisor').value,
+        salaPersonal: {
+      ing_residente: document.getElementById('f-ing-residente') ? parseInt(document.getElementById('f-ing-residente').value)||0 : 0,
+      sup_campo: document.getElementById('f-sup-campo') ? parseInt(document.getElementById('f-sup-campo').value)||0 : 0,
+      ing_seguridad: document.getElementById('f-ing-seguridad') ? parseInt(document.getElementById('f-ing-seguridad').value)||0 : 0,
+      ing_calidad: document.getElementById('f-ing-calidad') ? parseInt(document.getElementById('f-ing-calidad').value)||0 : 0,
+      topografo: document.getElementById('f-topografo') ? parseInt(document.getElementById('f-topografo').value)||0 : 0,
+    },
+  };
+}
+function csvEscape(val) {
+  val = (val === undefined || val === null) ? '' : String(val);
+  if (/[",\n;]/.test(val)) {
+    return '"' + val.replace(/"/g,'""') + '"';
+  }
+  return val;
+}
+function csvRow(arr) {
+  return arr.map(csvEscape).join(',');
+}
+function exportarXLSX() {
+  rebuildControlItems();
+  const meta = getMeta();
+  const fecha = meta.fecha || 'sin-fecha';
+  const frente = meta.frente || 'frente';
+  const lista = PARTIDAS[frente] || [];
+
+  const personal = {
+    capataz: document.getElementById('f-capataces').value || '0',
+    operarios: document.getElementById('f-operarios').value || '0',
+    oficiales: document.getElementById('f-oficiales').value || '0',
+    peones: document.getElementById('f-peones').value || '0',
+    vigias: document.getElementById('f-vigias').value || '0'
+  };
+  const almSalida = document.getElementById('f-almuerzo-salida').value;
+  const almRetorno = document.getElementById('f-almuerzo-retorno').value;
+  const hitosVals = currentHitos.map((h,i)=>{ const el=document.getElementById('hito-'+i); return el?el.value||'':''; });
+
+  const partidasConAvance = getPartidasEjecutadas();
+
+  const tuvoRestriccionAcceso = document.getElementById('f-truckshop').checked;
+  const restriccionAccesoDesc = (document.getElementById('f-restriccion-desc').value || '').trim();
+  const restriccionAccesoInicio = document.getElementById('f-restriccion-inicio').value || '';
+  const restriccionAccesoFin = document.getElementById('f-restriccion-fin').value || '';
+
+  const comentarios = document.getElementById('f-comentarios').value || '';
+  const restricciones = document.getElementById('f-restricciones').value || '';
+
+  const headers = [];
+  const values = [];
+
+  headers.push('Fecha','Sector','Frente','Cuadrilla','Capataz','Supervisor');
+  values.push(meta.fecha||'', meta.sector||'', meta.frente||'', meta.cuadrilla||'', meta.capataz||'', meta.supervisor||'');
+
+  headers.push('Restricción para llegar al frente','Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
+  values.push(tuvoRestriccionAcceso?'Sí':'No', tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
+
+  headers.push('N° Capataz','N° Operarios','N° Oficiales','N° Peones','N° Vigías');
+  values.push(Number(personal.capataz), Number(personal.operarios), Number(personal.oficiales), Number(personal.peones), Number(personal.vigias));
+
+  headers.push('Salida refrigerio','Retorno refrigerio');
+  values.push(almSalida||'', almRetorno||'');
+
+  currentHitos.forEach((h,i)=>{ headers.push(h); values.push(hitosVals[i]||''); });
+
+  const MAX_PARTIDAS = 16;
+  for (let i=0; i<MAX_PARTIDAS; i++) {
+    headers.push(`Partida ${i+1} - EDT`,`Partida ${i+1} - Nombre`,`Partida ${i+1} - Metrado`,`Partida ${i+1} - UM`);
+    const p = partidasConAvance[i];
+    values.push(p?p.edt:'', p?p.nombre:'', p?p.met:'', p?p.um:'');
+  }
+
+  HORAS.forEach(h => {
+    headers.push(`Actividad ${h}`);
+    const lineas = [];
+    rows.filter(r => r.hora === h).forEach(r => {
+      (r.descs || []).forEach(d => { if (d && d.trim()) lineas.push(d.trim()); });
+    });
+    values.push(lineas.join('\n'));
+  });
+
+  // Control de Sostenimiento — resumen para hoja RDC
+  const totalControl = controlItems.length;
+  const resumenControl = controlItems.length > 0
+    ? [...new Set(controlItems.map(c => c.tipo + (c.actividad?' — '+c.actividad:'')))].join(' / ')
+    : '';
+  headers.push('Control Sostenimiento - Total elementos','Control Sostenimiento - Tipos');
+  values.push(totalControl || '', resumenControl);
+
+  // Stand By — resumen para hoja RDC
+  // Restricción de acceso como primer item de Stand By
+  const tuvoRestriccion = document.getElementById('f-truckshop').checked;
+  const sbExtra = [];
+  if (tuvoRestriccion) {
+    const rDesc  = (document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '') || '';
+    const rDesde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
+    const rHasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    const rMin   = _sbMinutos(rDesde, rHasta);
+    sbExtra.push({ actividad:'Restricción de acceso al frente', desde:rDesde, hasta:rHasta, minutos:rMin, causa:'Restricción de acceso', comentario:rDesc });
+  }
+  // Registro documentario: desde Llegada a frente (hito 0) hasta Término de llenado de documentos (hito 3)
+  const _hitoVals = currentHitos.map((h,hi) => { const el=document.getElementById('hito-'+hi); return el?el.value:''; });
+  const _hLlegada = _hitoVals[0] || '';
+  const _hTermDoc = _hitoVals[3] || '';
+  if (_hLlegada && _hTermDoc) {
+    const _rdMin = _sbMinutos(_hLlegada, _hTermDoc);
+    sbExtra.push({ actividad:'Registro documentario', desde:_hLlegada, hasta:_hTermDoc, minutos:_rdMin, causa:'Registro documentario', comentario:'' });
+  }
+  const sbRegsXlsx = [...sbExtra.map((r,i)=>({...r,item:i+1})), ...getStandbyRegistrados().map((r,ri)=>({...r, item:sbExtra.length+ri+1}))];
+  headers.push('Stand By - N° eventos','Stand By - Total (hh:mm)','Stand By - Causas');
+  values.push(
+    sbRegsXlsx.length || '',
+    sbRegsXlsx.length ? _sbFmtHHMM(getStandbyTotalMin()) : '',
+    sbRegsXlsx.length ? [...new Set(sbRegsXlsx.map(r=>r.causa).filter(Boolean))].join(' / ') : ''
+  );
+
+  const redlineEstadoExp = redlineEstado === 'si' ? 'Sí' : redlineEstado === 'no' ? 'No' : '';
+  const redlineSupEl = document.getElementById('f-redline-supervisor');
+  const redlineSupVal = redlineSupEl ? redlineSupEl.value : '';
+  const redlineTextoExp = document.getElementById('f-redline').value || '';
+  const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
+  const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
+  headers.push('Observaciones','Requerimientos','Restricciones','Redline (¿hubo modificaciones?)','Redline - Supervisor Hegatrux','Redline - Descripción');
+  values.push(comentarios, requerimientosExp, restricciones, redlineEstadoExp, redlineSupFn, redlineTextoExp);
+
+  const wb = XLSX.utils.book_new();
+  // Personal Sala Eléctrica (solo si sector = A: 4000 - SALA ELECTRICA)
+  if (meta.sector === "A: 4000 - SALA ELECTRICA") {
+    headers.push('Ingeniero residente');
+    values.push(document.getElementById('f-ing-residente') ? parseInt(document.getElementById('f-ing-residente').value)||0 : 0);
+    headers.push('Supervisor de campo');
+    values.push(document.getElementById('f-sup-campo') ? parseInt(document.getElementById('f-sup-campo').value)||0 : 0);
+    headers.push('Ingenieros de seguridad');
+    values.push(document.getElementById('f-ing-seguridad') ? parseInt(document.getElementById('f-ing-seguridad').value)||0 : 0);
+    headers.push('Ingeniero de calidad');
+    values.push(document.getElementById('f-ing-calidad') ? parseInt(document.getElementById('f-ing-calidad').value)||0 : 0);
+    headers.push('Topógrafo');
+    values.push(document.getElementById('f-topografo') ? parseInt(document.getElementById('f-topografo').value)||0 : 0);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, values]);
+
+  // Ancho de columnas automático
+  ws['!cols'] = headers.map((h,i)=>{
+    const hlen = h.length;
+    const vlen = values[i] !== undefined && values[i] !== null ? String(values[i]).length : 0;
+    return { wch: Math.min(Math.max(hlen, vlen, 8), 40) };
+  });
+
+  // Estilo cabecera hoja RDC: fondo azul, texto blanco, negrita
+  headers.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!ws[cellRef]) return;
+    ws[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: '1D4ED8' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+
+  // Habilitar salto de línea visual en las celdas de Actividad (4 renglones de 15 min)
+  const actStartCol = headers.indexOf(`Actividad ${HORAS[0]}`);
+  if (actStartCol >= 0) {
+    HORAS.forEach((h, idx) => {
+      const col = actStartCol + idx;
+      const cellRef = XLSX.utils.encode_cell({r:1, c:col});
+      if (ws[cellRef]) {
+        ws[cellRef].s = Object.assign({}, ws[cellRef].s, { alignment: { wrapText: true, vertical: 'top' } });
+      }
+    });
+  }
+
+  XLSX.utils.book_append_sheet(wb, ws, 'RDC');
+
+  // ===== HOJA 2: CONTROL_SOSTENIMIENTO =====
+  const csHeaders = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Cantidad','Unidad'];
+  const csRows = controlItems.map(c => [
+    c.fecha || meta.fecha || '',
+    c.frente || meta.frente || '',
+    c.sistema || '',
+    c.zona || '',
+    c.elemento || '',
+    c.tipo || '',
+    c.actividad || '',
+    c.codigo || '',
+    (c.cantidad !== '' && c.cantidad !== undefined) ? c.cantidad : '',
+    c.unidad || ''
+  ]);
+
+  const wsCS = XLSX.utils.aoa_to_sheet([csHeaders, ...csRows]);
+
+  // Ancho columnas CONTROL_SOSTENIMIENTO
+  wsCS['!cols'] = [
+    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:10},{wch:8}
+  ];
+
+  // Estilo cabecera hoja CONTROL: fondo verde oscuro
+  csHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!wsCS[cellRef]) return;
+    wsCS[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: '15803D' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+
+  XLSX.utils.book_append_sheet(wb, wsCS, 'CONTROL_SOSTENIMIENTO');
+
+  // ===== HOJA EQUIPOS =====
+  const equiposXlsx = getEquiposRegistrados();
+  const eqHeaders = ['Fecha','Frente','Categoría','Equipo','Cantidad'];
+  const eqRows = [
+    ...equiposXlsx.perforacion.map(e => [meta.fecha||'', meta.frente||'', 'Perforación', e.nombre, e.cantidad]),
+    ...equiposXlsx.soporte.map(e => [meta.fecha||'', meta.frente||'', 'Soporte operativo', e.nombre, e.cantidad])
+  ];
+  const wsEQ = XLSX.utils.aoa_to_sheet([eqHeaders, ...eqRows]);
+  wsEQ['!cols'] = [{wch:12},{wch:18},{wch:20},{wch:30},{wch:10}];
+  eqHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!wsEQ[cellRef]) return;
+    wsEQ[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: 'D97706' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, wsEQ, 'EQUIPOS');
+
+  // ===== HOJA STAND_BY =====
+  const sbHeaders = ['Item','Fecha','Frente','Actividad afectada','Desde','Hasta','Total (hh:mm)','Total (decimal)','Total (min)','Causa','Comentarios'];
+  const sbSheetRows = sbRegsXlsx.map(r => [
+    r.item,
+    meta.fecha || '',
+    meta.frente || '',
+    r.actividad,
+    r.desde,
+    r.hasta,
+    r.minutos !== null ? _sbFmtHHMM(r.minutos) : '',
+    r.minutos !== null ? Math.round(r.minutos / 60 * 100) / 100 : '',
+    r.minutos !== null ? r.minutos : '',
+    r.causa,
+    r.comentario || ''
+  ]);
+  // Sin fila de totales en STAND_BY
+  const wsSB = XLSX.utils.aoa_to_sheet([sbHeaders, ...sbSheetRows]);
+  wsSB['!cols'] = [{wch:6},{wch:12},{wch:16},{wch:36},{wch:8},{wch:8},{wch:12},{wch:10},{wch:10},{wch:32},{wch:40}];
+  sbHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!wsSB[cellRef]) return;
+    wsSB[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: 'DC2626' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, wsSB, 'STAND_BY');
+
+  // ===== HOJA 3: REPORTE_WSP (texto descriptivo tal cual se comparte por WhatsApp) =====
+  buildTextoWsp();
+  const textoWsp = document.getElementById('texto-wsp').value || '';
+  // Reporte WSP: una línea por fila
+  const wspLineas = textoWsp ? textoWsp.split('\n').map(l => [l]) : [['Sin datos']];
+  // Separador
+  wspLineas.push(['']);
+  wspLineas.push(['--- RESUMEN DE JORNADA ---']);
+  // Hitos de jornada
+  currentHitos.forEach((h,hi) => {
+    const el = document.getElementById('hito-'+hi);
+    const hora = el ? el.value : '';
+    if (hora) wspLineas.push([h + ': ' + hora]);
+  });
+  // Refrigerio
+  const _almS = document.getElementById('f-almuerzo-salida') ? document.getElementById('f-almuerzo-salida').value : '';
+  const _almR = document.getElementById('f-almuerzo-retorno') ? document.getElementById('f-almuerzo-retorno').value : '';
+  if (_almS) wspLineas.push(['Salida a refrigerio: ' + _almS]);
+  if (_almR) wspLineas.push(['Retorno de refrigerio: ' + _almR]);
+  // Restricción
+  if (document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked) {
+    const _rDesc  = document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '';
+    const _rDesde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
+    const _rHasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    wspLineas.push(['Restricción de acceso: ' + (_rDesde&&_rHasta?_rDesde+' - '+_rHasta:'') + (_rDesc?' ('+_rDesc+')':'')]);
+  }
+  const wsWSP = XLSX.utils.aoa_to_sheet(wspLineas);
+  wsWSP['!cols'] = [{ wch: 95 }];
+  wspLineas.forEach((_, r) => {
+    const cellRef = XLSX.utils.encode_cell({ r, c: 0 });
+    if (wsWSP[cellRef]) {
+      wsWSP[cellRef].s = { alignment: { wrapText: true, vertical: 'top' }, font: { name: 'Arial', sz: 10 } };
+    }
+  });
+  XLSX.utils.book_append_sheet(wb, wsWSP, 'REPORTE_WSP');
+
+  // HOJA TELEMETRÍA (oculta)
+  if (_tele.inicio) {
+    const _fin=new Date(),_tot=Math.round((_fin-_tele.inicio)/1000);
+    const _th=['Pestaña','Hora entrada','Hora salida','Tiempo (seg)'];
+    const _appVer = 'v37';
+    const _tr=_tele.tabs.map(t=>[t.tab,t.entrada,t.salida,t.seg]);
+    _tr.push(['TOTAL',_tele.inicio.toTimeString().slice(0,8),_fin.toTimeString().slice(0,8),_tot]);
+    _tr.push(['','','Total minutos',Math.floor(_tot/60)+' min '+(_tot%60)+' seg']);
+    const _wst=XLSX.utils.aoa_to_sheet([_th,..._tr]);
+    _wst['!cols']=[{wch:14},{wch:14},{wch:14},{wch:14}];
+    _th.forEach((_,i)=>{const r=XLSX.utils.encode_cell({r:0,c:i});if(!_wst[r])return;_wst[r].s={font:{bold:true,color:{rgb:'FFFFFF'},sz:9},fill:{fgColor:{rgb:'555555'}},alignment:{horizontal:'center'}};});
+    // Versión del aplicativo en celda E1
+    const _verCell = XLSX.utils.encode_cell({r:0,c:4});
+    _wst[_verCell] = { v: 'Versión app: '+_appVer, t:'s', s:{font:{sz:8,color:{rgb:'AAAAAA'}}} };
+    if (!_wst['!ref']) _wst['!ref'] = 'A1:E'+(_tr.length+1);
+    XLSX.utils.book_append_sheet(wb,_wst,'TELEMETRIA');
+    if(!wb.Workbook)wb.Workbook={};if(!wb.Workbook.Sheets)wb.Workbook.Sheets=[];
+    const _ti=wb.SheetNames.indexOf('TELEMETRIA');
+    if(_ti>=0){if(!wb.Workbook.Sheets[_ti])wb.Workbook.Sheets[_ti]={};wb.Workbook.Sheets[_ti].Hidden=1;}
+  }
+
+  try {
+    XLSX.writeFile(wb, `RD_${frente}_${fecha}.xlsx`, { bookType: 'xlsx', type: 'binary', cellStyles: true });
+  } catch(e) {
+    // Fallback: download via blob
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `RD_${frente}_${fecha}.xlsx`;
+    a.style.display = 'none'; document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+  }
+  showToast(`Excel descargado — ${controlItems.length} elem. en CONTROL 📊✅`);
+}
+function exportarCSV() {
+  rebuildControlItems();
+  const meta = getMeta();
+  const fecha = meta.fecha || 'sin-fecha';
+  const frente = meta.frente || 'frente';
+  const lista = PARTIDAS[frente] || [];
+
+  const personal = {
+    capataz: document.getElementById('f-capataces').value || '0',
+    operarios: document.getElementById('f-operarios').value || '0',
+    oficiales: document.getElementById('f-oficiales').value || '0',
+    peones: document.getElementById('f-peones').value || '0',
+    vigias: document.getElementById('f-vigias').value || '0'
+  };
+
+  const almSalida = document.getElementById('f-almuerzo-salida').value;
+  const almRetorno = document.getElementById('f-almuerzo-retorno').value;
+
+  const hitosVals = currentHitos.map((h,i) => {
+    const el = document.getElementById('hito-'+i);
+    return el ? el.value || '' : '';
+  });
+
+  const partidasConAvance = getPartidasEjecutadas();
+
+  const tuvoRestriccionAcceso = document.getElementById('f-truckshop').checked;
+  const restriccionAccesoDesc = (document.getElementById('f-restriccion-desc').value || '').trim();
+  const restriccionAccesoInicio = document.getElementById('f-restriccion-inicio').value || '';
+  const restriccionAccesoFin = document.getElementById('f-restriccion-fin').value || '';
+
+  const comentarios = document.getElementById('f-comentarios').value || '';
+  const restricciones = document.getElementById('f-restricciones').value || '';
+
+  const headers = [];
+  const values = [];
+
+  headers.push('Fecha','Sector','Frente','Cuadrilla','Capataz','Supervisor');
+  values.push(meta.fecha||'', meta.sector||'', meta.frente||'', meta.cuadrilla||'', meta.capataz||'', meta.supervisor||'');
+
+  headers.push('Restricción para llegar al frente','Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
+  values.push(tuvoRestriccionAcceso?'Sí':'No', tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
+
+  headers.push('N° Capataz','N° Operarios','N° Oficiales','N° Peones','N° Vigías');
+  values.push(personal.capataz, personal.operarios, personal.oficiales, personal.peones, personal.vigias);
+
+  headers.push('Salida refrigerio','Retorno refrigerio');
+  values.push(almSalida||'', almRetorno||'');
+
+  currentHitos.forEach((h,i) => { headers.push(h); values.push(hitosVals[i]||''); });
+
+  const MAX_PARTIDAS = 16;
+  for (let i = 0; i < MAX_PARTIDAS; i++) {
+    headers.push(`Partida ${i+1} - EDT`, `Partida ${i+1} - Nombre`, `Partida ${i+1} - Metrado`, `Partida ${i+1} - UM`);
+    const p = partidasConAvance[i];
+    values.push(p ? p.edt : '', p ? p.n : '', p ? p.met : '', p ? p.u : '');
+  }
+
+  HORAS.forEach(h => {
+    headers.push(`Actividad ${h}`);
+    const lineas = [];
+    rows.filter(r => r.hora === h).forEach(r => {
+      (r.descs || []).forEach(d => { if (d && d.trim()) lineas.push(d.trim()); });
+    });
+    values.push(lineas.join('\n'));
+  });
+
+  const totalControl = controlItems.length;
+  const resumenControl = controlItems.length > 0
+    ? [...new Set(controlItems.map(c => c.tipo + (c.actividad?' — '+c.actividad:'')))].join(' / ')
+    : '';
+  headers.push('Control Sostenimiento - Total elementos','Control Sostenimiento - Tipos');
+  values.push(totalControl || '', resumenControl);
+
+  const equiposCsv = getEquiposRegistrados();
+  headers.push('Equipos Perforación','Equipos Soporte Operativo');
+  values.push(
+    equiposCsv.perforacion.map(e => `${e.nombre}: ${e.cantidad}`).join(' / '),
+    equiposCsv.soporte.map(e => `${e.nombre}: ${e.cantidad}`).join(' / ')
+  );
+
+  // Stand By
+  const sbRegsCsv = getStandbyRegistrados();
+  headers.push('Stand By - N° eventos','Stand By - Total (hh:mm)','Stand By - Detalle');
+  values.push(
+    sbRegsCsv.length || '',
+    sbRegsCsv.length ? _sbFmtHHMM(getStandbyTotalMin()) : '',
+    sbRegsCsv.map(r => `${r.item}. ${r.actividad||'—'} | ${r.desde||'—'}-${r.hasta||'—'} | ${_sbFmt(r.minutos)} | ${r.causa||'—'}${r.comentario ? ' | '+r.comentario : ''}`).join(' // ')
+  );
+
+  const redlineEstadoExp = redlineEstado === 'si' ? 'Sí' : redlineEstado === 'no' ? 'No' : '';
+  const redlineSupEl = document.getElementById('f-redline-supervisor');
+  const redlineSupVal = redlineSupEl ? redlineSupEl.value : '';
+  const redlineTextoExp = document.getElementById('f-redline').value || '';
+  const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
+  const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
+  headers.push('Observaciones','Requerimientos','Restricciones','Redline (¿hubo modificaciones?)','Redline - Supervisor Hegatrux','Redline - Descripción');
+  values.push(comentarios, requerimientosExp, restricciones, redlineEstadoExp, redlineSupFn, redlineTextoExp);
+
+  const csvContent = '\uFEFF' + csvRow(headers) + '\n' + csvRow(values);
+  downloadFile(csvContent, `RD_${frente}_${fecha}.csv`, 'text/csv;charset=utf-8');
+  showToast('Exportado para Excel 📊✅');
+}
+function exportarJSON() {
+  rebuildControlItems();
+  const meta = getMeta();
+  const frente = meta.frente || 'frente';
+  const fecha = meta.fecha || 'sin-fecha';
+  const lista = PARTIDAS[frente] || [];
+
+  const partidasOut = getPartidasEjecutadas().map(p=>({partida: p.n, unidad: p.u, metrado_ejecutado: p.met, nueva_no_catalogada: !!p.manual}));
+
+  const data = {
+    ...meta,
+    personal: {
+      capataz: document.getElementById('f-capataces').value,
+      operarios: document.getElementById('f-operarios').value,
+      oficiales: document.getElementById('f-oficiales').value,
+      peones: document.getElementById('f-peones').value,
+      vigias: document.getElementById('f-vigias').value
+    },
+    truck_shop: document.getElementById('f-truckshop').checked,
+    hitos: currentHitos.map((h,i)=>({hito:h, hora: document.getElementById('hito-'+i).value})),
+    partidas_previstas: partidasOut,
+    actividades_no_previstas: rows.map(r=>({
+      hora: r.hora,
+      detalle_15min: quarterLabels(r.hora).map((lbl,idx)=>({hora:lbl, descripcion:(r.descs||[])[idx]||''})).filter(x=>x.descripcion.trim()!=='')
+    })),
+    control_sostenimiento: controlItems.map(c=>({fecha:c.fecha,frente:c.frente,sistema:c.sistema,sector:c.sector,elemento:c.elemento,tipo:c.tipo,actividad:c.actividad,codigo:c.codigo,cantidad:c.cantidad,unidad:c.unidad})),
+    equipos_maquinaria: getEquiposRegistrados(),
+    stand_by: {
+      total_minutos: getStandbyTotalMin(),
+      total_hhmm: _sbFmtHHMM(getStandbyTotalMin()),
+      eventos: getStandbyRegistrados().map(r => ({
+        item: r.item,
+        actividad_afectada: r.actividad,
+        desde: r.desde,
+        hasta: r.hasta,
+        total_minutos: r.minutos,
+        total_hhmm: r.minutos !== null ? _sbFmtHHMM(r.minutos) : '',
+        causa: r.causa,
+        comentario: r.comentario
+      }))
+    },
+    comentarios: document.getElementById('f-comentarios').value,
+    requerimientos: (document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value : ''),
+    restricciones: document.getElementById('f-restricciones').value
+  };
+
+  downloadFile(JSON.stringify(data, null, 2), `RD_${frente}_${fecha}.json`, 'application/json');
+  showToast('Datos exportados en JSON 🗂️');
+}
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 300);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function saveDraft() {
+  if (suppressSave) return;
+  const meta = getMeta();
+  const data = {
+    meta,
+    personal: {
+      capataz: document.getElementById('f-capataces').value,
+      operarios: document.getElementById('f-operarios').value,
+      oficiales: document.getElementById('f-oficiales').value,
+      peones: document.getElementById('f-peones').value,
+      vigias: document.getElementById('f-vigias').value
+    },
+    truckShop: document.getElementById('f-truckshop').checked,
+    restriccionDesc: document.getElementById('f-restriccion-desc').value,
+    restriccionInicio: document.getElementById('f-restriccion-inicio').value,
+    restriccionFin: document.getElementById('f-restriccion-fin').value,
+    almuerzoSalida: document.getElementById('f-almuerzo-salida').value,
+    almuerzoRetorno: document.getElementById('f-almuerzo-retorno').value,
+    hitos: currentHitos.map((h,i)=>{ const el=document.getElementById('hito-'+i); return el?el.value:''; }),
+    partidaValores,
+    rows, rowId,
+    cables, cableId,
+    controlItems, controlId,
+    equiposPerforacionFijos: EQUIPOS_PERFORACION_FIJOS.map((n,i)=>{ const el=document.getElementById('eqp-perf-'+i); return el?el.value:''; }),
+    equiposSoporteFijos: EQUIPOS_SOPORTE_FIJOS.map((n,i)=>{ const el=document.getElementById('eqp-sop-'+i); return el?el.value:''; }),
+    equiposPerforacionManual, equiposPerforacionManualId,
+    equiposSoporteManual, equiposSoporteManualId,
+    comentarios: document.getElementById('f-comentarios').value,
+    requerimientos: (document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value : ''),
+    restricciones: document.getElementById('f-restricciones').value,
+    redlineEstado,
+    redlineSupervisor: document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value : '',
+    redlineTexto: document.getElementById('f-redline').value,
+    redlineSupervisor: document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value : '',
+    progRows, progRowId, progAdicRows, progAdicId,
+    metradosManuales, metradosManualId,
+    standbyRows, standbyId
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function loadDraft() {
+  let data;
+  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) { data = null; }
+  if (!data) return;
+  suppressSave = true;
+
+  document.getElementById('f-fecha').value = data.meta.fecha || '';
+  document.getElementById('f-sector').value = data.meta.sector || '';
+  onSectorChange();
+  document.getElementById('f-frente').value = data.meta.frente || '';
+  // cuadrilla field removed
+  document.getElementById('f-capataz').value = data.meta.capataz || '';
+  document.getElementById('f-supervisor').value = data.meta.supervisor || '';
+
+  if (data.personal) {
+    document.getElementById('f-capataces').value = data.personal.capataz ?? 1;
+    document.getElementById('f-operarios').value = data.personal.operarios ?? 0;
+    document.getElementById('f-oficiales').value = data.personal.oficiales ?? 0;
+    document.getElementById('f-peones').value = data.personal.peones ?? 0;
+    document.getElementById('f-vigias').value = data.personal.vigias ?? 0;
+  }
+
+  // Migrar partidaValores: asegurar que cada entrada tenga items:[]
+  const rawPV = data.partidaValores || {};
+  partidaValores = {};
+  Object.keys(rawPV).forEach(k => {
+    const v = rawPV[k];
+    partidaValores[k] = {
+      met: (v && v.met !== undefined) ? v.met : '',
+      items: (v && Array.isArray(v.items)) ? v.items : []
+    };
+  });
+  renderMetradosPartidas();
+
+  document.getElementById('f-truckshop').checked = !!data.truckShop;
+  toggleRestriccion();
+  if (data.restriccionDesc) document.getElementById('f-restriccion-desc').value = data.restriccionDesc;
+  if (data.restriccionInicio) document.getElementById('f-restriccion-inicio').value = data.restriccionInicio;
+  if (data.restriccionFin) document.getElementById('f-restriccion-fin').value = data.restriccionFin;
+  if (data.almuerzoSalida) document.getElementById('f-almuerzo-salida').value = data.almuerzoSalida;
+  if (data.almuerzoRetorno) document.getElementById('f-almuerzo-retorno').value = data.almuerzoRetorno;
+
+  renderHitos(false);
+  (data.hitos||[]).forEach((v,i)=>{ const el=document.getElementById('hito-'+i); if(el) el.value=v||''; });
+
+  rows = (data.rows || []).map(r => {
+    if (!r.descs) {
+      r.descs = ['','','',''];
+      if (r.desc) r.descs[0] = r.desc;
+    }
+    return r;
+  });
+  rowId = data.rowId || rows.length;
+  renderRows();
+
+  cables = data.cables || [];
+  cableId = data.cableId || 0;
+
+  controlItems = data.controlItems || [];
+  controlId = data.controlId || controlItems.length;
+  // Nota: controlItems se reconstruye desde partidaValores con rebuildControlItems();
+  // las funciones de render antiguas (renderCables/renderControlItems) ya no existen.
+
+  renderEquiposFijos();
+  (data.equiposPerforacionFijos||[]).forEach((v,i)=>{ const el=document.getElementById('eqp-perf-'+i); if(el) el.value=v||''; });
+  (data.equiposSoporteFijos||[]).forEach((v,i)=>{ const el=document.getElementById('eqp-sop-'+i); if(el) el.value=v||''; });
+  equiposPerforacionManual = data.equiposPerforacionManual || [];
+  equiposPerforacionManualId = data.equiposPerforacionManualId || equiposPerforacionManual.length;
+  equiposSoporteManual = data.equiposSoporteManual || [];
+  equiposSoporteManualId = data.equiposSoporteManualId || equiposSoporteManual.length;
+  renderEquiposManuales();
+
+  document.getElementById('f-comentarios').value = data.comentarios || '';
+  if (document.getElementById('f-requerimientos')) document.getElementById('f-requerimientos').value = data.requerimientos || '';
+  document.getElementById('f-restricciones').value = data.restricciones || '';
+  if (data.redlineEstado) toggleRedline(data.redlineEstado);
+  if (data.redlineTexto) document.getElementById('f-redline').value = data.redlineTexto;
+  const _rds=document.getElementById('f-redline-supervisor'); if(_rds && data.redlineSupervisor) _rds.value=data.redlineSupervisor;
+  const rdSup = document.getElementById('f-redline-supervisor');
+  if (rdSup && data.redlineSupervisor) rdSup.value = data.redlineSupervisor;
+
+  progRows = data.progRows || [];
+  progRowId = data.progRowId || 0;
+  progAdicRows = data.progAdicRows || [];
+  progAdicId = data.progAdicId || 0;
+
+  metradosManuales = data.metradosManuales || [];
+  metradosManualId = data.metradosManualId || metradosManuales.length;
+  renderMetradosManuales();
+
+  standbyRows = data.standbyRows || [];
+  standbyId = data.standbyId || (standbyRows.length ? Math.max(...standbyRows.map(r=>r.id)) + 1 : 0);
+  renderStandbyRows();
+
+  suppressSave = false;
+}
+function nuevoReporte() {
+  const confirmarExport = confirm('⚠️ IMPORTANTE: ¿Ya exportaste el Excel de este reporte?\n\nEs obligatorio exportar el Excel antes de iniciar un nuevo reporte.\n\nPresiona OK solo si ya exportaste. Presiona Cancelar para volver y exportar primero.');
+  if (!confirmarExport) return;
+  const confirmarBorrar = confirm('¿Confirmas que deseas borrar el borrador actual y empezar un reporte nuevo?');
+  if (!confirmarBorrar) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+
+// ==================== INIT ====================
+initSelects();
+renderHitos();
+renderRows();
+renderEquiposFijos();
+renderEquiposManuales();
+renderMetradosPartidas();
+renderMetradosManuales();
+renderStandbyRows();
+renderProgRows();
+renderProgAdicRows();
+loadDraft();
+
+</script>
+
+</body>
+</html>
