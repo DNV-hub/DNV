@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Reporte Diario de Campo</title>
+
+<!-- PWA: manifest + iconos + metadatos de instalación (no afecta el uso normal desde navegador) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563EB">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="RDC">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -466,14 +477,14 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
 // ==================== DATOS ====================
 const SECTORES = {"SECTOR": ["FRENTE"], "A: 2000 - OPB MINA": ["OPB"], "A: 2000 - BY PASS": ["BPN - 32"], "A: 3000 - POZA": ["POZA PC-003", "ACCESO POZA PC-003"], "A: 3000 - VIA MAR II": ["ZCM08", "ZCM09", "VM-08", "VM-07", "VM-06", "VM-05", "VM-04", "VM-01", "VM-16", "VM-13", "VM-12", "VM_10 SP"], "A: 4000 - SALA ELECTRICA": ["PLATAFORMA SALA ELECTRICA", "PLATAFORMA DE OPERACIONES"], "DM2": [], "Otro": []};
 const SUPERVISORES = ["AARON CESPEDES", "BRYAN VENTURA", "DAVID GANAMPA", "GLORIA ARROYO", "JESUS MAMANI", "YEAMPIER PARIENTE", "JUAN TICONA", "YASIR GUEVAR", "MIRO POMA", "ANDREI SALAS", "ALFREDO IPARRAGUIRRE"];
-const CAPATACES = ["DARWIN REYES", "RUBEN GAMARRA", "LUIS SANCHEZ", "ANGEL BARRIGA", "EBER CASTRO", "OLMER GAMARRA", "JAIRO VELASQUEZ"];
+const CAPATACES = ["DARWIN REYES", "RUBEN GAMARRA", "LUIS SANCHEZ", "ANGEL BARRIGA", "EBER CASTRO", "OLMER GAMARRA", "JAIRO VELASQUEZ", "MANUEL GAMARRA", "ANTONIO MELENDEZ"];
 
 // PARTIDAS: n=nombre u=um s=subtitulo e=edt c=control t=tipos sis=sistema zona=zona
-const PARTIDAS = {"ZCM09":[{"n":"Movilización interna","u":"GLB","s":"ZCM09 ACT. PRELIMINARES","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"ZCM09 ACT. PRELIMINARES","e":"1.02"},{"n":"Habilitación de accesos","u":"ML","s":"ZCM09 ACT. PRELIMINARES","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM09 ACT. PRELIMINARES","e":"1.04"},{"n":"Instalacion de Tirolina","u":"UND","s":"ZCM09 ACT. PRELIMINARES","e":"1.05"},{"n":"Línea de vida","u":"ML","s":"ZCM09 ACT. PRELIMINARES","e":"1.06"},{"n":"Traslado de malla por Tirolina","u":"M2","s":"ZCM09 ACT. PRELIMINARES","e":"1.07"},{"n":"Perforación manual de anclajes (41 mm) / Inyeccion - Cabecera","u":"ML","s":"ZCM09 ACTIVO","e":"2.01","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalación de Malla TECCO G65/3","u":"M2","s":"ZCM09 ACTIVO","e":"2.02","c":"malla","sis":"A"},{"n":"Cosido de malla","u":"M2","s":"ZCM09 ACTIVO","e":"2.03"},{"n":"Perforación de anclajes sobre patín (90mm)","u":"ML","s":"ZCM09 ACTIVO","e":"2.04","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Inyección de anclajes (90mm)","u":"ML","s":"ZCM09 ACTIVO","e":"2.05","c":"inyeccion","sis":"A"},{"n":"Perforación manual de anclajes (41 mm) / Inyeccion - Pie - Retencion","u":"ML","s":"ZCM09 ACTIVO","e":"2.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ML","s":"ZCM09 ACTIVO","e":"2.07","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ML","s":"ZCM09 ACTIVO","e":"2.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"UND","s":"ZCM09 ACTIVO","e":"2.09"},{"n":"Ensayo Pull Test (carga 60%)","u":"UND","s":"ZCM09 ACTIVO","e":"2.1","c":"pull test","sis":"A"},{"n":"Perforación manual de  (41 mm) / Inyección (Encapsulado)","u":"ML","s":"ZCM09 PASIVO","e":"3.01","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de cables horizontales 19mm (Encapsulado)","u":"ML","s":"ZCM09 PASIVO","e":"3.02","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Perforación manual de anclajes (41mm) / Inyección - cabecera y laterales","u":"ML","s":"ZCM09 PASIVO","e":"3.03","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Desquinche","u":"M2","s":"ZCM09 PASIVO","e":"3.04"},{"n":"Instalación de Malla Minox 80/3","u":"M2","s":"ZCM09 PASIVO","e":"3.05","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"ZCM09 PASIVO","e":"3.06"},{"n":"Perforación manual de anclajes ( 41 mm) / Inyeccion - Pie","u":"ML","s":"ZCM09 PASIVO","e":"3.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ML","s":"ZCM09 PASIVO","e":"3.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"UND","s":"ZCM09 PASIVO","e":"3.09"},{"n":"Ensayos pull test","u":"UND","s":"ZCM09 PASIVO","e":"3.1","c":"pull test","sis":"P"},{"n":"Desmovilización","u":"GLB","s":"ZCM09 PASIVO","e":"3.11"}],"ZCM08":[{"n":"Movilización de personal, equipos a proyecto","u":"und","s":"ZCM-08 PASIVO 1","e":"1.01"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 1","e":"1.02"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 1","e":"1.04"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 PASIVO 1","e":"1.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.06"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.07"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm (cabecera)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.08","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.09","c":"inyeccion","sis":"P","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.1"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.11","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.12"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (cuerpo)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.13","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.14"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.15","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.16"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cuerpo 2026)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.17","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cuerpo laterales)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.18","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.19","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.2","c":"inyeccion","sis":"P","zona":"1"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.21","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.22","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 1","e":"1.23"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 1","e":"1.24","c":"pull test","sis":"P","zona":"1"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 ACTIVO 1","e":"2.03"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.04"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.06"},{"n":"Instalación de malla Geotextil","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.07","c":"malla","sis":"A","zona":"1"},{"n":"Perforación manual de Garrotas / Inyección","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.08"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cabecera)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.09","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.1"},{"n":"Instalación de malla para sostenimiento TECCO G65/3","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.11","c":"malla","sis":"A","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.12"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm (Cuerpo)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.13","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.14","c":"inyeccion","sis":"A","zona":"1"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Pie)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.15","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.16","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A","zona":"1"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.17","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A","zona":"1"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.18"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.19","c":"pull test","sis":"A","zona":"1"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 3","e":"3.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 3","e":"3.03"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 PASIVO 3","e":"3.04"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Cabecera","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"3"},{"n":"Instalación de malla para sostenimiento TECCO G65/3","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.08","c":"malla","sis":"P","zona":"3"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.09"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Pie","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.1","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"3"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"3"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 3","e":"3.12"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 3","e":"3.13","c":"pull test","sis":"P","zona":"3"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 2","e":"4.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 2","e":"4.03"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Cabecera","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 2","e":"4.06","c":"malla","sis":"P","zona":"2"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 2","e":"4.07"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Pie","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"2"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 2","e":"4.1"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 2","e":"4.11","c":"pull test","sis":"P","zona":"2"},{"n":"Desmovilización de personal, equipos","u":"und","s":"ZCM-08 PASIVO 2","e":"4.12"}],"PLATAFORMA SALA ELECTRICA":[{"n":"Movilización de materiales, equipos y herramientas","u":"GLB","s":"Trabajos Preliminares","e":"01.01.01"},{"n":"Trazo y levantamiento topográfico","u":"GLB","s":"Trabajos Preliminares","e":"01.01.02"},{"n":"Habilitación de facilidades","u":"GLB","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.01"},{"n":"Habilitación de accesos","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.02"},{"n":"Línea de vida","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.03"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.04","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.05","c":"malla","sis":"A-P"},{"n":"Cosido de malla","u":"M2","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A-P"},{"n":"Perforación de anclajes sobre patín (min 76mm) - 1 patin /Inyeccion de anclaje","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.09","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.10"},{"n":"Ensayos pull test","u":"UND","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.11"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.01"},{"n":"Línea de vida","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.02"},{"n":"Desquinche","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.03"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.04","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.05","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.08"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.10"},{"n":"Habilitación de accesos","u":"M","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.01"},{"n":"Traslado de materiales con camión grúa","u":"VJE","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.02"},{"n":"Línea de vida","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.03"},{"n":"Desquinche","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.06","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.07"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.09"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.10","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.11"},{"n":"Tirolina","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.01"},{"n":"Línea de vida","u":"ML","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.02"},{"n":"Perforación de anclajes sobre patín (min 76mm) - 2 patin /Inyeccion de anclaje Activo","u":"ML","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.03","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.04"},{"n":"Ensayos pull test","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.05","c":"pull test","sis":"A"}],"PLATAFORMA DE OPERACIONES":[{"n":"Movilización interna","u":"GLB","s":"Trabajos Preliminares","e":"02.01.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"Trabajos Preliminares","e":"02.01.02"},{"n":"Habilitación de accesos","u":"M","s":"Trabajos Preliminares","e":"02.01.03"},{"n":"Línea de vida","u":"M","s":"Sostenimiento Pasivo","e":"02.02.01"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.02","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.03","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.04"},{"n":"Desquinche","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.05"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Sostenimiento Pasivo","e":"02.02.07"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Sostenimiento Pasivo","e":"02.02.09","c":"pull test","sis":"P"},{"n":"Desmovilización de materiales, equipos y herramientas","u":"GLB","s":"Sostenimiento Pasivo","e":"02.02.10"}],"OPB":[{"n":"Movilización interna","u":"GLB","s":"TRABAJOS PRELIMINARES","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"TRABAJOS PRELIMINARES","e":"1.02"},{"n":"Habilitación de accesos","u":"ML","s":"TRABAJOS PRELIMINARES","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"DIAS","s":"TRABAJOS PRELIMINARES","e":"1.04"},{"n":"Medios de izaje para traslado de materiales","u":"VIAJE","s":"TRABAJOS PRELIMINARES","e":"1.05"},{"n":"Instalación de Tirolinas","u":"UND","s":"TRABAJOS AUXILIARES","e":"2.01"},{"n":"Traslado por tirolinea de equipos y materiales","u":"DIAS","s":"TRABAJOS AUXILIARES","e":"2.02"},{"n":"Línea de vida","u":"ML","s":"TRABAJOS AUXILIARES","e":"2.03"},{"n":"Instalación de Barrera Provisional","u":"ML","s":"TRABAJOS AUXILIARES","e":"2.04"},{"n":"Malla sacrificio para perforación y traslado","u":"M2","s":"TRABAJOS AUXILIARES","e":"2.05","c":"malla"},{"n":"Perforación e inyección de anclajes con Toku (bases de poste)","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.01","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Perforación de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.02","c":"perforacion","t":["BAHE","Autoperforante"]},{"n":"Inyección de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.03","c":"inyeccion"},{"n":"Dados de nivelación 0.30x0.40x0.20m3","u":"UND","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.04"},{"n":"Instalación de barrera dinámica GBE 1000, H5 L=55m (2 tramos L=30m)","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.05"},{"n":"Ensayos Pull Test","u":"UND","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.06","c":"pull test"},{"n":"Perforación e inyección de anclajes con Toku (bases de poste)","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.01","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Perforación de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.02","c":"perforacion","t":["BAHE","Autoperforante"]},{"n":"Inyección de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.03","c":"inyeccion"},{"n":"Dados de nivelación 0.30x0.40x0.20m3","u":"UND","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.04"},{"n":"Instalación de barrera dinámica GBE 1000, H5 L=40m","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.05"},{"n":"Ensayos Pull Test","u":"UND","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.06","c":"pull test"},{"n":"Desmovilización","u":"GLB","s":"DESMOVILIZACIÓN","e":"5.01"}],"VM-08":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Insatalación Malla","u":"M2","e":"1.09","c":"malla"},{"n":"Cosido de malla","u":"M2","e":"1.1"},{"n":"Perforación manual de anclajes (41 mm) / Inyección - pie","u":"ML","e":"1.11","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Limpieza manual en pie de talud","u":"M3","e":"1.12"}],"VM-07":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Desquinche","u":"M2","e":"1.04"},{"n":"Descolmatación","u":"DIAS","e":"1.05"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.06"},{"n":"Insatalación Malla","u":"M2","e":"1.07","c":"malla"},{"n":"Cosido de malla","u":"M2","e":"1.08"},{"n":"Perforación manual de anclajes (41 mm) / Inyección - pie","u":"ML","e":"1.09","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Limpieza manual en pie de talud","u":"M3","e":"1.1"}],"VM-06":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"}],"VM-05":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-04":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-01":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-16":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Desmovilización del proyecto","u":"GLB","e":"1.09"}],"VM-13":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Desquinche","u":"M2","e":"1.04"},{"n":"Descolmatación","u":"DIAS","e":"1.05"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.06"}],"VM-12":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"}],"BPN - 32":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"POZA PC-003":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"ACCESO POZA PC-003":[{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"VM_10 SP":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grua","u":"VJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Perforación/ Inyección de anclajes 25mm/L=3m <45° Cabecera","u":"ML","e":"1.06","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.07","c":"malla"},{"n":"Instalacion de  Geotextil  NWO19M 200gr/m²","u":"M2","e":"1.08","c":"malla"},{"n":"Cosido de mallas","u":"ML","e":"1.09"},{"n":"Instalación de accesorios","u":"UND","e":"1.1"},{"n":"Cable de acero galvanizado D=16mm Cabecera/horizontal","u":"ML","e":"1.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"]},{"n":"Desquinche","u":"M2","e":"1.12"},{"n":"Descolmatación","u":"M3","e":"1.13"}]};
+const PARTIDAS = {"ZCM09":[{"n":"Movilización interna","u":"GLB","s":"ZCM09 ACT. PRELIMINARES","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"ZCM09 ACT. PRELIMINARES","e":"1.02"},{"n":"Habilitación de accesos","u":"ML","s":"ZCM09 ACT. PRELIMINARES","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM09 ACT. PRELIMINARES","e":"1.04"},{"n":"Instalacion de Tirolina","u":"UND","s":"ZCM09 ACT. PRELIMINARES","e":"1.05"},{"n":"Línea de vida","u":"ML","s":"ZCM09 ACT. PRELIMINARES","e":"1.06"},{"n":"Traslado de malla por Tirolina","u":"M2","s":"ZCM09 ACT. PRELIMINARES","e":"1.07"},{"n":"Perforación manual de anclajes (41 mm) / Inyeccion - Cabecera","u":"ML","s":"ZCM09 ACTIVO","e":"2.01","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalación de Malla TECCO G65/3","u":"M2","s":"ZCM09 ACTIVO","e":"2.02","c":"malla","sis":"A"},{"n":"Cosido de malla","u":"M2","s":"ZCM09 ACTIVO","e":"2.03"},{"n":"Perforación de anclajes sobre patín (90mm)","u":"ML","s":"ZCM09 ACTIVO","e":"2.04","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Inyección de anclajes (90mm)","u":"ML","s":"ZCM09 ACTIVO","e":"2.05","c":"inyeccion","sis":"A"},{"n":"Perforación manual de anclajes (41 mm) / Inyeccion - Pie - Retencion","u":"ML","s":"ZCM09 ACTIVO","e":"2.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ML","s":"ZCM09 ACTIVO","e":"2.07","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ML","s":"ZCM09 ACTIVO","e":"2.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"UND","s":"ZCM09 ACTIVO","e":"2.09"},{"n":"Ensayo Pull Test (carga 60%)","u":"UND","s":"ZCM09 ACTIVO","e":"2.1","c":"pull test","sis":"A"},{"n":"Perforación manual de  (41 mm) / Inyección (Encapsulado)","u":"ML","s":"ZCM09 PASIVO","e":"3.01","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de cables horizontales 19mm (Encapsulado)","u":"ML","s":"ZCM09 PASIVO","e":"3.02","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Perforación manual de anclajes (41mm) / Inyección - cabecera y laterales","u":"ML","s":"ZCM09 PASIVO","e":"3.03","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Desquinche","u":"M2","s":"ZCM09 PASIVO","e":"3.04"},{"n":"Instalación de Malla Minox 80/3","u":"M2","s":"ZCM09 PASIVO","e":"3.05","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"ZCM09 PASIVO","e":"3.06"},{"n":"Perforación manual de anclajes ( 41 mm) / Inyeccion - Pie","u":"ML","s":"ZCM09 PASIVO","e":"3.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ML","s":"ZCM09 PASIVO","e":"3.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"UND","s":"ZCM09 PASIVO","e":"3.09"},{"n":"Ensayos pull test","u":"UND","s":"ZCM09 PASIVO","e":"3.1","c":"pull test","sis":"P"},{"n":"Desmovilización","u":"GLB","s":"ZCM09 PASIVO","e":"3.11"}],"ZCM08":[{"n":"Movilización de personal, equipos a proyecto","u":"und","s":"ZCM-08 PASIVO 1","e":"1.01"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 1","e":"1.02"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 1","e":"1.04"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 PASIVO 1","e":"1.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.06"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.07"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm (cabecera)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.08","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.09","c":"inyeccion","sis":"P","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.1"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.11","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.12"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (cuerpo)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.13","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.14"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.15","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 1","e":"1.16"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cuerpo 2026)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.17","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cuerpo laterales)","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.18","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.19","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.2","c":"inyeccion","sis":"P","zona":"1"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.21","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 PASIVO 1","e":"1.22","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 1","e":"1.23"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 1","e":"1.24","c":"pull test","sis":"P","zona":"1"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 ACTIVO 1","e":"2.03"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.04"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.06"},{"n":"Instalación de malla Geotextil","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.07","c":"malla","sis":"A","zona":"1"},{"n":"Perforación manual de Garrotas / Inyección","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.08"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Cabecera)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.09","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Desquinche","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.1"},{"n":"Instalación de malla para sostenimiento TECCO G65/3","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.11","c":"malla","sis":"A","zona":"1"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 ACTIVO 1","e":"2.12"},{"n":"Perforacion en instalación de anclajes Mediante Patín (Siste TH) Hasta D:90mm (Cuerpo)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.13","c":"perforacion","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Inyección de anclajes hasta D:90 mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.14","c":"inyeccion","sis":"A","zona":"1"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo (Pie)","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.15","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A","zona":"1"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.16","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A","zona":"1"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 ACTIVO 1","e":"2.17","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A","zona":"1"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.18"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 ACTIVO 1","e":"2.19","c":"pull test","sis":"A","zona":"1"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 3","e":"3.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 3","e":"3.03"},{"n":"Medios de Izaje para traslado de materiales / Tirolina","u":"und","s":"ZCM-08 PASIVO 3","e":"3.04"},{"n":"Traslado de malla por tirolina","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.05"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Cabecera","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"3"},{"n":"Instalación de malla para sostenimiento TECCO G65/3","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.08","c":"malla","sis":"P","zona":"3"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 3","e":"3.09"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Pie","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.1","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"3"},{"n":"Instalación de cables horizontales 12mm hasta 16mm","u":"ml","s":"ZCM-08 PASIVO 3","e":"3.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"3"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 3","e":"3.12"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 3","e":"3.13","c":"pull test","sis":"P","zona":"3"},{"n":"Habilitación de facilidades","u":"und","s":"ZCM-08 PASIVO 2","e":"4.01"},{"n":"Habilitación de accesos","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"ZCM-08 PASIVO 2","e":"4.03"},{"n":"Instalación de línea de vida","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Cabecera","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2"},{"n":"Instalación de Malla MINAX G80/4","u":"m2","s":"ZCM-08 PASIVO 2","e":"4.06","c":"malla","sis":"P","zona":"2"},{"n":"Cosido de malla","u":"m2","s":"ZCM-08 PASIVO 2","e":"4.07"},{"n":"Perforación manual de anclajes (41mm) / Inyección  - Pasivo Pie","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2"},{"n":"Instalación de cables horizontales 19mm hasta 22mm","u":"ml","s":"ZCM-08 PASIVO 2","e":"4.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"2"},{"n":"Instalación de accesorios (Placas, tuercas, etc)","u":"und","s":"ZCM-08 PASIVO 2","e":"4.1"},{"n":"Ensayo Pull Test (carga 60%)","u":"und","s":"ZCM-08 PASIVO 2","e":"4.11","c":"pull test","sis":"P","zona":"2"},{"n":"Desmovilización de personal, equipos","u":"und","s":"ZCM-08 PASIVO 2","e":"4.12"}],"PLATAFORMA SALA ELECTRICA":[{"n":"Movilización de materiales, equipos y herramientas","u":"GLB","s":"Trabajos Preliminares","e":"01.01.01"},{"n":"Trazo y levantamiento topográfico","u":"GLB","s":"Trabajos Preliminares","e":"01.01.02"},{"n":"Habilitación de facilidades","u":"GLB","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.01"},{"n":"Habilitación de accesos","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.02"},{"n":"Línea de vida","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.03"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.04","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.05","c":"malla","sis":"A-P"},{"n":"Cosido de malla","u":"M2","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"A-P"},{"n":"Perforación de anclajes sobre patín (min 76mm) - 1 patin /Inyeccion de anclaje","u":"ML","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.09","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A-P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.10"},{"n":"Ensayos pull test","u":"UND","s":"Zona 1 y Lateral 1- Sostenimiento Activo-Pasivo","e":"01.02.11"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.01"},{"n":"Línea de vida","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.02"},{"n":"Desquinche","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.03"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.04","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.05","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.08"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Zona 3 Sostenimiento Pasivo","e":"01.03.10"},{"n":"Habilitación de accesos","u":"M","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.01"},{"n":"Traslado de materiales con camión grúa","u":"VJE","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.02"},{"n":"Línea de vida","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.03"},{"n":"Desquinche","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.06","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.07"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.09"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.10","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Lateral 2 Sostenimiento Pasivo","e":"01.04.11"},{"n":"Tirolina","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.01"},{"n":"Línea de vida","u":"ML","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.02"},{"n":"Perforación de anclajes sobre patín (min 76mm) - 2 patin /Inyeccion de anclaje Activo","u":"ML","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.03","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"A"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.04"},{"n":"Ensayos pull test","u":"UND","s":"Zona 2, 3, lateral 2 - Sostenimiento Activo","e":"01.05.05","c":"pull test","sis":"A"}],"PLATAFORMA DE OPERACIONES":[{"n":"Movilización interna","u":"GLB","s":"Trabajos Preliminares","e":"02.01.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"Trabajos Preliminares","e":"02.01.02"},{"n":"Habilitación de accesos","u":"M","s":"Trabajos Preliminares","e":"02.01.03"},{"n":"Línea de vida","u":"M","s":"Sostenimiento Pasivo","e":"02.02.01"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku- Cabecera","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.02","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/4","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.03","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.04"},{"n":"Desquinche","u":"M2","s":"Sostenimiento Pasivo","e":"02.02.05"},{"n":"Perforación manual de anclajes (41mm) / Inyección - 2 cuadrillas de toku-Pie/lateral","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Sostenimiento Pasivo","e":"02.02.07"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Sostenimiento Pasivo","e":"02.02.08","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Ensayos pull test","u":"UND","s":"Sostenimiento Pasivo","e":"02.02.09","c":"pull test","sis":"P"},{"n":"Desmovilización de materiales, equipos y herramientas","u":"GLB","s":"Sostenimiento Pasivo","e":"02.02.10"}],"OPB":[{"n":"Movilización interna","u":"GLB","s":"TRABAJOS PRELIMINARES","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"TRABAJOS PRELIMINARES","e":"1.02"},{"n":"Habilitación de accesos","u":"ML","s":"TRABAJOS PRELIMINARES","e":"1.03"},{"n":"Traslado de materiales con camión grúa","u":"DIAS","s":"TRABAJOS PRELIMINARES","e":"1.04"},{"n":"Medios de izaje para traslado de materiales","u":"VIAJE","s":"TRABAJOS PRELIMINARES","e":"1.05"},{"n":"Instalación de Tirolinas","u":"UND","s":"TRABAJOS AUXILIARES","e":"2.01"},{"n":"Traslado por tirolinea de equipos y materiales","u":"DIAS","s":"TRABAJOS AUXILIARES","e":"2.02"},{"n":"Línea de vida","u":"ML","s":"TRABAJOS AUXILIARES","e":"2.03"},{"n":"Instalación de Barrera Provisional","u":"ML","s":"TRABAJOS AUXILIARES","e":"2.04"},{"n":"Malla sacrificio para perforación y traslado","u":"M2","s":"TRABAJOS AUXILIARES","e":"2.05","c":"malla"},{"n":"Perforación e inyección de anclajes con Toku (bases de poste)","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.01","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Perforación de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.02","c":"perforacion","t":["BAHE","Autoperforante"]},{"n":"Inyección de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.03","c":"inyeccion"},{"n":"Dados de nivelación 0.30x0.40x0.20m3","u":"UND","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.04"},{"n":"Instalación de barrera dinámica GBE 1000, H5 L=55m (2 tramos L=30m)","u":"ML","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.05"},{"n":"Ensayos Pull Test","u":"UND","s":"BARRERA GBE 1000 H=5M L=55M (2 TRAMOS)","e":"3.06","c":"pull test"},{"n":"Perforación e inyección de anclajes con Toku (bases de poste)","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.01","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Perforación de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.02","c":"perforacion","t":["BAHE","Autoperforante"]},{"n":"Inyección de anclajes sobre patín (76mm) - Vientos","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.03","c":"inyeccion"},{"n":"Dados de nivelación 0.30x0.40x0.20m3","u":"UND","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.04"},{"n":"Instalación de barrera dinámica GBE 1000, H5 L=40m","u":"ML","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.05"},{"n":"Ensayos Pull Test","u":"UND","s":"BARRERA GBE 1000 H=5M L=40M (1 TRAMO)","e":"4.06","c":"pull test"},{"n":"Desmovilización","u":"GLB","s":"DESMOVILIZACIÓN","e":"5.01"}],"VM-08":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Insatalación Malla","u":"M2","e":"1.09","c":"malla"},{"n":"Cosido de malla","u":"M2","e":"1.1"},{"n":"Perforación manual de anclajes (41 mm) / Inyección - pie","u":"ML","e":"1.11","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Limpieza manual en pie de talud","u":"M3","e":"1.12"}],"VM-07":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Desquinche","u":"M2","e":"1.04"},{"n":"Descolmatación","u":"DIAS","e":"1.05"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.06"},{"n":"Insatalación Malla","u":"M2","e":"1.07","c":"malla"},{"n":"Cosido de malla","u":"M2","e":"1.08"},{"n":"Perforación manual de anclajes (41 mm) / Inyección - pie","u":"ML","e":"1.09","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Limpieza manual en pie de talud","u":"M3","e":"1.1"}],"VM-06":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"}],"VM-05":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-04":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-01":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.09","c":"malla"},{"n":"Perforación manual de anclajes (41mm) / Inyección","u":"ML","e":"1.1","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Ensayo Pull Test","u":"UND","e":"1.11","c":"pull test"}],"VM-16":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"},{"n":"Desmovilización del proyecto","u":"GLB","e":"1.09"}],"VM-13":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Desquinche","u":"M2","e":"1.04"},{"n":"Descolmatación","u":"DIAS","e":"1.05"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.06"}],"VM-12":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"},{"n":"Reparación de malla descolmatada","u":"GLB","e":"1.08"}],"BPN - 32":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grúa","u":"VIAJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Desquinche","u":"M2","e":"1.06"},{"n":"Descolmatación","u":"DIAS","e":"1.07"}],"POZA PC-003":[{"n":"Movilización inicial de materiales, equipos y herramientas","u":"GLB","s":"Trabajos Preliminares","e":"01.01.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"Trabajos Preliminares","e":"01.01.02"},{"n":"Habilitación de accesos","u":"ML","s":"Trabajos Preliminares","e":"01.01.03"},{"n":"Traslado de materiales con camión grúa /  Camión baranda","u":"VJE","s":"Trabajos Preliminares","e":"01.01.04"},{"n":"Limpieza manual de pie de talud, carguío y traslado de material a acopio en Zona 1 y 3","u":"M3","s":"Trabajos Preliminares","e":"01.01.05"},{"n":"Trazo y levantamiento topográfico","u":"GLB","s":"Trabajos Preliminares","e":"01.01.06"},{"n":"Tirolina","u":"UND","s":"Sostenimiento Pasivo Zona 1","e":"01.02.01"},{"n":"Línea de vida","u":"ML","s":"Sostenimiento Pasivo Zona 1","e":"01.02.02"},{"n":"Traslado de malla por tirolina","u":"M2","s":"Sostenimiento Pasivo Zona 1","e":"01.02.03"},{"n":"Desquinche","u":"M2","s":"Sostenimiento Pasivo Zona 1","e":"01.02.04"},{"n":"Descolmatación","u":"DIA","s":"Sostenimiento Pasivo Zona 1","e":"01.02.05"},{"n":"Perforación manual de anclajes (41mm) / Inyección - Cabecera","u":"ML","s":"Sostenimiento Pasivo Zona 1","e":"01.02.06","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Instalación de Geotextil","u":"M2","s":"Sostenimiento Pasivo Zona 1","e":"01.02.07","c":"malla","sis":"P","zona":"1"},{"n":"Instalación de Malla Deltax G80/2","u":"M2","s":"Sostenimiento Pasivo Zona 1","e":"01.02.08","c":"malla","sis":"P","zona":"1"},{"n":"Cosido de malla","u":"M2","s":"Sostenimiento Pasivo Zona 1","e":"01.02.09"},{"n":"Perforación manual de anclajes (41mm) / Inyección -Pie/lateral","u":"ML","s":"Sostenimiento Pasivo Zona 1","e":"01.02.10","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"1"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Sostenimiento Pasivo Zona 1","e":"01.02.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"1"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Sostenimiento Pasivo Zona 1","e":"01.02.12"},{"n":"Ensayos pull test","u":"UND","s":"Sostenimiento Pasivo Zona 1","e":"01.02.13","c":"pull test","sis":"P","zona":"1"},{"n":"Tirolina","u":"UND","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.01"},{"n":"Línea de vida","u":"ML","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.02"},{"n":"Traslado de malla por tirolina","u":"M2","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.03"},{"n":"Desquinche","u":"M2","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.04"},{"n":"Perforación manual de anclajes (41mm) / Inyección - Cabecera","u":"ML","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.05","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2,3"},{"n":"Instalación de Geomamalla biaxial","u":"M2","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.06","c":"malla","sis":"P","zona":"2,3"},{"n":"Perforación manual de anclajes (41mm) / Inyección -Pie/lateral","u":"ML","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2,3"},{"n":"Perforación manual de Garrotas / Inyección","u":"ML","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.08","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P","zona":"2,3"},{"n":"Cable de acero de 12 mm","u":"ML","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.09","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P","zona":"2,3"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.10"},{"n":"Ensayos pull test","u":"UND","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.11","c":"pull test","sis":"P","zona":"2,3"},{"n":"Desmovilizacion de equipos, materiales y herramientas","u":"GLB","s":"Sostenimiento Pasivo Zona 2 y 3","e":"01.03.12"}],"ACCESO POZA PC-003":[{"n":"Movilización inicial de materiales, equipos y herramientas","u":"GLB","s":"Trabajos Preliminares","e":"01.01.01"},{"n":"Habilitación de facilidades","u":"GLB","s":"Trabajos Preliminares","e":"01.01.02"},{"n":"Habilitación de accesos","u":"ML","s":"Trabajos Preliminares","e":"01.01.03"},{"n":"Desbroce y limpieza de terreno","u":"M2","s":"Trabajos Preliminares","e":"01.01.04"},{"n":"Traslado de materiales con camión grúa /  Camión baranda","u":"VJE","s":"Trabajos Preliminares","e":"01.01.05"},{"n":"Tirolina","u":"UND","s":"Sostenimiento Pasivo","e":"01.02.01"},{"n":"Línea de vida","u":"ML","s":"Sostenimiento Pasivo","e":"01.02.02"},{"n":"Trazo y levantamiento topográfico","u":"GLB","s":"Sostenimiento Pasivo","e":"01.02.03"},{"n":"Traslado de malla por tirolina","u":"M2","s":"Sostenimiento Pasivo","e":"01.02.04"},{"n":"Desquinche","u":"M2","s":"Sostenimiento Pasivo","e":"01.02.05"},{"n":"Descolmatación","u":"DIA","s":"Sostenimiento Pasivo","e":"01.02.06"},{"n":"Perforación manual de anclajes (41mm) / Inyección - Cabecera","u":"ML","s":"Sostenimiento Pasivo","e":"01.02.07","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Instalación de Malla Minax 80/3","u":"M2","s":"Sostenimiento Pasivo","e":"01.02.08","c":"malla","sis":"P"},{"n":"Cosido de malla","u":"M2","s":"Sostenimiento Pasivo","e":"01.02.09"},{"n":"Perforación manual de anclajes (41mm) / Inyección -Banqueta","u":"ML","s":"Sostenimiento Pasivo","e":"01.02.10","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Perforación manual de anclajes (41mm) / Inyección -Pie/lateral","u":"ML","s":"Sostenimiento Pasivo","e":"01.02.11","c":"perf-iny","t":["BAHE","Autoperforante"],"sis":"P"},{"n":"Cable de acero de 19 mm","u":"ML","s":"Sostenimiento Pasivo","e":"01.02.12","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Cable de acero de 12 mm","u":"ML","s":"Sostenimiento Pasivo","e":"01.02.13","c":"cable","t":["12 mm","16mm","19 mm","22mm"],"sis":"P"},{"n":"Instalacion de Accesorios (Placas, tuercas, etc)","u":"UND","s":"Sostenimiento Pasivo","e":"01.02.14"},{"n":"Ensayos pull test","u":"UND","s":"Sostenimiento Pasivo","e":"01.02.15","c":"pull test","sis":"P"},{"n":"Desmovilizacion de equipos, materiales y herramientas","u":"GLB","s":"Sostenimiento Pasivo","e":"01.02.16"}],"VM_10 SP":[{"n":"Movilización interna","u":"GLB","e":"1.01"},{"n":"Habilitación de facilidades","u":"GLB","e":"1.02"},{"n":"Traslado de materiales con camión grua","u":"VJE","e":"1.03"},{"n":"Habilitación de accesos","u":"ML","e":"1.04"},{"n":"Línea de vida","u":"ML","e":"1.05"},{"n":"Perforación/ Inyección de anclajes 25mm/L=3m <45° Cabecera","u":"ML","e":"1.06","c":"perf-iny","t":["BAHE","Autoperforante"]},{"n":"Instalación de malla Deltax G80/2","u":"M2","e":"1.07","c":"malla"},{"n":"Instalacion de  Geotextil  NWO19M 200gr/m²","u":"M2","e":"1.08","c":"malla"},{"n":"Cosido de mallas","u":"ML","e":"1.09"},{"n":"Instalación de accesorios","u":"UND","e":"1.1"},{"n":"Cable de acero galvanizado D=16mm Cabecera/horizontal","u":"ML","e":"1.11","c":"cable","t":["12 mm","16mm","19 mm","22mm"]},{"n":"Desquinche","u":"M2","e":"1.12"},{"n":"Descolmatación","u":"M3","e":"1.13"}]};
 const HORAS = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
 const UNITS = ['','ML','M2','M3','UND','HH','GLB','VIAJE'];
 const HITOS_BASE = ['Llegada a frente de trabajo','Inicio de charla de seguridad','Término de charla de seguridad','Término de llenado de documentos','Firma de PETAR','Inicio de actividades','Término de jornada'];
-const STORAGE_KEY = 'rdc_v38';
+const STORAGE_KEY = 'rdc_v39';
 const CAUSAS_STANDBY = ['FACTOR SOCIAL','INSPECCIÓN DE SEGURIDAD','INTERFERENCIA CON OTRO CONTRATISTA','LIBERACIÓN','INGENIERÍA','CLIMÁTICO','ENCAPSULADOS'];
 const EQUIPOS_PERFORACION_FIJOS = ['Compresora','Perforador sobre patín','Estación Hidráulica','Inyectora','Martillo de mano'];
 const EQUIPOS_SOPORTE_FIJOS = ['Retroexcavadora','Camión grúa','Camión Baranda','Camioneta','Minibús'];
@@ -1489,14 +1500,20 @@ function showTab(tab) {
   }
   window.scrollTo({top:0, behavior:'smooth'});
 }
-function _standbyTotalCompleto() {
-  let total = 0;
-  // 1. Restricción de acceso al frente
+function _standbyAccesoMin() {
+  // Restricción de acceso al frente
   if (document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked) {
     const rD = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
     const rH = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
-    total += _sbMinutos(rD, rH);
+    return _sbMinutos(rD, rH) || 0;
   }
+  return 0;
+}
+
+function _standbyTotalCompleto() {
+  let total = 0;
+  // 1. Restricción de acceso al frente
+  total += _standbyAccesoMin();
   // 2. Registro documentario (hito 0 Llegada → hito 3 Término llenado docs)
   const h0 = document.getElementById('hito-0') ? document.getElementById('hito-0').value : '';
   const h3 = document.getElementById('hito-3') ? document.getElementById('hito-3').value : '';
@@ -1507,7 +1524,9 @@ function _standbyTotalCompleto() {
 }
 
 function _tiempoEfectivo() {
-  // Tiempo efectivo = Término de jornada (hito 6) − Inicio de actividades (hito 5) − Stand By total
+  // Tiempo efectivo = Término de jornada (hito 6) − Inicio de actividades (hito 5) − Stand By del módulo.
+  // La restricción de acceso NO se resta aquí: ocurre antes de "Inicio de actividades" (fuera de esta ventana),
+  // así que restarla de nuevo duplicaba el descuento y podía dejar el resultado en 0.
   const inicioEl  = document.getElementById('hito-5');
   const terminoEl = document.getElementById('hito-6');
   const inicio  = inicioEl  ? inicioEl.value  : '';
@@ -1517,7 +1536,7 @@ function _tiempoEfectivo() {
   const [ht, mt] = termino.split(':').map(Number);
   const totalMin = (ht * 60 + mt) - (hi * 60 + mi);
   if (totalMin <= 0) return '—';
-  const efectMin = Math.max(0, totalMin - _standbyTotalCompleto());
+  const efectMin = Math.max(0, totalMin - getStandbyTotalMin());
   return _sbFmt(efectMin);
 }
 
@@ -1543,7 +1562,7 @@ function buildResumen() {
       <span style="font-size:13px;font-weight:600;color:var(--blue-text)">${meta.supervisor||'—'}</span>
     </div>
     <div class="metric"><div class="val">${_totalPersonal()}<\/div><div class="lbl">Personal<\/div><\/div>
-    <div class="metric"><div class="val" style="color:var(--red-text);font-size:22px">${_sbFmt(_standbyTotalCompleto())}<\/div><div class="lbl">Stand By total<\/div><\/div>
+    <div class="metric"><div class="val" style="color:var(--red-text);font-size:22px">${_sbFmt(getStandbyTotalMin())}<\/div><div class="lbl">Stand By total<\/div><\/div>
     <div class="metric"><div class="val" style="color:var(--green-text);font-size:22px">${_tiempoEfectivo()}<\/div><div class="lbl">Tiempo efectivo<\/div><\/div>
     <div class="metric"><div class="val">${partidasConMetrado}<\/div><div class="lbl">Partidas con avance<\/div><\/div>
   `;
@@ -1667,6 +1686,16 @@ function buildTextoWsp() {
   t += `👷 Capataz: ${meta.capataz || '—'}\n`;
   t += `🦺 Supervisor: ${meta.supervisor || '—'}\n\n`;
 
+  // Registro de jornada (hitos) — solo los que tengan hora registrada, sin el Término de jornada (va al final de la bitácora)
+  const hitosJornada = currentHitos.slice(0, -1)
+    .map((h,i)=>({ h, v: document.getElementById('hito-'+i) ? document.getElementById('hito-'+i).value : '' }))
+    .filter(x => x.v);
+  if (hitosJornada.length) {
+    t += `*REGISTRO DE JORNADA* 🕒\n`;
+    hitosJornada.forEach(x => { t += `• ${x.h}: ${x.v}\n`; });
+    t += `\n`;
+  }
+
   // Restricción para llegar al frente (Inicio de jornada)
   const tuvoRestriccionAcceso = document.getElementById('f-truckshop').checked;
   if (tuvoRestriccionAcceso) {
@@ -1716,9 +1745,12 @@ function buildTextoWsp() {
       if (d && d.trim()) lineasBitacora.push(`${labels[idx]} — ${d.trim()}`);
     });
   });
-  if (lineasBitacora.length) {
+  const terminoJornadaIdx = currentHitos.length - 1;
+  const terminoJornadaVal = document.getElementById('hito-'+terminoJornadaIdx) ? document.getElementById('hito-'+terminoJornadaIdx).value : '';
+  if (lineasBitacora.length || terminoJornadaVal) {
     t += `*BITÁCORA DE ACTIVIDADES* 📝\n`;
     lineasBitacora.forEach(l => { t += `• ${l}\n`; });
+    if (terminoJornadaVal) t += `• ${currentHitos[terminoJornadaIdx]}: ${terminoJornadaVal}\n`;
     t += `\n`;
   }
 
@@ -1944,13 +1976,10 @@ function csvEscape(val) {
 function csvRow(arr) {
   return arr.map(csvEscape).join(',');
 }
-function exportarXLSX() {
-  rebuildControlItems();
+// ==================== HELPERS COMPARTIDOS DE EXPORT (Excel + CSV) ====================
+// Fila única de la hoja/sección RDC: identificación, personal, hitos, partidas, observaciones.
+function _buildRdcRow() {
   const meta = getMeta();
-  const fecha = meta.fecha || 'sin-fecha';
-  const frente = meta.frente || 'frente';
-  const lista = PARTIDAS[frente] || [];
-
   const personal = {
     capataz: document.getElementById('f-capataces').value || '0',
     operarios: document.getElementById('f-operarios').value || '0',
@@ -1975,11 +2004,11 @@ function exportarXLSX() {
   const headers = [];
   const values = [];
 
-  headers.push('Fecha','Sector','Frente','Cuadrilla','Capataz','Supervisor');
-  values.push(meta.fecha||'', meta.sector||'', meta.frente||'', meta.cuadrilla||'', meta.capataz||'', meta.supervisor||'');
+  headers.push('Fecha','Sector','Frente','Capataz','Supervisor');
+  values.push(meta.fecha||'', meta.sector||'', meta.frente||'', meta.capataz||'', meta.supervisor||'');
 
-  headers.push('Restricción para llegar al frente','Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
-  values.push(tuvoRestriccionAcceso?'Sí':'No', tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
+  headers.push('Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
+  values.push(tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
 
   headers.push('N° Capataz','N° Operarios','N° Oficiales','N° Peones','N° Vigías');
   values.push(Number(personal.capataz), Number(personal.operarios), Number(personal.oficiales), Number(personal.peones), Number(personal.vigias));
@@ -1996,25 +2025,81 @@ function exportarXLSX() {
     values.push(p?p.edt:'', p?p.nombre:'', p?p.met:'', p?p.um:'');
   }
 
-  HORAS.forEach(h => {
-    headers.push(`Actividad ${h}`);
-    const lineas = [];
-    rows.filter(r => r.hora === h).forEach(r => {
-      (r.descs || []).forEach(d => { if (d && d.trim()) lineas.push(d.trim()); });
+  const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
+  const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
+  const redlineTextoExp = document.getElementById('f-redline').value || '';
+  headers.push('Observaciones','Requerimientos','Restricciones','Redline - Supervisor Hegatrux','Redline - Descripción');
+  values.push(comentarios, requerimientosExp, restricciones, redlineSupFn, redlineTextoExp);
+
+  // Personal Sala Eléctrica (solo si sector = A: 4000 - SALA ELECTRICA)
+  if (meta.sector === "A: 4000 - SALA ELECTRICA") {
+    headers.push('Ingeniero residente');
+    values.push(document.getElementById('f-ing-residente') ? parseInt(document.getElementById('f-ing-residente').value)||0 : 0);
+    headers.push('Supervisor de campo');
+    values.push(document.getElementById('f-sup-campo') ? parseInt(document.getElementById('f-sup-campo').value)||0 : 0);
+    headers.push('Ingenieros de seguridad');
+    values.push(document.getElementById('f-ing-seguridad') ? parseInt(document.getElementById('f-ing-seguridad').value)||0 : 0);
+    headers.push('Ingeniero de calidad');
+    values.push(document.getElementById('f-ing-calidad') ? parseInt(document.getElementById('f-ing-calidad').value)||0 : 0);
+    headers.push('Topógrafo');
+    values.push(document.getElementById('f-topografo') ? parseInt(document.getElementById('f-topografo').value)||0 : 0);
+  }
+
+  return { headers, values };
+}
+
+// Hoja/sección BITACORA: una fila por cada cuarto de hora con actividad registrada.
+function _buildBitacoraRows() {
+  const meta = getMeta();
+  const headers = ['Fecha','Frente','Hora','Actividad'];
+  const items = [];
+  rows.forEach(r => {
+    if (!r.hora) return;
+    const labels = quarterLabels(r.hora);
+    (r.descs || []).forEach((d, idx) => {
+      if (d && d.trim()) items.push([meta.fecha||'', meta.frente||'', labels[idx], d.trim()]);
     });
-    values.push(lineas.join('\n'));
   });
+  items.sort((a,b) => a[2].localeCompare(b[2]));
+  return { headers, rows: items };
+}
 
-  // Control de Sostenimiento — resumen para hoja RDC
-  const totalControl = controlItems.length;
-  const resumenControl = controlItems.length > 0
-    ? [...new Set(controlItems.map(c => c.tipo + (c.actividad?' — '+c.actividad:'')))].join(' / ')
-    : '';
-  headers.push('Control Sostenimiento - Total elementos','Control Sostenimiento - Tipos');
-  values.push(totalControl || '', resumenControl);
+// Hoja/sección CONTROL_SOSTENIMIENTO: Longitud (ML de pernos/inyección/cable) o Ancho×Largo (malla).
+function _buildControlSostenimientoRows() {
+  const meta = getMeta();
+  const headers = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Longitud','Ancho','Largo','Unidad'];
+  const rows = controlItems.map(c => [
+    c.fecha || meta.fecha || '',
+    c.frente || meta.frente || '',
+    c.sistema || '',
+    c.zona || '',
+    c.elemento || '',
+    c.tipo || '',
+    c.actividad || '',
+    c.codigo || '',
+    (c.unidad === 'ML' && c.cantidad !== '' && c.cantidad !== undefined) ? c.cantidad : '',
+    c.ancho || '',
+    c.largo || '',
+    c.unidad || ''
+  ]);
+  return { headers, rows };
+}
 
-  // Stand By — resumen para hoja RDC
-  // Restricción de acceso como primer item de Stand By
+// Hoja/sección EQUIPOS.
+function _buildEquiposRows() {
+  const meta = getMeta();
+  const equipos = getEquiposRegistrados();
+  const headers = ['Fecha','Frente','Categoría','Equipo','Cantidad'];
+  const rows = [
+    ...equipos.perforacion.map(e => [meta.fecha||'', meta.frente||'', 'Perforación', e.nombre, e.cantidad]),
+    ...equipos.soporte.map(e => [meta.fecha||'', meta.frente||'', 'Soporte operativo', e.nombre, e.cantidad])
+  ];
+  return { headers, rows };
+}
+
+// Hoja/sección STAND_BY: incluye restricción de acceso + registro documentario + módulo Stand By (sin cambios).
+function _buildStandByExportRows() {
+  const meta = getMeta();
   const tuvoRestriccion = document.getElementById('f-truckshop').checked;
   const sbExtra = [];
   if (tuvoRestriccion) {
@@ -2032,37 +2117,64 @@ function exportarXLSX() {
     const _rdMin = _sbMinutos(_hLlegada, _hTermDoc);
     sbExtra.push({ actividad:'Registro documentario', desde:_hLlegada, hasta:_hTermDoc, minutos:_rdMin, causa:'Registro documentario', comentario:'' });
   }
-  const sbRegsXlsx = [...sbExtra.map((r,i)=>({...r,item:i+1})), ...getStandbyRegistrados().map((r,ri)=>({...r, item:sbExtra.length+ri+1}))];
-  headers.push('Stand By - N° eventos','Stand By - Total (hh:mm)','Stand By - Causas');
-  values.push(
-    sbRegsXlsx.length || '',
-    sbRegsXlsx.length ? _sbFmtHHMM(getStandbyTotalMin()) : '',
-    sbRegsXlsx.length ? [...new Set(sbRegsXlsx.map(r=>r.causa).filter(Boolean))].join(' / ') : ''
-  );
+  const sbRegs = [...sbExtra.map((r,i)=>({...r,item:i+1})), ...getStandbyRegistrados().map((r,ri)=>({...r, item:sbExtra.length+ri+1}))];
 
-  const redlineEstadoExp = redlineEstado === 'si' ? 'Sí' : redlineEstado === 'no' ? 'No' : '';
-  const redlineSupEl = document.getElementById('f-redline-supervisor');
-  const redlineSupVal = redlineSupEl ? redlineSupEl.value : '';
-  const redlineTextoExp = document.getElementById('f-redline').value || '';
-  const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
-  const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
-  headers.push('Observaciones','Requerimientos','Restricciones','Redline (¿hubo modificaciones?)','Redline - Supervisor Hegatrux','Redline - Descripción');
-  values.push(comentarios, requerimientosExp, restricciones, redlineEstadoExp, redlineSupFn, redlineTextoExp);
+  const headers = ['Item','Fecha','Frente','Actividad afectada','Desde','Hasta','Total (hh:mm)','Total (decimal)','Total (min)','Causa','Comentarios'];
+  const rows = sbRegs.map(r => [
+    r.item,
+    meta.fecha || '',
+    meta.frente || '',
+    r.actividad,
+    r.desde,
+    r.hasta,
+    r.minutos !== null ? _sbFmtHHMM(r.minutos) : '',
+    r.minutos !== null ? Math.round(r.minutos / 60 * 100) / 100 : '',
+    r.minutos !== null ? r.minutos : '',
+    r.causa,
+    r.comentario || ''
+  ]);
+  return { headers, rows, sbRegs };
+}
+
+// Hoja/sección REPORTE_WSP: texto WSP línea por línea + resumen de jornada + resumen completo en una sola celda.
+function _buildReporteWspLineas() {
+  buildTextoWsp();
+  const textoWsp = document.getElementById('texto-wsp').value || '';
+  const lineas = textoWsp ? textoWsp.split('\n').map(l => [l]) : [['Sin datos']];
+  lineas.push(['']);
+  lineas.push(['--- RESUMEN DE JORNADA ---']);
+  currentHitos.forEach((h,hi) => {
+    const el = document.getElementById('hito-'+hi);
+    const hora = el ? el.value : '';
+    if (hora) lineas.push([h + ': ' + hora]);
+  });
+  const _almS = document.getElementById('f-almuerzo-salida') ? document.getElementById('f-almuerzo-salida').value : '';
+  const _almR = document.getElementById('f-almuerzo-retorno') ? document.getElementById('f-almuerzo-retorno').value : '';
+  if (_almS) lineas.push(['Salida a refrigerio: ' + _almS]);
+  if (_almR) lineas.push(['Retorno de refrigerio: ' + _almR]);
+  if (document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked) {
+    const _rDesc  = document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '';
+    const _rDesde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
+    const _rHasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    lineas.push(['Restricción de acceso: ' + (_rDesde&&_rHasta?_rDesde+' - '+_rHasta:'') + (_rDesc?' ('+_rDesc+')':'')]);
+  }
+  // Resumen completo del reporte en una sola celda
+  lineas.push(['']);
+  lineas.push(['--- RESUMEN COMPLETO (celda única) ---']);
+  lineas.push([textoWsp]);
+  return lineas;
+}
+// ==================== FIN HELPERS COMPARTIDOS DE EXPORT ====================
+
+function exportarXLSX() {
+  rebuildControlItems();
+  const meta = getMeta();
+  const fecha = meta.fecha || 'sin-fecha';
+  const frente = meta.frente || 'frente';
+
+  const { headers, values } = _buildRdcRow();
 
   const wb = XLSX.utils.book_new();
-  // Personal Sala Eléctrica (solo si sector = A: 4000 - SALA ELECTRICA)
-  if (meta.sector === "A: 4000 - SALA ELECTRICA") {
-    headers.push('Ingeniero residente');
-    values.push(document.getElementById('f-ing-residente') ? parseInt(document.getElementById('f-ing-residente').value)||0 : 0);
-    headers.push('Supervisor de campo');
-    values.push(document.getElementById('f-sup-campo') ? parseInt(document.getElementById('f-sup-campo').value)||0 : 0);
-    headers.push('Ingenieros de seguridad');
-    values.push(document.getElementById('f-ing-seguridad') ? parseInt(document.getElementById('f-ing-seguridad').value)||0 : 0);
-    headers.push('Ingeniero de calidad');
-    values.push(document.getElementById('f-ing-calidad') ? parseInt(document.getElementById('f-ing-calidad').value)||0 : 0);
-    headers.push('Topógrafo');
-    values.push(document.getElementById('f-topografo') ? parseInt(document.getElementById('f-topografo').value)||0 : 0);
-  }
 
   const ws = XLSX.utils.aoa_to_sheet([headers, values]);
 
@@ -2084,40 +2196,34 @@ function exportarXLSX() {
     };
   });
 
-  // Habilitar salto de línea visual en las celdas de Actividad (4 renglones de 15 min)
-  const actStartCol = headers.indexOf(`Actividad ${HORAS[0]}`);
-  if (actStartCol >= 0) {
-    HORAS.forEach((h, idx) => {
-      const col = actStartCol + idx;
-      const cellRef = XLSX.utils.encode_cell({r:1, c:col});
-      if (ws[cellRef]) {
-        ws[cellRef].s = Object.assign({}, ws[cellRef].s, { alignment: { wrapText: true, vertical: 'top' } });
-      }
-    });
-  }
-
   XLSX.utils.book_append_sheet(wb, ws, 'RDC');
 
-  // ===== HOJA 2: CONTROL_SOSTENIMIENTO =====
-  const csHeaders = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Cantidad','Unidad'];
-  const csRows = controlItems.map(c => [
-    c.fecha || meta.fecha || '',
-    c.frente || meta.frente || '',
-    c.sistema || '',
-    c.zona || '',
-    c.elemento || '',
-    c.tipo || '',
-    c.actividad || '',
-    c.codigo || '',
-    (c.cantidad !== '' && c.cantidad !== undefined) ? c.cantidad : '',
-    c.unidad || ''
-  ]);
+  // ===== HOJA BITACORA =====
+  const { headers: biHeaders, rows: biRows } = _buildBitacoraRows();
+  const wsBI = XLSX.utils.aoa_to_sheet([biHeaders, ...biRows]);
+  wsBI['!cols'] = [{wch:12},{wch:16},{wch:8},{wch:60}];
+  biHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!wsBI[cellRef]) return;
+    wsBI[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: '374151' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+  biRows.forEach((_, r) => {
+    const cellRef = XLSX.utils.encode_cell({ r: r+1, c: 3 });
+    if (wsBI[cellRef]) wsBI[cellRef].s = { alignment: { wrapText: true, vertical: 'top' } };
+  });
+  XLSX.utils.book_append_sheet(wb, wsBI, 'BITACORA');
 
+  // ===== HOJA CONTROL_SOSTENIMIENTO =====
+  const { headers: csHeaders, rows: csRows } = _buildControlSostenimientoRows();
   const wsCS = XLSX.utils.aoa_to_sheet([csHeaders, ...csRows]);
 
   // Ancho columnas CONTROL_SOSTENIMIENTO
   wsCS['!cols'] = [
-    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:10},{wch:8}
+    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8}
   ];
 
   // Estilo cabecera hoja CONTROL: fondo verde oscuro
@@ -2134,12 +2240,7 @@ function exportarXLSX() {
   XLSX.utils.book_append_sheet(wb, wsCS, 'CONTROL_SOSTENIMIENTO');
 
   // ===== HOJA EQUIPOS =====
-  const equiposXlsx = getEquiposRegistrados();
-  const eqHeaders = ['Fecha','Frente','Categoría','Equipo','Cantidad'];
-  const eqRows = [
-    ...equiposXlsx.perforacion.map(e => [meta.fecha||'', meta.frente||'', 'Perforación', e.nombre, e.cantidad]),
-    ...equiposXlsx.soporte.map(e => [meta.fecha||'', meta.frente||'', 'Soporte operativo', e.nombre, e.cantidad])
-  ];
+  const { headers: eqHeaders, rows: eqRows } = _buildEquiposRows();
   const wsEQ = XLSX.utils.aoa_to_sheet([eqHeaders, ...eqRows]);
   wsEQ['!cols'] = [{wch:12},{wch:18},{wch:20},{wch:30},{wch:10}];
   eqHeaders.forEach((_,i)=>{
@@ -2154,20 +2255,7 @@ function exportarXLSX() {
   XLSX.utils.book_append_sheet(wb, wsEQ, 'EQUIPOS');
 
   // ===== HOJA STAND_BY =====
-  const sbHeaders = ['Item','Fecha','Frente','Actividad afectada','Desde','Hasta','Total (hh:mm)','Total (decimal)','Total (min)','Causa','Comentarios'];
-  const sbSheetRows = sbRegsXlsx.map(r => [
-    r.item,
-    meta.fecha || '',
-    meta.frente || '',
-    r.actividad,
-    r.desde,
-    r.hasta,
-    r.minutos !== null ? _sbFmtHHMM(r.minutos) : '',
-    r.minutos !== null ? Math.round(r.minutos / 60 * 100) / 100 : '',
-    r.minutos !== null ? r.minutos : '',
-    r.causa,
-    r.comentario || ''
-  ]);
+  const { headers: sbHeaders, rows: sbSheetRows } = _buildStandByExportRows();
   // Sin fila de totales en STAND_BY
   const wsSB = XLSX.utils.aoa_to_sheet([sbHeaders, ...sbSheetRows]);
   wsSB['!cols'] = [{wch:6},{wch:12},{wch:16},{wch:36},{wch:8},{wch:8},{wch:12},{wch:10},{wch:10},{wch:32},{wch:40}];
@@ -2182,32 +2270,8 @@ function exportarXLSX() {
   });
   XLSX.utils.book_append_sheet(wb, wsSB, 'STAND_BY');
 
-  // ===== HOJA 3: REPORTE_WSP (texto descriptivo tal cual se comparte por WhatsApp) =====
-  buildTextoWsp();
-  const textoWsp = document.getElementById('texto-wsp').value || '';
-  // Reporte WSP: una línea por fila
-  const wspLineas = textoWsp ? textoWsp.split('\n').map(l => [l]) : [['Sin datos']];
-  // Separador
-  wspLineas.push(['']);
-  wspLineas.push(['--- RESUMEN DE JORNADA ---']);
-  // Hitos de jornada
-  currentHitos.forEach((h,hi) => {
-    const el = document.getElementById('hito-'+hi);
-    const hora = el ? el.value : '';
-    if (hora) wspLineas.push([h + ': ' + hora]);
-  });
-  // Refrigerio
-  const _almS = document.getElementById('f-almuerzo-salida') ? document.getElementById('f-almuerzo-salida').value : '';
-  const _almR = document.getElementById('f-almuerzo-retorno') ? document.getElementById('f-almuerzo-retorno').value : '';
-  if (_almS) wspLineas.push(['Salida a refrigerio: ' + _almS]);
-  if (_almR) wspLineas.push(['Retorno de refrigerio: ' + _almR]);
-  // Restricción
-  if (document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked) {
-    const _rDesc  = document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '';
-    const _rDesde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
-    const _rHasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
-    wspLineas.push(['Restricción de acceso: ' + (_rDesde&&_rHasta?_rDesde+' - '+_rHasta:'') + (_rDesc?' ('+_rDesc+')':'')]);
-  }
+  // ===== HOJA REPORTE_WSP (texto descriptivo tal cual se comparte por WhatsApp) =====
+  const wspLineas = _buildReporteWspLineas();
   const wsWSP = XLSX.utils.aoa_to_sheet(wspLineas);
   wsWSP['!cols'] = [{ wch: 95 }];
   wspLineas.forEach((_, r) => {
@@ -2222,7 +2286,7 @@ function exportarXLSX() {
   if (_tele.inicio) {
     const _fin=new Date(),_tot=Math.round((_fin-_tele.inicio)/1000);
     const _th=['Pestaña','Hora entrada','Hora salida','Tiempo (seg)'];
-    const _appVer = 'v37';
+    const _appVer = 'v39';
     const _tr=_tele.tabs.map(t=>[t.tab,t.entrada,t.salida,t.seg]);
     _tr.push(['TOTAL',_tele.inicio.toTimeString().slice(0,8),_fin.toTimeString().slice(0,8),_tot]);
     _tr.push(['','','Total minutos',Math.floor(_tot/60)+' min '+(_tot%60)+' seg']);
@@ -2258,100 +2322,34 @@ function exportarCSV() {
   const meta = getMeta();
   const fecha = meta.fecha || 'sin-fecha';
   const frente = meta.frente || 'frente';
-  const lista = PARTIDAS[frente] || [];
 
-  const personal = {
-    capataz: document.getElementById('f-capataces').value || '0',
-    operarios: document.getElementById('f-operarios').value || '0',
-    oficiales: document.getElementById('f-oficiales').value || '0',
-    peones: document.getElementById('f-peones').value || '0',
-    vigias: document.getElementById('f-vigias').value || '0'
+  const lines = [];
+  const addSection = (nombre, headers, dataRows) => {
+    lines.push(`=== ${nombre} ===`);
+    lines.push(csvRow(headers));
+    dataRows.forEach(r => lines.push(csvRow(r)));
+    lines.push('');
   };
 
-  const almSalida = document.getElementById('f-almuerzo-salida').value;
-  const almRetorno = document.getElementById('f-almuerzo-retorno').value;
+  const rdc = _buildRdcRow();
+  addSection('RDC', rdc.headers, [rdc.values]);
 
-  const hitosVals = currentHitos.map((h,i) => {
-    const el = document.getElementById('hito-'+i);
-    return el ? el.value || '' : '';
-  });
+  const bitacora = _buildBitacoraRows();
+  addSection('BITACORA', bitacora.headers, bitacora.rows);
 
-  const partidasConAvance = getPartidasEjecutadas();
+  const control = _buildControlSostenimientoRows();
+  addSection('CONTROL_SOSTENIMIENTO', control.headers, control.rows);
 
-  const tuvoRestriccionAcceso = document.getElementById('f-truckshop').checked;
-  const restriccionAccesoDesc = (document.getElementById('f-restriccion-desc').value || '').trim();
-  const restriccionAccesoInicio = document.getElementById('f-restriccion-inicio').value || '';
-  const restriccionAccesoFin = document.getElementById('f-restriccion-fin').value || '';
+  const equipos = _buildEquiposRows();
+  addSection('EQUIPOS', equipos.headers, equipos.rows);
 
-  const comentarios = document.getElementById('f-comentarios').value || '';
-  const restricciones = document.getElementById('f-restricciones').value || '';
+  const standBy = _buildStandByExportRows();
+  addSection('STAND_BY', standBy.headers, standBy.rows);
 
-  const headers = [];
-  const values = [];
+  lines.push('=== REPORTE_WSP ===');
+  _buildReporteWspLineas().forEach(r => lines.push(csvRow(r)));
 
-  headers.push('Fecha','Sector','Frente','Cuadrilla','Capataz','Supervisor');
-  values.push(meta.fecha||'', meta.sector||'', meta.frente||'', meta.cuadrilla||'', meta.capataz||'', meta.supervisor||'');
-
-  headers.push('Restricción para llegar al frente','Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
-  values.push(tuvoRestriccionAcceso?'Sí':'No', tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
-
-  headers.push('N° Capataz','N° Operarios','N° Oficiales','N° Peones','N° Vigías');
-  values.push(personal.capataz, personal.operarios, personal.oficiales, personal.peones, personal.vigias);
-
-  headers.push('Salida refrigerio','Retorno refrigerio');
-  values.push(almSalida||'', almRetorno||'');
-
-  currentHitos.forEach((h,i) => { headers.push(h); values.push(hitosVals[i]||''); });
-
-  const MAX_PARTIDAS = 16;
-  for (let i = 0; i < MAX_PARTIDAS; i++) {
-    headers.push(`Partida ${i+1} - EDT`, `Partida ${i+1} - Nombre`, `Partida ${i+1} - Metrado`, `Partida ${i+1} - UM`);
-    const p = partidasConAvance[i];
-    values.push(p ? p.edt : '', p ? p.n : '', p ? p.met : '', p ? p.u : '');
-  }
-
-  HORAS.forEach(h => {
-    headers.push(`Actividad ${h}`);
-    const lineas = [];
-    rows.filter(r => r.hora === h).forEach(r => {
-      (r.descs || []).forEach(d => { if (d && d.trim()) lineas.push(d.trim()); });
-    });
-    values.push(lineas.join('\n'));
-  });
-
-  const totalControl = controlItems.length;
-  const resumenControl = controlItems.length > 0
-    ? [...new Set(controlItems.map(c => c.tipo + (c.actividad?' — '+c.actividad:'')))].join(' / ')
-    : '';
-  headers.push('Control Sostenimiento - Total elementos','Control Sostenimiento - Tipos');
-  values.push(totalControl || '', resumenControl);
-
-  const equiposCsv = getEquiposRegistrados();
-  headers.push('Equipos Perforación','Equipos Soporte Operativo');
-  values.push(
-    equiposCsv.perforacion.map(e => `${e.nombre}: ${e.cantidad}`).join(' / '),
-    equiposCsv.soporte.map(e => `${e.nombre}: ${e.cantidad}`).join(' / ')
-  );
-
-  // Stand By
-  const sbRegsCsv = getStandbyRegistrados();
-  headers.push('Stand By - N° eventos','Stand By - Total (hh:mm)','Stand By - Detalle');
-  values.push(
-    sbRegsCsv.length || '',
-    sbRegsCsv.length ? _sbFmtHHMM(getStandbyTotalMin()) : '',
-    sbRegsCsv.map(r => `${r.item}. ${r.actividad||'—'} | ${r.desde||'—'}-${r.hasta||'—'} | ${_sbFmt(r.minutos)} | ${r.causa||'—'}${r.comentario ? ' | '+r.comentario : ''}`).join(' // ')
-  );
-
-  const redlineEstadoExp = redlineEstado === 'si' ? 'Sí' : redlineEstado === 'no' ? 'No' : '';
-  const redlineSupEl = document.getElementById('f-redline-supervisor');
-  const redlineSupVal = redlineSupEl ? redlineSupEl.value : '';
-  const redlineTextoExp = document.getElementById('f-redline').value || '';
-  const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
-  const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
-  headers.push('Observaciones','Requerimientos','Restricciones','Redline (¿hubo modificaciones?)','Redline - Supervisor Hegatrux','Redline - Descripción');
-  values.push(comentarios, requerimientosExp, restricciones, redlineEstadoExp, redlineSupFn, redlineTextoExp);
-
-  const csvContent = '\uFEFF' + csvRow(headers) + '\n' + csvRow(values);
+  const csvContent = '﻿' + lines.join('\n');
   downloadFile(csvContent, `RD_${frente}_${fecha}.csv`, 'text/csv;charset=utf-8');
   showToast('Exportado para Excel 📊✅');
 }
@@ -2583,6 +2581,17 @@ renderProgRows();
 renderProgAdicRows();
 loadDraft();
 
+</script>
+
+<script>
+// Registro del Service Worker (PWA). No hace nada obligatorio: si el navegador no lo soporta,
+// o la página se abre como archivo local (file://), esto simplemente falla en silencio y la
+// app sigue funcionando exactamente igual que siempre.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 
 </body>
