@@ -457,15 +457,25 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
       <button class="secondary-btn" onclick="compartirTextoWsp()"><i class="ti ti-share"></i>Compartir</button>
     </div>
   </div>
-  <div class="bottom-actions">
-    <button class="export-btn" onclick="exportarXLSX()"><i class="ti ti-file-spreadsheet"></i>Excel (.xlsx)</button>
-    <button class="secondary-btn" onclick="exportarCSV()"><i class="ti ti-table-export"></i>.csv</button>
-    <button class="secondary-btn" onclick="exportarJSON()"><i class="ti ti-file-export"></i>.json</button>
-    <button class="secondary-btn" onclick="nuevoReporte()"><i class="ti ti-refresh"></i>Nuevo</button>
+  <div class="card" style="margin-top:12px">
+    <div class="card-title"><i class="ti ti-send"></i>Enviar reporte a la oficina</div>
+    <p class="note" style="margin-bottom:10px">Cuando termines de llenar todo el reporte, presiona <strong>Terminado y Enviar</strong>. Recién cuando se confirme el envío podrás iniciar un reporte nuevo.</p>
+    <div id="envio-status" style="display:none"></div>
+    <button class="nav-btn primary" id="btn-enviar" onclick="terminarYEnviar()"><i class="ti ti-send"></i>Terminado y Enviar</button>
+    <button class="secondary-btn" id="btn-descargar-copia" onclick="descargarMiCopia()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-download"></i>Descargar mi copia</button>
+    <button class="secondary-btn" id="btn-nuevo" onclick="nuevoReporte()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-refresh"></i>Nuevo</button>
+    <div class="alert alert-amber" style="margin-top:10px">
+      <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
+      <span><strong>"Nuevo" se habilita recién cuando el envío sea exitoso.</strong> Una vez iniciado el nuevo reporte, el borrador anterior se borra.</span>
+    </div>
   </div>
-  <div class="alert alert-amber" style="margin-top:10px">
-    <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
-    <span><strong>Recuerda exportar el Excel antes de dar en Nuevo.</strong> Una vez iniciado el nuevo reporte, el borrador anterior se borra.</span>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-title"><i class="ti ti-dots"></i>Otras exportaciones (por si acaso)</div>
+    <div class="bottom-actions">
+      <button class="secondary-btn" onclick="exportarCSV()"><i class="ti ti-table-export"></i>.csv</button>
+      <button class="secondary-btn" onclick="exportarJSON()"><i class="ti ti-file-export"></i>.json</button>
+    </div>
   </div>
 </div>
 
@@ -485,6 +495,7 @@ const HORAS = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','
 const UNITS = ['','ML','M2','M3','UND','HH','GLB','VIAJE'];
 const HITOS_BASE = ['Llegada a frente de trabajo','Inicio de charla de seguridad','Término de charla de seguridad','Término de llenado de documentos','Firma de PETAR','Inicio de actividades','Término de jornada'];
 const STORAGE_KEY = 'rdc_v39';
+const POWER_AUTOMATE_URL = 'https://default01d952a2601948aa80282d9a49e865.6f.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/27/workflows/2e23dd0cd2934ec9931530f581697367/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ce3UCSsol-hu3HfbHw7Bpqf9eXbqMm4dT55tAlmj5l0';
 const CAUSAS_STANDBY = ['FACTOR SOCIAL','INSPECCIÓN DE SEGURIDAD','INTERFERENCIA CON OTRO CONTRATISTA','LIBERACIÓN','INGENIERÍA','CLIMÁTICO','ENCAPSULADOS'];
 const EQUIPOS_PERFORACION_FIJOS = ['Compresora','Perforador sobre patín','Estación Hidráulica','Inyectora','Martillo de mano'];
 const EQUIPOS_SOPORTE_FIJOS = ['Retroexcavadora','Camión grúa','Camión Baranda','Camioneta','Minibús'];
@@ -513,6 +524,7 @@ let metradosManuales = [];
 let metradosManualId = 0;
 let standbyRows = [];
 let standbyId = 0;
+let reporteEnviado = false;
 
 
 
@@ -1547,6 +1559,7 @@ function _totalPersonal() {
 
 function buildResumen() {
   rebuildControlItems();
+  _actualizarBotonNuevo();
   const meta = getMeta();
   const frente = document.getElementById('f-frente').value;
   const lista = PARTIDAS[frente] || [];
@@ -2007,16 +2020,16 @@ function _buildRdcRow() {
   headers.push('Fecha','Sector','Frente','Capataz','Supervisor');
   values.push(meta.fecha||'', meta.sector||'', meta.frente||'', meta.capataz||'', meta.supervisor||'');
 
-  headers.push('Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
-  values.push(tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
-
   headers.push('N° Capataz','N° Operarios','N° Oficiales','N° Peones','N° Vigías');
   values.push(Number(personal.capataz), Number(personal.operarios), Number(personal.oficiales), Number(personal.peones), Number(personal.vigias));
 
-  headers.push('Salida refrigerio','Retorno refrigerio');
-  values.push(almSalida||'', almRetorno||'');
+  headers.push('Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
+  values.push(tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
 
   currentHitos.forEach((h,i)=>{ headers.push(h); values.push(hitosVals[i]||''); });
+
+  headers.push('Salida refrigerio','Retorno refrigerio');
+  values.push(almSalida||'', almRetorno||'');
 
   const MAX_PARTIDAS = 16;
   for (let i=0; i<MAX_PARTIDAS; i++) {
@@ -2048,19 +2061,42 @@ function _buildRdcRow() {
   return { headers, values };
 }
 
-// Hoja/sección BITACORA: una fila por cada cuarto de hora con actividad registrada.
+// Hoja/sección BITACORA: al inicio la restricción de acceso (si hubo) y el registro de jornada
+// (hitos con hora), y luego todo lo registrado en el módulo Actividades (por cuarto de hora).
 function _buildBitacoraRows() {
   const meta = getMeta();
   const headers = ['Fecha','Frente','Hora','Actividad'];
   const items = [];
+
+  // 1. Restricción para llegar al frente (si la hubo)
+  const tuvoRestriccion = document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked;
+  if (tuvoRestriccion) {
+    const desc = (document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '').trim();
+    const desde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
+    const hasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    const horaTxt = (desde || hasta) ? `${desde||'—'} - ${hasta||'—'}` : '';
+    items.push([meta.fecha||'', meta.frente||'', horaTxt, 'Restricción para llegar al frente' + (desc ? ': ' + desc : '')]);
+  }
+
+  // 2. Registro de jornada (hitos con hora registrada)
+  currentHitos.forEach((h, i) => {
+    const el = document.getElementById('hito-'+i);
+    const hora = el ? el.value : '';
+    if (hora) items.push([meta.fecha||'', meta.frente||'', hora, h]);
+  });
+
+  // 3. Actividades registradas por cuarto de hora
+  const actividades = [];
   rows.forEach(r => {
     if (!r.hora) return;
     const labels = quarterLabels(r.hora);
     (r.descs || []).forEach((d, idx) => {
-      if (d && d.trim()) items.push([meta.fecha||'', meta.frente||'', labels[idx], d.trim()]);
+      if (d && d.trim()) actividades.push([meta.fecha||'', meta.frente||'', labels[idx], d.trim()]);
     });
   });
-  items.sort((a,b) => a[2].localeCompare(b[2]));
+  actividades.sort((a,b) => a[2].localeCompare(b[2]));
+  items.push(...actividades);
+
   return { headers, rows: items };
 }
 
@@ -2166,11 +2202,10 @@ function _buildReporteWspLineas() {
 }
 // ==================== FIN HELPERS COMPARTIDOS DE EXPORT ====================
 
-function exportarXLSX() {
+// Construye el libro de Excel completo (todas las hojas) y lo devuelve sin descargarlo.
+// Lo usan tanto exportarXLSX() (descarga local) como terminarYEnviar() (envío a Power Automate).
+function _construirWorkbookRDC() {
   rebuildControlItems();
-  const meta = getMeta();
-  const fecha = meta.fecha || 'sin-fecha';
-  const frente = meta.frente || 'frente';
 
   const { headers, values } = _buildRdcRow();
 
@@ -2303,6 +2338,20 @@ function exportarXLSX() {
     if(_ti>=0){if(!wb.Workbook.Sheets[_ti])wb.Workbook.Sheets[_ti]={};wb.Workbook.Sheets[_ti].Hidden=1;}
   }
 
+  return wb;
+}
+
+// Convierte el workbook a base64 (para enviarlo por POST) usando el propio conversor de SheetJS.
+function _workbookABase64(wb) {
+  return XLSX.write(wb, { bookType: 'xlsx', type: 'base64', cellStyles: true });
+}
+
+function exportarXLSX() {
+  const meta = getMeta();
+  const fecha = meta.fecha || 'sin-fecha';
+  const frente = meta.frente || 'frente';
+  const wb = _construirWorkbookRDC();
+
   try {
     XLSX.writeFile(wb, `RD_${frente}_${fecha}.xlsx`, { bookType: 'xlsx', type: 'binary', cellStyles: true });
   } catch(e) {
@@ -2317,6 +2366,76 @@ function exportarXLSX() {
   }
   showToast(`Excel descargado — ${controlItems.length} elem. en CONTROL 📊✅`);
 }
+
+// ==================== ENVÍO DEL REPORTE (Power Automate) ====================
+function _mostrarEstadoEnvio(tipo, mensajeHtml) {
+  const box = document.getElementById('envio-status');
+  if (!box) return;
+  const clasePorTipo = { cargando: 'alert-blue', exito: 'alert-green', error: 'alert-red' };
+  box.className = 'alert ' + (clasePorTipo[tipo] || 'alert-blue');
+  box.style.display = 'flex';
+  box.innerHTML = mensajeHtml;
+}
+
+function _actualizarBotonNuevo() {
+  const btn = document.getElementById('btn-nuevo');
+  if (!btn) return;
+  btn.disabled = !reporteEnviado;
+  btn.style.opacity = reporteEnviado ? '1' : '.5';
+  btn.style.cursor = reporteEnviado ? 'pointer' : 'not-allowed';
+  btn.title = reporteEnviado ? '' : 'Primero envía el reporte con "Terminado y Enviar"';
+}
+
+async function terminarYEnviar() {
+  const btn = document.getElementById('btn-enviar');
+  const meta = getMeta();
+  const frente = meta.frente || '';
+  const fecha = meta.fecha || '';
+
+  if (!frente || !fecha) {
+    showToast('Completa Fecha y Frente (pestaña Datos) antes de enviar ⚠️');
+    return;
+  }
+
+  btn.disabled = true;
+  const textoOriginalBtn = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Enviando reporte...';
+  _mostrarEstadoEnvio('cargando', '<i class="ti ti-loader-2" style="flex-shrink:0"></i><span>Enviando reporte, por favor espera...</span>');
+
+  try {
+    const wb = _construirWorkbookRDC();
+    const contenidoArchivo = _workbookABase64(wb);
+    const nombreArchivo = `${frente}_${fecha}.xlsx`;
+
+    const respuesta = await fetch(POWER_AUTOMATE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombreArchivo, contenidoArchivo, frente, fecha })
+    });
+
+    if (respuesta.status === 202) {
+      reporteEnviado = true;
+      saveDraft();
+      _actualizarBotonNuevo();
+      _mostrarEstadoEnvio('exito', '<i class="ti ti-circle-check" style="flex-shrink:0"></i><span>✅ Reporte enviado correctamente. Ya puedes descargar tu copia o iniciar un nuevo reporte.</span>');
+      showToast('Reporte enviado ✅');
+      btn.innerHTML = '<i class="ti ti-circle-check"></i> Reporte enviado';
+    } else {
+      throw new Error('Respuesta inesperada: HTTP ' + respuesta.status);
+    }
+  } catch (e) {
+    _mostrarEstadoEnvio('error', '<i class="ti ti-alert-triangle" style="flex-shrink:0"></i><span>❌ No se pudo enviar, verifica tu conexión e intenta de nuevo. Tus datos no se han perdido.</span>');
+    showToast('Error al enviar el reporte ❌');
+    btn.disabled = false;
+    btn.innerHTML = textoOriginalBtn;
+  }
+}
+
+function descargarMiCopia() {
+  exportarXLSX();
+}
+// ==================== FIN ENVÍO DEL REPORTE ====================
+
 function exportarCSV() {
   rebuildControlItems();
   const meta = getMeta();
@@ -2458,7 +2577,8 @@ function saveDraft() {
     redlineSupervisor: document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value : '',
     progRows, progRowId, progAdicRows, progAdicId,
     metradosManuales, metradosManualId,
-    standbyRows, standbyId
+    standbyRows, standbyId,
+    reporteEnviado
   };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
 }
@@ -2556,12 +2676,22 @@ function loadDraft() {
   standbyId = data.standbyId || (standbyRows.length ? Math.max(...standbyRows.map(r=>r.id)) + 1 : 0);
   renderStandbyRows();
 
+  reporteEnviado = !!data.reporteEnviado;
+  _actualizarBotonNuevo();
+  if (reporteEnviado) {
+    _mostrarEstadoEnvio('exito', '<i class="ti ti-circle-check" style="flex-shrink:0"></i><span>✅ Este reporte ya fue enviado correctamente.</span>');
+    const btnEnviar = document.getElementById('btn-enviar');
+    if (btnEnviar) { btnEnviar.disabled = true; btnEnviar.innerHTML = '<i class="ti ti-circle-check"></i> Reporte enviado'; }
+  }
+
   suppressSave = false;
 }
 function nuevoReporte() {
-  const confirmarExport = confirm('⚠️ IMPORTANTE: ¿Ya exportaste el Excel de este reporte?\n\nEs obligatorio exportar el Excel antes de iniciar un nuevo reporte.\n\nPresiona OK solo si ya exportaste. Presiona Cancelar para volver y exportar primero.');
-  if (!confirmarExport) return;
-  const confirmarBorrar = confirm('¿Confirmas que deseas borrar el borrador actual y empezar un reporte nuevo?');
+  if (!reporteEnviado) {
+    alert('🚫 Aún no has enviado este reporte.\n\nPresiona "Terminado y Enviar" en la pestaña Resumen y espera el mensaje de confirmación antes de iniciar un reporte nuevo.\n\nTranquilo, tus datos no se han perdido.');
+    return;
+  }
+  const confirmarBorrar = confirm('✅ Este reporte ya fue enviado.\n\n¿Confirmas que deseas borrar el borrador actual y empezar un reporte nuevo?');
   if (!confirmarBorrar) return;
   localStorage.removeItem(STORAGE_KEY);
   location.reload();
@@ -2580,6 +2710,7 @@ renderStandbyRows();
 renderProgRows();
 renderProgAdicRows();
 loadDraft();
+_actualizarBotonNuevo();
 
 </script>
 
