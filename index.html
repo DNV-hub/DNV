@@ -184,7 +184,32 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ═══════════════ PANTALLA DE INICIO ═══════════════ -->
+<div class="app" id="pantalla-inicio">
+  <header class="app-header">
+    <div class="app-logo">
+      <i class="ti ti-clipboard-list"></i>
+      <h1>Reporte Diario de Campo</h1>
+    </div>
+    <p>Sostenimiento y mantenimiento de talud ⛰️</p>
+  </header>
+  <div class="card">
+    <button class="nav-btn primary" style="padding:22px;font-size:16px" onclick="mostrarPantallaRaiz('rdc')">
+      <i class="ti ti-clipboard-list" style="font-size:22px"></i> Reporte Diario de Campo
+    </button>
+    <button class="nav-btn" style="padding:22px;font-size:16px;margin-top:10px" onclick="mostrarPantallaRaiz('fotos')">
+      <i class="ti ti-camera" style="font-size:22px"></i> Registro Fotográfico
+    </button>
+  </div>
+  <div class="alert alert-blue">
+    <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+    <span><strong>Reporte Diario de Campo:</strong> puedes llenarlo desde laptop o celular, como prefieras.<br><strong>Registro Fotográfico:</strong> se recomienda hacerlo desde el celular, para poder tomar/elegir fotos fácilmente.</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PANTALLA RDC (app original, sin cambios) ═══════════════ -->
+<div class="app" id="pantalla-rdc" style="display:none">
 
 <!-- HEADER -->
 <header class="app-header">
@@ -479,7 +504,100 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
   </div>
 </div>
 
-</div><!-- .app -->
+<button class="secondary-btn" style="width:100%;justify-content:center;margin-top:4px" onclick="mostrarPantallaRaiz('inicio')"><i class="ti ti-arrow-left"></i>Volver al menú principal</button>
+
+</div><!-- .app --><!-- fin #pantalla-rdc -->
+
+<!-- ═══════════════ PANTALLA REGISTRO FOTOGRÁFICO ═══════════════ -->
+<div class="app" id="pantalla-fotos" style="display:none">
+  <header class="app-header">
+    <div class="app-logo">
+      <i class="ti ti-camera"></i>
+      <h1>Registro Fotográfico</h1>
+    </div>
+    <p>Evidencia fotográfica de campo</p>
+  </header>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-id-badge"></i>Datos</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field"><label>Rol</label>
+        <select id="foto-rol" onchange="onCambioFotoRol()">
+          <option value="">— Seleccionar —</option>
+          <option value="Supervisor">Supervisor</option>
+          <option value="Capataz">Capataz</option>
+        </select>
+      </div>
+      <div class="field"><label>Nombre</label>
+        <select id="foto-nombre"><option value="">— Selecciona primero el Rol —</option></select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Frente</label>
+        <select id="foto-frente"><option value="">— Seleccionar —</option></select>
+      </div>
+      <div class="field"><label>Fecha</label><input type="date" id="foto-fecha"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-photo"></i>Fotos</div>
+    <div class="field" id="foto-tipo-wrap" style="margin-bottom:12px">
+      <label>Tipo de foto</label>
+      <select id="foto-tipo" onchange="onCambioTipoFoto()">
+        <option value="diarias">Fotos diarias</option>
+        <option value="redline">Redline</option>
+        <option value="sketch">Sketch de avance</option>
+      </select>
+      <p class="note">Fotos diarias siempre se envían. Redline y Sketch son opcionales y se envían junto con las diarias si tienen fotos.</p>
+    </div>
+
+    <div class="foto-tipo-panel" id="panel-foto-diarias">
+      <div class="alert alert-red" style="margin-bottom:10px">
+        <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
+        <span><strong>Obligatorio:</strong> una de las fotos diarias debe ser del <strong>inicio de la jornada</strong> (inicio de la charla de seguridad).</span>
+      </div>
+      <p class="note" style="margin-bottom:10px">Selecciona una o varias fotos desde tu galería.</p>
+      <input type="file" id="foto-input-diarias" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('diarias',event)">
+      <button class="add-btn" onclick="document.getElementById('foto-input-diarias').click()"><i class="ti ti-photo-plus"></i>Seleccionar fotos</button>
+      <p class="note" id="contador-diarias" style="margin-top:6px;font-weight:600"></p>
+      <div id="foto-thumbs-diarias" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+    </div>
+
+    <div class="foto-tipo-panel" id="panel-foto-redline" style="display:none">
+      <p class="note" style="margin-bottom:10px">Selecciona una o varias fotos desde tu galería.</p>
+      <input type="file" id="foto-input-redline" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('redline',event)">
+      <button class="add-btn" onclick="document.getElementById('foto-input-redline').click()"><i class="ti ti-photo-plus"></i>Seleccionar fotos</button>
+      <p class="note" id="contador-redline" style="margin-top:6px;font-weight:600"></p>
+      <div id="foto-thumbs-redline" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+    </div>
+
+    <div class="foto-tipo-panel" id="panel-foto-sketch" style="display:none">
+      <p class="note" style="margin-bottom:10px">Selecciona una o varias fotos desde tu galería.</p>
+      <input type="file" id="foto-input-sketch" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch',event)">
+      <button class="add-btn" onclick="document.getElementById('foto-input-sketch').click()"><i class="ti ti-photo-plus"></i>Seleccionar fotos</button>
+      <p class="note" id="contador-sketch" style="margin-top:6px;font-weight:600"></p>
+      <div id="foto-thumbs-sketch" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div class="card" id="foto-resumen-conteo">
+    <div class="card-title"><i class="ti ti-list-check"></i>Resumen antes de enviar</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+      <div style="display:flex;justify-content:space-between"><span><i class="ti ti-photo" style="color:var(--blue)"></i> Fotos diarias</span><strong id="resumen-conteo-diarias">0</strong></div>
+      <div id="resumen-conteo-redline-fila" style="display:flex;justify-content:space-between"><span><i class="ti ti-pencil-exclamation" style="color:var(--red)"></i> Redline</span><strong id="resumen-conteo-redline">0</strong></div>
+      <div id="resumen-conteo-sketch-fila" style="display:flex;justify-content:space-between"><span><i class="ti ti-ruler" style="color:var(--green)"></i> Sketch de avance</span><strong id="resumen-conteo-sketch">0</strong></div>
+    </div>
+  </div>
+
+  <div id="foto-status" style="display:none"></div>
+
+  <div class="bottom-actions">
+    <button class="nav-btn primary" id="btn-enviar-fotos" onclick="enviarFotos()"><i class="ti ti-send"></i>Enviar fotos</button>
+  </div>
+  <button class="secondary-btn" style="width:100%;justify-content:center;margin-top:10px" onclick="mostrarPantallaRaiz('inicio')"><i class="ti ti-arrow-left"></i>Volver al inicio</button>
+</div><!-- fin #pantalla-fotos -->
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2712,6 +2830,256 @@ renderProgAdicRows();
 loadDraft();
 _actualizarBotonNuevo();
 
+</script>
+
+<script>
+// ==================== PANTALLA DE INICIO / NAVEGACIÓN RAÍZ ====================
+function mostrarPantallaRaiz(nombre) {
+  document.getElementById('pantalla-inicio').style.display = nombre === 'inicio' ? '' : 'none';
+  document.getElementById('pantalla-rdc').style.display = nombre === 'rdc' ? '' : 'none';
+  document.getElementById('pantalla-fotos').style.display = nombre === 'fotos' ? '' : 'none';
+}
+
+// ==================== REGISTRO FOTOGRÁFICO ====================
+const POWER_AUTOMATE_FOTOS_URL = 'https://default01d952a2601948aa80282d9a49e865.6f.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/03/workflows/2a1230eb1f674732bf3b59251156e839/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DNpo8bFGcKVl1M0Eolyl3ov8KcayvYkmiDFe_vyd-oM';
+
+// Cada tipo de foto tiene su propia selección y su propia categoría/nombrado de archivo.
+const FOTO_TIPOS = {
+  diarias: { categoria: 'Fotos RDC', label: 'Fotos diarias' },
+  redline: { categoria: 'Redlines', label: 'Redline' },
+  sketch:  { categoria: 'Sketch', label: 'Sketch de avance' }
+};
+
+let fotosSeleccionadas = { diarias: [], redline: [], sketch: [] };
+let fotosSeleccionadasId = 0;
+
+function _hoyISO() {
+  const d = new Date();
+  const tz = d.getTimezoneOffset() * 60000;
+  return new Date(d - tz).toISOString().slice(0, 10);
+}
+
+function _initPantallaFotos() {
+  const selFrente = document.getElementById('foto-frente');
+  if (selFrente) {
+    selFrente.innerHTML = '<option value="">— Seleccionar —</option>' +
+      Object.keys(PARTIDAS).map(f => `<option>${f}</option>`).join('');
+  }
+  const elFecha = document.getElementById('foto-fecha');
+  if (elFecha && !elFecha.value) elFecha.value = _hoyISO();
+  _actualizarContadoresFotos();
+}
+
+// Rol y Nombre reutilizan las mismas listas SUPERVISORES/CAPATACES que ya usa el RDC.
+function onCambioFotoRol() {
+  const rol = document.getElementById('foto-rol').value;
+  const sel = document.getElementById('foto-nombre');
+  const lista = rol === 'Supervisor' ? SUPERVISORES : rol === 'Capataz' ? CAPATACES : [];
+  sel.innerHTML = lista.length
+    ? '<option value="">— Seleccionar —</option>' + lista.map(n => `<option>${n}</option>`).join('')
+    : '<option value="">— Selecciona primero el Rol —</option>';
+
+  // El Capataz solo registra Fotos diarias. Redline y Sketch quedan solo para el Supervisor.
+  const tipoWrap = document.getElementById('foto-tipo-wrap');
+  const selTipo = document.getElementById('foto-tipo');
+  if (rol === 'Capataz') {
+    selTipo.value = 'diarias';
+    onCambioTipoFoto();
+    if (tipoWrap) tipoWrap.style.display = 'none';
+  } else {
+    if (tipoWrap) tipoWrap.style.display = '';
+  }
+  _actualizarContadoresFotos();
+}
+
+function onCambioTipoFoto() {
+  const tipoFoto = document.getElementById('foto-tipo').value;
+  Object.keys(FOTO_TIPOS).forEach(t => {
+    const panel = document.getElementById('panel-foto-' + t);
+    if (panel) panel.style.display = (t === tipoFoto) ? '' : 'none';
+  });
+}
+
+function onFotosSeleccionadas(tipoFoto, event) {
+  const files = Array.from(event.target.files || []);
+  files.forEach(file => {
+    if (!file.type || !file.type.startsWith('image/')) return;
+    const id = fotosSeleccionadasId++;
+    const previewUrl = URL.createObjectURL(file);
+    fotosSeleccionadas[tipoFoto].push({ id, file, previewUrl });
+  });
+  event.target.value = '';
+  renderFotoThumbs(tipoFoto);
+}
+
+function quitarFoto(tipoFoto, id) {
+  const arr = fotosSeleccionadas[tipoFoto];
+  const f = arr.find(x => x.id === id);
+  if (f) URL.revokeObjectURL(f.previewUrl);
+  fotosSeleccionadas[tipoFoto] = arr.filter(x => x.id !== id);
+  renderFotoThumbs(tipoFoto);
+}
+
+function renderFotoThumbs(tipoFoto) {
+  const cont = document.getElementById('foto-thumbs-' + tipoFoto);
+  if (cont) {
+    const arr = fotosSeleccionadas[tipoFoto];
+    cont.innerHTML = !arr.length ? '' : arr.map(f => `
+      <div style="position:relative;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;aspect-ratio:1/1;background:var(--surface2)">
+        <img src="${f.previewUrl}" style="width:100%;height:100%;object-fit:cover;display:block">
+        <button onclick="quitarFoto('${tipoFoto}',${f.id})" aria-label="Quitar" style="position:absolute;top:4px;right:4px;background:rgba(17,24,39,.65);color:#fff;border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <i class="ti ti-x" style="font-size:14px"></i>
+        </button>
+      </div>
+    `).join('');
+  }
+  _actualizarContadoresFotos();
+}
+
+// Contador por tipo (dentro de cada panel) + resumen combinado antes de enviar.
+function _actualizarContadoresFotos() {
+  Object.keys(FOTO_TIPOS).forEach(t => {
+    const n = fotosSeleccionadas[t].length;
+    const elPanel = document.getElementById('contador-' + t);
+    if (elPanel) elPanel.textContent = n === 0 ? 'Sin fotos seleccionadas' : (n === 1 ? '1 foto seleccionada' : `${n} fotos seleccionadas`);
+    const elResumen = document.getElementById('resumen-conteo-' + t);
+    if (elResumen) elResumen.textContent = n;
+  });
+  const esCapataz = document.getElementById('foto-rol').value === 'Capataz';
+  const filaRedline = document.getElementById('resumen-conteo-redline-fila');
+  const filaSketch = document.getElementById('resumen-conteo-sketch-fila');
+  if (filaRedline) filaRedline.style.display = esCapataz ? 'none' : '';
+  if (filaSketch) filaSketch.style.display = esCapataz ? 'none' : '';
+}
+
+// Redimensiona a un ancho máximo y recodifica en JPEG con calidad reducida.
+function _comprimirImagen(file, maxAncho, calidad) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxAncho) { h = Math.round(h * (maxAncho / w)); w = maxAncho; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('No se pudo comprimir la imagen')); return; }
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('No se pudo leer la imagen comprimida'));
+        reader.readAsDataURL(blob);
+      }, 'image/jpeg', calidad);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer la imagen')); };
+    img.src = url;
+  });
+}
+
+function _mostrarEstadoFotos(tipo, mensajeHtml) {
+  const box = document.getElementById('foto-status');
+  if (!box) return;
+  const clasePorTipo = { cargando: 'alert-blue', exito: 'alert-green', error: 'alert-red' };
+  box.className = 'alert ' + (clasePorTipo[tipo] || 'alert-blue');
+  box.style.display = 'flex';
+  box.innerHTML = mensajeHtml;
+}
+
+function _nombreArchivoFoto(tipoFoto, idx, ctx) {
+  const { rol, nombreSinEspacios, frente, fecha } = ctx;
+  if (tipoFoto === 'redline') return `Redline_${frente}_${fecha}.jpg`;
+  if (tipoFoto === 'sketch')  return `Sketch_${frente}_${fecha}_${idx + 1}.jpg`;
+  return `${rol}_${nombreSinEspacios}_${idx + 1}.jpg`; // diarias
+}
+
+// Envía una categoría (diarias/redline/sketch). Devuelve true si tuvo éxito.
+// Si tiene éxito limpia esa selección; si falla, la deja intacta para reintentar.
+async function _enviarCategoriaFotos(tipoFoto, ctx, catIdx, catTotal) {
+  const seleccion = fotosSeleccionadas[tipoFoto];
+  const total = seleccion.length;
+  const categoria = FOTO_TIPOS[tipoFoto].categoria;
+  const etiqueta = FOTO_TIPOS[tipoFoto].label;
+  const prefijo = catTotal > 1 ? `[${etiqueta} — ${catIdx}/${catTotal}] ` : '';
+  const btn = document.getElementById('btn-enviar-fotos');
+
+  try {
+    const fotos = [];
+    for (let idx = 0; idx < total; idx++) {
+      const msg = `${prefijo}Enviando foto ${idx + 1} de ${total}...`;
+      btn.innerHTML = `<i class="ti ti-loader-2"></i> ${msg}`;
+      _mostrarEstadoFotos('cargando', `<i class="ti ti-loader-2" style="flex-shrink:0"></i><span>${msg}</span>`);
+      const dataUrl = await _comprimirImagen(seleccion[idx].file, 1600, 0.7);
+      const contenidoArchivo = dataUrl.split(',')[1];
+      const nombreArchivo = _nombreArchivoFoto(tipoFoto, idx, ctx);
+      fotos.push({ nombreArchivo, contenidoArchivo });
+    }
+
+    _mostrarEstadoFotos('cargando', `<i class="ti ti-loader-2" style="flex-shrink:0"></i><span>${prefijo}Enviando...</span>`);
+
+    const respuesta = await fetch(POWER_AUTOMATE_FOTOS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fecha: ctx.fecha, frente: ctx.frente, rol: ctx.rol, nombre: ctx.nombre, categoria, fotos })
+    });
+
+    if (respuesta.status !== 202) throw new Error('Respuesta inesperada: HTTP ' + respuesta.status);
+
+    seleccion.forEach(f => URL.revokeObjectURL(f.previewUrl));
+    fotosSeleccionadas[tipoFoto] = [];
+    renderFotoThumbs(tipoFoto);
+    return true;
+  } catch (e) {
+    _mostrarEstadoFotos('error', `<i class="ti ti-alert-triangle" style="flex-shrink:0"></i><span>❌ No se pudo enviar "${etiqueta}". Verifica tu conexión e intenta de nuevo — esas fotos siguen seleccionadas.</span>`);
+    showToast(`Error al enviar "${etiqueta}" ❌`);
+    return false;
+  }
+}
+
+// Envía Fotos diarias (obligatorio) y, si el Rol es Supervisor y tienen fotos, también
+// Redline y Sketch de avance — todo con un solo click, cada uno en su propio envío.
+async function enviarFotos() {
+  const rol = document.getElementById('foto-rol').value;
+  const nombre = document.getElementById('foto-nombre').value;
+  const frente = document.getElementById('foto-frente').value;
+  const fecha = document.getElementById('foto-fecha').value;
+
+  if (!rol || !nombre || !frente || !fecha) {
+    showToast('Completa Rol, Nombre, Frente y Fecha ⚠️');
+    return;
+  }
+  if (!fotosSeleccionadas.diarias.length) {
+    showToast('Las fotos diarias son obligatorias — selecciona al menos una ⚠️');
+    return;
+  }
+
+  const tiposAEnviar = ['diarias'];
+  if (rol === 'Supervisor') {
+    if (fotosSeleccionadas.redline.length) tiposAEnviar.push('redline');
+    if (fotosSeleccionadas.sketch.length) tiposAEnviar.push('sketch');
+  }
+
+  const ctx = { rol, nombre, nombreSinEspacios: nombre.replace(/\s+/g, ''), frente, fecha };
+  const btn = document.getElementById('btn-enviar-fotos');
+  const textoOriginal = btn.innerHTML;
+  btn.disabled = true;
+
+  let huboError = false;
+  for (let i = 0; i < tiposAEnviar.length; i++) {
+    const ok = await _enviarCategoriaFotos(tiposAEnviar[i], ctx, i + 1, tiposAEnviar.length);
+    if (!ok) { huboError = true; break; }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = textoOriginal;
+
+  if (!huboError) {
+    _mostrarEstadoFotos('exito', '<i class="ti ti-circle-check" style="flex-shrink:0"></i><span>✅ Fotos enviadas correctamente.</span>');
+    showToast('Fotos enviadas ✅');
+  }
+}
+
+_initPantallaFotos();
 </script>
 
 <script>
