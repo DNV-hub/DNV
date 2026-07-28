@@ -353,7 +353,7 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
     <div class="card-title"><i class="ti ti-clock-pause"></i>Stand By de la jornada</div>
     <div class="alert alert-blue">
       <i class="ti ti-info-circle" style="flex-shrink:0"></i>
-      <span>Registra los <strong>tiempos de paralización (Stand By)</strong> de la jornada: actividad afectada, horario y causa. El total se calcula automáticamente.</span>
+      <span>Registra los <strong>tiempos de paralización (Stand By)</strong> de la jornada: actividad afectada, horario y causa. El total se calcula automáticamente descontando el horario de almuerzo (pestaña Datos) si se cruza con el rango registrado.</span>
     </div>
     <div id="standby-rows"></div>
     <div id="standby-total" style="display:none;margin-top:10px;padding:11px 13px;background:var(--red-bg);border:1px solid #FCA5A5;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red-text)"></div>
@@ -484,14 +484,16 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
   </div>
   <div class="card" style="margin-top:12px">
     <div class="card-title"><i class="ti ti-send"></i>Enviar reporte a la oficina</div>
-    <p class="note" style="margin-bottom:10px">Cuando termines de llenar todo el reporte, presiona <strong>Terminado y Enviar</strong>. Recién cuando se confirme el envío podrás iniciar un reporte nuevo.</p>
+    <p class="note" style="margin-bottom:10px">Cuando termines de llenar todo el reporte, presiona <strong>Terminado y Enviar</strong>. Recién cuando se confirme el envío podrás iniciar un reporte nuevo. Si estás en una zona sin señal, descarga tu copia y usa <strong>"No tengo señal"</strong>: el reporte quedará en una cola y la app intentará enviarlo automáticamente en cuanto detecte conexión.</p>
     <div id="envio-status" style="display:none"></div>
+    <div id="pendientes-indicador" style="display:none;margin-bottom:10px"></div>
     <button class="nav-btn primary" id="btn-enviar" onclick="terminarYEnviar()"><i class="ti ti-send"></i>Terminado y Enviar</button>
     <button class="secondary-btn" id="btn-descargar-copia" onclick="descargarMiCopia()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-download"></i>Descargar mi copia</button>
+    <button class="secondary-btn" id="btn-sin-senal" onclick="marcarSinSenal()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-wifi-off"></i>No tengo señal — ya descargué mi copia</button>
     <button class="secondary-btn" id="btn-nuevo" onclick="nuevoReporte()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-refresh"></i>Nuevo</button>
     <div class="alert alert-amber" style="margin-top:10px">
       <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
-      <span><strong>"Nuevo" se habilita recién cuando el envío sea exitoso.</strong> Una vez iniciado el nuevo reporte, el borrador anterior se borra.</span>
+      <span><strong>"Nuevo" se habilita recién cuando el envío sea exitoso</strong>, o cuando confirmes que no tienes señal y ya descargaste tu copia. Una vez iniciado el nuevo reporte, el borrador anterior se borra.</span>
     </div>
   </div>
 
@@ -613,6 +615,7 @@ const HORAS = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','
 const UNITS = ['','ML','M2','M3','UND','HH','GLB','VIAJE'];
 const HITOS_BASE = ['Llegada a frente de trabajo','Inicio de charla de seguridad','Término de charla de seguridad','Término de llenado de documentos','Firma de PETAR','Inicio de actividades','Término de jornada'];
 const STORAGE_KEY = 'rdc_v39';
+const COLA_PENDIENTES_KEY = 'rdc_cola_pendientes_v1';
 const POWER_AUTOMATE_URL = 'https://default01d952a2601948aa80282d9a49e865.6f.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/27/workflows/2e23dd0cd2934ec9931530f581697367/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ce3UCSsol-hu3HfbHw7Bpqf9eXbqMm4dT55tAlmj5l0';
 const CAUSAS_STANDBY = ['FACTOR SOCIAL','INSPECCIÓN DE SEGURIDAD','INTERFERENCIA CON OTRO CONTRATISTA','LIBERACIÓN','INGENIERÍA','CLIMÁTICO','ENCAPSULADOS'];
 const EQUIPOS_PERFORACION_FIJOS = ['Compresora','Perforador sobre patín','Estación Hidráulica','Inyectora','Martillo de mano'];
@@ -643,6 +646,7 @@ let metradosManualId = 0;
 let standbyRows = [];
 let standbyId = 0;
 let reporteEnviado = false;
+let reporteFinalizadoSinEnvio = false;
 
 
 
@@ -1199,14 +1203,37 @@ function rebuildControlItems() {
 // ==================== MÓDULO STAND BY ====================
 // standbyRows[i] = { id, actividad, desde, hasta, causa }
 function _sbMinutos(desde, hasta) {
-  // Devuelve minutos entre desde y hasta (HH:MM). Si hasta < desde asume cruce de medianoche.
+  // Devuelve minutos entre desde y hasta (HH:MM), descontando el traslape con el horario
+  // de almuerzo (si está registrado). Si hasta < desde asume cruce de medianoche.
   if (!desde || !hasta) return null;
   const [h1,m1] = desde.split(':').map(Number);
   const [h2,m2] = hasta.split(':').map(Number);
   if ([h1,m1,h2,m2].some(v=>isNaN(v))) return null;
-  let diff = (h2*60+m2) - (h1*60+m1);
-  if (diff < 0) diff += 24*60;
-  return diff;
+  const inicio = h1*60+m1;
+  let fin = h2*60+m2;
+  if (fin < inicio) fin += 24*60;
+  let diff = fin - inicio;
+
+  // Descuenta el cruce con el refrigerio (almuerzo), si está registrado y no es 00:00
+  const almSalidaEl = document.getElementById('f-almuerzo-salida');
+  const almRetornoEl = document.getElementById('f-almuerzo-retorno');
+  const almSalida = almSalidaEl ? almSalidaEl.value : '';
+  const almRetorno = almRetornoEl ? almRetornoEl.value : '';
+  if (almSalida && almRetorno && almSalida !== '00:00' && almRetorno !== '00:00') {
+    const [ah1,am1] = almSalida.split(':').map(Number);
+    const [ah2,am2] = almRetorno.split(':').map(Number);
+    if (![ah1,am1,ah2,am2].some(v=>isNaN(v))) {
+      const almIni = ah1*60+am1;
+      let almFin = ah2*60+am2;
+      if (almFin < almIni) almFin += 24*60;
+      const solapeIni = Math.max(inicio, almIni);
+      const solapeFin = Math.min(fin, almFin);
+      const solape = Math.max(0, solapeFin - solapeIni);
+      diff -= solape;
+    }
+  }
+
+  return Math.max(0, diff);
 }
 function _sbFmt(min) {
   // 95 → "1h 35m" / 95 → también "01:35" para exports
@@ -1653,20 +1680,25 @@ function _standbyTotalCompleto() {
   return total;
 }
 
-function _tiempoEfectivo() {
-  // Tiempo efectivo = Término de jornada (hito 6) − Inicio de actividades (hito 5) − Stand By del módulo.
-  // La restricción de acceso NO se resta aquí: ocurre antes de "Inicio de actividades" (fuera de esta ventana),
-  // así que restarla de nuevo duplicaba el descuento y podía dejar el resultado en 0.
+function _tiempoEfectivoMin() {
+  // Minutos entre Inicio de actividades (hito 5) y Término de jornada (hito 6), menos el Stand By del módulo.
   const inicioEl  = document.getElementById('hito-5');
   const terminoEl = document.getElementById('hito-6');
   const inicio  = inicioEl  ? inicioEl.value  : '';
   const termino = terminoEl ? terminoEl.value : '';
-  if (!inicio || !termino) return '—';
+  if (!inicio || !termino) return null;
   const [hi, mi] = inicio.split(':').map(Number);
   const [ht, mt] = termino.split(':').map(Number);
   const totalMin = (ht * 60 + mt) - (hi * 60 + mi);
-  if (totalMin <= 0) return '—';
-  const efectMin = Math.max(0, totalMin - getStandbyTotalMin());
+  if (totalMin <= 0) return null;
+  return Math.max(0, totalMin - getStandbyTotalMin());
+}
+function _tiempoEfectivo() {
+  // Tiempo efectivo = Término de jornada (hito 6) − Inicio de actividades (hito 5) − Stand By del módulo.
+  // La restricción de acceso NO se resta aquí: ocurre antes de "Inicio de actividades" (fuera de esta ventana),
+  // así que restarla de nuevo duplicaba el descuento y podía dejar el resultado en 0.
+  const efectMin = _tiempoEfectivoMin();
+  if (efectMin === null) return '—';
   return _sbFmt(efectMin);
 }
 
@@ -2149,12 +2181,8 @@ function _buildRdcRow() {
   headers.push('Salida refrigerio','Retorno refrigerio');
   values.push(almSalida||'', almRetorno||'');
 
-  const MAX_PARTIDAS = 16;
-  for (let i=0; i<MAX_PARTIDAS; i++) {
-    headers.push(`Partida ${i+1} - EDT`,`Partida ${i+1} - Nombre`,`Partida ${i+1} - Metrado`,`Partida ${i+1} - UM`);
-    const p = partidasConAvance[i];
-    values.push(p?p.edt:'', p?p.nombre:'', p?p.met:'', p?p.um:'');
-  }
+  headers.push('N° de partidas con avance');
+  values.push(partidasConAvance.length);
 
   const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
   const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
@@ -2179,41 +2207,118 @@ function _buildRdcRow() {
   return { headers, values };
 }
 
+// Hoja/sección METRADOS: TODAS las partidas de la EDT del frente en formato vertical
+// (EDT / Partida / Unidad / Metrado), con 0 cuando no se registró metrado. Al final se
+// agregan las partidas manuales (no catalogadas) que sí tuvieron metrado.
+function _buildMetradosRows() {
+  const meta = getMeta();
+  const frente = meta.frente || '';
+  const headers = ['Fecha','Frente','EDT','Partida','Unidad','Metrado'];
+  const lista = PARTIDAS[frente] || [];
+
+  const rows = lista.map((p,i) => {
+    const v = partidaValores[i];
+    const met = (v && v.met !== '' && v.met !== undefined && v.met !== null) ? Number(v.met) : 0;
+    return [meta.fecha || '', meta.frente || '', p.e || '', p.n || '', p.u || '', met];
+  });
+
+  metradosManuales.forEach(m => {
+    rows.push([meta.fecha || '', meta.frente || '', '', m.nombre, m.um || '', Number(m.met)]);
+  });
+
+  return { headers, rows };
+}
+
+// Hoja/sección RECURSOS: mano de obra directa/indirecta, equipos y maquinaria, en formato
+// vertical (Item / Descripción / Cantidad / Horas), agrupado por bloques con encabezado de sección.
+function _buildRecursosRows() {
+  const meta = getMeta();
+  const headers = ['Item','Descripción','Cantidad','Horas'];
+  const rows = [];
+
+  const efectMin = _tiempoEfectivoMin();
+  const horas = efectMin !== null ? Math.round((efectMin/60)*100)/100 : '';
+
+  const addSeccion = (titulo, items) => {
+    const validos = items.filter(it => (Number(it.cant)||0) > 0);
+    if (validos.length === 0) return;
+    rows.push(['', titulo, '', '']);
+    validos.forEach((it, i) => rows.push([i+1, it.desc, Number(it.cant), horas]));
+  };
+
+  // Mano de obra directa
+  addSeccion('MANO DE OBRA DIRECTA', [
+    { desc:'Capataz',  cant: document.getElementById('f-capataces').value },
+    { desc:'Operario', cant: document.getElementById('f-operarios').value },
+    { desc:'Oficial',  cant: document.getElementById('f-oficiales').value },
+    { desc:'Peón',     cant: document.getElementById('f-peones').value }
+  ]);
+
+  // Mano de obra indirecta
+  const indirecta = [
+    { desc:'Vigía', cant: document.getElementById('f-vigias').value }
+  ];
+  if (meta.sector === 'A: 4000 - SALA ELECTRICA') {
+    indirecta.push(
+      { desc:'Ingeniero residente',    cant: document.getElementById('f-ing-residente')  ? document.getElementById('f-ing-residente').value  : 0 },
+      { desc:'Supervisor de campo',    cant: document.getElementById('f-sup-campo')      ? document.getElementById('f-sup-campo').value      : 0 },
+      { desc:'Ingeniero de seguridad', cant: document.getElementById('f-ing-seguridad')  ? document.getElementById('f-ing-seguridad').value  : 0 },
+      { desc:'Ingeniero de calidad',   cant: document.getElementById('f-ing-calidad')    ? document.getElementById('f-ing-calidad').value    : 0 },
+      { desc:'Topógrafo',              cant: document.getElementById('f-topografo')      ? document.getElementById('f-topografo').value      : 0 }
+    );
+  }
+  addSeccion('MANO DE OBRA INDIRECTA', indirecta);
+
+  // Equipos (perforación) y Maquinaria (soporte operativo)
+  const equipos = getEquiposRegistrados();
+  addSeccion('EQUIPOS', equipos.perforacion.map(e => ({ desc: e.nombre, cant: e.cantidad })));
+  addSeccion('MAQUINARIA', equipos.soporte.map(e => ({ desc: e.nombre, cant: e.cantidad })));
+
+  return { headers, rows };
+}
+
 // Hoja/sección BITACORA: al inicio la restricción de acceso (si hubo) y el registro de jornada
 // (hitos con hora), y luego todo lo registrado en el módulo Actividades (por cuarto de hora).
 function _buildBitacoraRows() {
   const meta = getMeta();
-  const headers = ['Fecha','Frente','Hora','Actividad'];
-  const items = [];
+  const headers = ['Fecha','Frente','Hora Inicio','Hora Fin','Actividad'];
+  const eventos = []; // {hora, actividad}
 
   // 1. Restricción para llegar al frente (si la hubo)
   const tuvoRestriccion = document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked;
   if (tuvoRestriccion) {
     const desc = (document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '').trim();
     const desde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
-    const hasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
-    const horaTxt = (desde || hasta) ? `${desde||'—'} - ${hasta||'—'}` : '';
-    items.push([meta.fecha||'', meta.frente||'', horaTxt, 'Restricción para llegar al frente' + (desc ? ': ' + desc : '')]);
+    if (desde) {
+      eventos.push({ hora: desde, actividad: 'Restricción para llegar al frente' + (desc ? ': ' + desc : '') });
+    }
   }
 
   // 2. Registro de jornada (hitos con hora registrada)
   currentHitos.forEach((h, i) => {
     const el = document.getElementById('hito-'+i);
     const hora = el ? el.value : '';
-    if (hora) items.push([meta.fecha||'', meta.frente||'', hora, h]);
+    if (hora) eventos.push({ hora, actividad: h });
   });
 
   // 3. Actividades registradas por cuarto de hora
-  const actividades = [];
   rows.forEach(r => {
     if (!r.hora) return;
     const labels = quarterLabels(r.hora);
     (r.descs || []).forEach((d, idx) => {
-      if (d && d.trim()) actividades.push([meta.fecha||'', meta.frente||'', labels[idx], d.trim()]);
+      if (d && d.trim()) eventos.push({ hora: labels[idx], actividad: d.trim() });
     });
   });
-  actividades.sort((a,b) => a[2].localeCompare(b[2]));
-  items.push(...actividades);
+
+  // Orden cronológico de todos los eventos del día
+  eventos.sort((a,b) => a.hora.localeCompare(b.hora));
+
+  // La hora fin de cada fila es la hora inicio de la siguiente (traslapada, sin huecos).
+  // La última fila queda sin hora fin (no hay evento posterior registrado).
+  const items = eventos.map((ev, i) => {
+    const horaFin = (i < eventos.length - 1) ? eventos[i+1].hora : '';
+    return [meta.fecha||'', meta.frente||'', ev.hora, horaFin, ev.actividad];
+  });
 
   return { headers, rows: items };
 }
@@ -2351,10 +2456,53 @@ function _construirWorkbookRDC() {
 
   XLSX.utils.book_append_sheet(wb, ws, 'RDC');
 
+  // ===== HOJA METRADOS (vertical: EDT / Partida / Unidad / Metrado) =====
+  const { headers: metHeaders, rows: metRows } = _buildMetradosRows();
+  const wsMET = XLSX.utils.aoa_to_sheet([metHeaders, ...metRows]);
+  wsMET['!cols'] = [{wch:12},{wch:16},{wch:12},{wch:55},{wch:10},{wch:12}];
+  metHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!wsMET[cellRef]) return;
+    wsMET[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: '0F766E' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, wsMET, 'METRADOS');
+
+  // ===== HOJA RECURSOS (vertical: Item / Descripción / Cantidad / Horas) =====
+  const { headers: rcHeaders, rows: rcRows } = _buildRecursosRows();
+  const wsRC = XLSX.utils.aoa_to_sheet([rcHeaders, ...rcRows]);
+  wsRC['!cols'] = [{wch:8},{wch:40},{wch:12},{wch:10}];
+  rcHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
+    if (!wsRC[cellRef]) return;
+    wsRC[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: '7C3AED' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+  // Estilo de las filas de encabezado de sección (Item vacío, texto en Descripción)
+  rcRows.forEach((row, r) => {
+    if (row[0] === '' && row[1] && row[2] === '' && row[3] === '') {
+      for (let c = 0; c < 4; c++) {
+        const cellRef = XLSX.utils.encode_cell({ r: r+1, c });
+        if (!wsRC[cellRef]) wsRC[cellRef] = { t:'s', v:'' };
+        wsRC[cellRef].s = {
+          font: { bold: true, color: { rgb: '5B21B6' }, name: 'Arial', sz: 10 },
+          fill: { fgColor: { rgb: 'EDE9FE' } }
+        };
+      }
+    }
+  });
+  XLSX.utils.book_append_sheet(wb, wsRC, 'RECURSOS');
+
   // ===== HOJA BITACORA =====
   const { headers: biHeaders, rows: biRows } = _buildBitacoraRows();
   const wsBI = XLSX.utils.aoa_to_sheet([biHeaders, ...biRows]);
-  wsBI['!cols'] = [{wch:12},{wch:16},{wch:8},{wch:60}];
+  wsBI['!cols'] = [{wch:12},{wch:16},{wch:10},{wch:10},{wch:60}];
   biHeaders.forEach((_,i)=>{
     const cellRef = XLSX.utils.encode_cell({r:0, c:i});
     if (!wsBI[cellRef]) return;
@@ -2365,7 +2513,7 @@ function _construirWorkbookRDC() {
     };
   });
   biRows.forEach((_, r) => {
-    const cellRef = XLSX.utils.encode_cell({ r: r+1, c: 3 });
+    const cellRef = XLSX.utils.encode_cell({ r: r+1, c: 4 });
     if (wsBI[cellRef]) wsBI[cellRef].s = { alignment: { wrapText: true, vertical: 'top' } };
   });
   XLSX.utils.book_append_sheet(wb, wsBI, 'BITACORA');
@@ -2498,10 +2646,11 @@ function _mostrarEstadoEnvio(tipo, mensajeHtml) {
 function _actualizarBotonNuevo() {
   const btn = document.getElementById('btn-nuevo');
   if (!btn) return;
-  btn.disabled = !reporteEnviado;
-  btn.style.opacity = reporteEnviado ? '1' : '.5';
-  btn.style.cursor = reporteEnviado ? 'pointer' : 'not-allowed';
-  btn.title = reporteEnviado ? '' : 'Primero envía el reporte con "Terminado y Enviar"';
+  const habilitado = reporteEnviado || reporteFinalizadoSinEnvio;
+  btn.disabled = !habilitado;
+  btn.style.opacity = habilitado ? '1' : '.5';
+  btn.style.cursor = habilitado ? 'pointer' : 'not-allowed';
+  btn.title = habilitado ? '' : 'Primero envía el reporte con "Terminado y Enviar", o usa "No tengo señal" si no hay conexión';
 }
 
 async function terminarYEnviar() {
@@ -2552,6 +2701,133 @@ async function terminarYEnviar() {
 function descargarMiCopia() {
   exportarXLSX();
 }
+
+// ==================== MODO SIN SEÑAL / COLA DE PENDIENTES ====================
+function _leerColaPendientes() {
+  try {
+    const data = JSON.parse(localStorage.getItem(COLA_PENDIENTES_KEY));
+    return Array.isArray(data) ? data : [];
+  } catch(e) { return []; }
+}
+function _guardarColaPendientes(arr) {
+  try { localStorage.setItem(COLA_PENDIENTES_KEY, JSON.stringify(arr)); } catch(e) {}
+}
+function _actualizarIndicadorPendientes() {
+  const box = document.getElementById('pendientes-indicador');
+  if (!box) return;
+  const cola = _leerColaPendientes();
+  if (cola.length === 0) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="alert alert-amber">
+      <i class="ti ti-cloud-off" style="flex-shrink:0"></i>
+      <span style="flex:1"><strong>${cola.length} reporte${cola.length>1?'s':''} pendiente${cola.length>1?'s':''} de envío</strong> (sin señal). Se reintentará automáticamente al detectar conexión.
+        <br><button class="secondary-btn" style="margin-top:6px;padding:6px 10px;font-size:12px" onclick="_reintentarColaPendientes(false)"><i class="ti ti-refresh"></i> Reintentar ahora</button>
+      </span>
+    </div>`;
+}
+
+// Marca el reporte actual como finalizado SIN confirmación de envío (por falta de señal),
+// lo agrega a la cola de pendientes y habilita "Nuevo reporte". Exige confirmación explícita.
+async function marcarSinSenal() {
+  const meta = getMeta();
+  const frente = meta.frente || '';
+  const fecha = meta.fecha || '';
+
+  if (!frente || !fecha) {
+    showToast('Completa Fecha y Frente (pestaña Datos) antes de continuar ⚠️');
+    return;
+  }
+
+  const confirmar = confirm(
+    '📵 MODO SIN SEÑAL\n\n' +
+    '¿Ya descargaste tu copia (Excel) de este reporte?\n\n' +
+    'Al confirmar:\n' +
+    '• El reporte quedará guardado en una cola de pendientes.\n' +
+    '• La app intentará enviarlo automáticamente en cuanto detecte conexión (al abrir la app o al recuperar señal).\n' +
+    '• Se habilitará el botón "Nuevo" para que puedas iniciar el siguiente reporte.\n\n' +
+    '⚠️ Es tu responsabilidad conservar la copia descargada hasta que se confirme el envío.\n\n' +
+    '¿Confirmas que ya descargaste tu copia y deseas continuar?'
+  );
+  if (!confirmar) return;
+
+  // Descarga de respaldo automática, por si acaso
+  exportarXLSX();
+
+  const wb = _construirWorkbookRDC();
+  const contenidoArchivo = _workbookABase64(wb);
+  const nombreArchivo = `${frente}_${fecha}.xlsx`;
+
+  const cola = _leerColaPendientes();
+  cola.push({
+    id: `${frente}_${fecha}_${Date.now()}`,
+    nombreArchivo, contenidoArchivo, frente, fecha,
+    creado: new Date().toISOString()
+  });
+  _guardarColaPendientes(cola);
+  _actualizarIndicadorPendientes();
+
+  reporteFinalizadoSinEnvio = true;
+  saveDraft();
+  _actualizarBotonNuevo();
+
+  _mostrarEstadoEnvio('cargando', '<i class="ti ti-cloud-off" style="flex-shrink:0"></i><span>📵 Guardado sin conexión. Se intentará enviar automáticamente en cuanto haya señal. Ya puedes iniciar un nuevo reporte.</span>');
+  showToast('Guardado sin conexión — se reintentará el envío 📵');
+
+  // Intento silencioso inmediato, por si en realidad sí hay señal
+  _reintentarColaPendientes(true);
+}
+
+// Reintenta enviar todos los reportes en la cola de pendientes. silencioso=true no muestra
+// toasts de fallo (se usa en los intentos automáticos al abrir la app o recuperar conexión).
+async function _reintentarColaPendientes(silencioso) {
+  let cola = _leerColaPendientes();
+  if (cola.length === 0) return;
+
+  const meta = getMeta();
+  const enviados = [];
+  const restantes = [];
+
+  for (const item of cola) {
+    try {
+      const respuesta = await fetch(POWER_AUTOMATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombreArchivo: item.nombreArchivo, contenidoArchivo: item.contenidoArchivo, frente: item.frente, fecha: item.fecha })
+      });
+      if (respuesta.status === 202) {
+        enviados.push(item);
+      } else {
+        restantes.push(item);
+      }
+    } catch(e) {
+      restantes.push(item);
+    }
+  }
+
+  _guardarColaPendientes(restantes);
+  _actualizarIndicadorPendientes();
+
+  if (enviados.length > 0) {
+    showToast(`${enviados.length} reporte${enviados.length>1?'s':''} pendiente${enviados.length>1?'s':''} enviado${enviados.length>1?'s':''} ✅`);
+    // Si el reporte que se está viendo ahora mismo era uno de los enviados, actualiza su estado
+    const actual = enviados.find(e => e.frente === meta.frente && e.fecha === meta.fecha);
+    if (actual && reporteFinalizadoSinEnvio) {
+      reporteEnviado = true;
+      reporteFinalizadoSinEnvio = false;
+      saveDraft();
+      _actualizarBotonNuevo();
+      _mostrarEstadoEnvio('exito', '<i class="ti ti-circle-check" style="flex-shrink:0"></i><span>✅ Este reporte, que estaba pendiente por falta de señal, ya fue enviado correctamente.</span>');
+    }
+  } else if (!silencioso) {
+    showToast('Sigue sin haber conexión, se reintentará más tarde ❌');
+  }
+}
+window.addEventListener('online', () => _reintentarColaPendientes(true));
 // ==================== FIN ENVÍO DEL REPORTE ====================
 
 function exportarCSV() {
@@ -2570,6 +2846,12 @@ function exportarCSV() {
 
   const rdc = _buildRdcRow();
   addSection('RDC', rdc.headers, [rdc.values]);
+
+  const metrados = _buildMetradosRows();
+  addSection('METRADOS', metrados.headers, metrados.rows);
+
+  const recursos = _buildRecursosRows();
+  addSection('RECURSOS', recursos.headers, recursos.rows);
 
   const bitacora = _buildBitacoraRows();
   addSection('BITACORA', bitacora.headers, bitacora.rows);
@@ -2696,7 +2978,8 @@ function saveDraft() {
     progRows, progRowId, progAdicRows, progAdicId,
     metradosManuales, metradosManualId,
     standbyRows, standbyId,
-    reporteEnviado
+    reporteEnviado,
+    reporteFinalizadoSinEnvio
   };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
 }
@@ -2795,21 +3078,27 @@ function loadDraft() {
   renderStandbyRows();
 
   reporteEnviado = !!data.reporteEnviado;
+  reporteFinalizadoSinEnvio = !!data.reporteFinalizadoSinEnvio;
   _actualizarBotonNuevo();
   if (reporteEnviado) {
     _mostrarEstadoEnvio('exito', '<i class="ti ti-circle-check" style="flex-shrink:0"></i><span>✅ Este reporte ya fue enviado correctamente.</span>');
     const btnEnviar = document.getElementById('btn-enviar');
     if (btnEnviar) { btnEnviar.disabled = true; btnEnviar.innerHTML = '<i class="ti ti-circle-check"></i> Reporte enviado'; }
+  } else if (reporteFinalizadoSinEnvio) {
+    _mostrarEstadoEnvio('cargando', '<i class="ti ti-cloud-off" style="flex-shrink:0"></i><span>📵 Este reporte quedó pendiente de envío por falta de señal. Se reintentará automáticamente.</span>');
   }
 
   suppressSave = false;
 }
 function nuevoReporte() {
-  if (!reporteEnviado) {
-    alert('🚫 Aún no has enviado este reporte.\n\nPresiona "Terminado y Enviar" en la pestaña Resumen y espera el mensaje de confirmación antes de iniciar un reporte nuevo.\n\nTranquilo, tus datos no se han perdido.');
+  if (!reporteEnviado && !reporteFinalizadoSinEnvio) {
+    alert('🚫 Aún no has enviado este reporte.\n\nPresiona "Terminado y Enviar" en la pestaña Resumen y espera el mensaje de confirmación antes de iniciar un reporte nuevo.\n\nSi no tienes señal, usa el botón "No tengo señal — ya descargué mi copia".\n\nTranquilo, tus datos no se han perdido.');
     return;
   }
-  const confirmarBorrar = confirm('✅ Este reporte ya fue enviado.\n\n¿Confirmas que deseas borrar el borrador actual y empezar un reporte nuevo?');
+  const mensaje = reporteEnviado
+    ? '✅ Este reporte ya fue enviado.\n\n¿Confirmas que deseas borrar el borrador actual y empezar un reporte nuevo?'
+    : '📵 Este reporte quedó marcado como pendiente de envío por falta de señal (se reintentará automáticamente).\n\n¿Ya descargaste tu copia? ¿Confirmas que deseas borrar el borrador actual y empezar un reporte nuevo?';
+  const confirmarBorrar = confirm(mensaje);
   if (!confirmarBorrar) return;
   localStorage.removeItem(STORAGE_KEY);
   location.reload();
@@ -2829,6 +3118,8 @@ renderProgRows();
 renderProgAdicRows();
 loadDraft();
 _actualizarBotonNuevo();
+_actualizarIndicadorPendientes();
+_reintentarColaPendientes(true);
 
 </script>
 
