@@ -620,6 +620,7 @@ const POWER_AUTOMATE_URL = 'https://default01d952a2601948aa80282d9a49e865.6f.env
 const CAUSAS_STANDBY = ['FACTOR SOCIAL','INSPECCIÓN DE SEGURIDAD','INTERFERENCIA CON OTRO CONTRATISTA','LIBERACIÓN','INGENIERÍA','CLIMÁTICO','ENCAPSULADOS'];
 const EQUIPOS_PERFORACION_FIJOS = ['Compresora','Perforador sobre patín','Estación Hidráulica','Inyectora','Martillo de mano'];
 const EQUIPOS_SOPORTE_FIJOS = ['Retroexcavadora','Camión grúa','Camión Baranda','Camioneta','Minibús'];
+const UBICACIONES_PERNO = ['Cabecera','Cuerpo','Pie','Lateral','Viento'];
 
 // ==================== ESTADO ====================
 let rows = [];
@@ -737,14 +738,21 @@ function _buildForm(p, i, cat, tipoML) {
       <div id="perfiny-form-${i}">
         <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
           ${tipoSelect}
-          <div class="field" style="flex:1;min-width:90px"><label style="font-size:11px">Código<\/label>
-            <input type="text" id="pv-cod-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+          <div class="field" style="min-width:80px"><label style="font-size:11px">Código inicio<\/label>
+            <input type="text" id="pv-cod-desde-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-cod-hasta-${i}').focus()">
+          <\/div>
+          <div class="field" style="min-width:80px"><label style="font-size:11px">Código fin<\/label>
+            <input type="text" id="pv-cod-hasta-${i}" placeholder="Ej: P20 (opcional)" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
           <\/div>
           <div class="field" style="min-width:90px"><label style="font-size:11px" id="pv-ml-label-${i}">ML / perno<\/label>
-            <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+            <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')document.getElementById('pv-ubic-${i}').focus()">
+          <\/div>
+          <div class="field" style="min-width:110px"><label style="font-size:11px">Ubicación<\/label>
+            <select id="pv-ubic-${i}">${UBICACIONES_PERNO.map(u=>'<option>'+u+'<\/option>').join('')}<\/select>
           <\/div>
           <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
         <\/div>
+        <p class="note" style="margin-top:6px;font-size:11px">Si registras un rango (ej. inicio P01 → fin P20), se crea una fila por cada código correlativo, todas con el mismo ML y ubicación. Si solo llenas "Código inicio", se agrega un único perno.<\/p>
       <\/div>
       ${_buildItemsTable((partidaValores[i]&&partidaValores[i].items?partidaValores[i].items:[]).map(it=>({...it,_partidaIdx:i})),p,'perf-iny','perforacion')}
     `;
@@ -809,14 +817,21 @@ function _buildForm(p, i, cat, tipoML) {
   if (cat === 'ml' && tipoML === 'inyeccion') {
     return `
       <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
-        <div class="field" style="flex:1;min-width:100px"><label>Código perno<\/label>
-          <input type="text" id="pv-cod-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+        <div class="field" style="min-width:80px"><label>Código inicio<\/label>
+          <input type="text" id="pv-cod-desde-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-cod-hasta-${i}').focus()">
+        <\/div>
+        <div class="field" style="min-width:80px"><label>Código fin<\/label>
+          <input type="text" id="pv-cod-hasta-${i}" placeholder="Ej: P20 (opcional)" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
         <\/div>
         <div class="field" style="min-width:90px"><label>ML / perno<\/label>
-          <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+          <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')document.getElementById('pv-ubic-${i}').focus()">
+        <\/div>
+        <div class="field" style="min-width:110px"><label>Ubicación<\/label>
+          <select id="pv-ubic-${i}">${UBICACIONES_PERNO.map(u=>'<option>'+u+'<\/option>').join('')}<\/select>
         <\/div>
         <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
-      <\/div>`;
+      <\/div>
+      <p class="note" style="margin-top:6px;font-size:11px">Rango opcional: inicio P01 → fin P20 genera una fila por cada perno correlativo.<\/p>`;
   }
 
   // perforacion (default ML)
@@ -828,14 +843,21 @@ function _buildForm(p, i, cat, tipoML) {
   return `
     <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
       ${tipoSelect}
-      <div class="field" style="flex:1;min-width:90px"><label>Código<\/label>
-        <input type="text" id="pv-cod-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
+      <div class="field" style="min-width:80px"><label>Código inicio<\/label>
+        <input type="text" id="pv-cod-desde-${i}" placeholder="Ej: P01" onkeydown="if(event.key==='Enter')document.getElementById('pv-cod-hasta-${i}').focus()">
+      <\/div>
+      <div class="field" style="min-width:80px"><label>Código fin<\/label>
+        <input type="text" id="pv-cod-hasta-${i}" placeholder="Ej: P20 (opcional)" onkeydown="if(event.key==='Enter')document.getElementById('pv-ml-${i}').focus()">
       <\/div>
       <div class="field" style="min-width:90px"><label>ML / perno<\/label>
-        <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')_addItem(${i})">
+        <input type="number" min="0" step="0.01" id="pv-ml-${i}" placeholder="0.00" onkeydown="if(event.key==='Enter')document.getElementById('pv-ubic-${i}').focus()">
+      <\/div>
+      <div class="field" style="min-width:110px"><label>Ubicación<\/label>
+        <select id="pv-ubic-${i}">${UBICACIONES_PERNO.map(u=>'<option>'+u+'<\/option>').join('')}<\/select>
       <\/div>
       <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
-    <\/div>`;
+    <\/div>
+    <p class="note" style="margin-top:6px;font-size:11px">Rango opcional: inicio P01 → fin P20 genera una fila por cada perno correlativo.<\/p>`;
 }
 
 // ── Construir tabla de items registrados ───────────────────────────────────
@@ -850,7 +872,7 @@ function _buildItemsTable(items, p, cat, tipoML) {
   if (isPT) thead += '<th>Código perno<\/th><th style="text-align:right">UND<\/th>';
   else if (isCable) thead += '<th>Tipo<\/th><th>Tramo<\/th><th style="text-align:right">ML<\/th>';
   else if (isMalla) thead += '<th>Código<\/th><th>Ancho<\/th><th>Largo<\/th><th style="text-align:right">M2<\/th>';
-  else thead += '<th>Tipo<\/th><th>Código<\/th><th style="text-align:right">ML<\/th>';
+  else thead += '<th>Tipo<\/th><th>Código<\/th><th>Ubicación<\/th><th style="text-align:right">ML<\/th>';
   thead += '<th style="width:28px"><\/th><\/tr>';
 
   let tbody = '';
@@ -859,13 +881,13 @@ function _buildItemsTable(items, p, cat, tipoML) {
     if (isPT) tbody += `<td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td style="text-align:right">1<\/td>`;
     else if (isCable) tbody += `<td>${it.tipo||'—'}<\/td><td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
     else if (isMalla) tbody += `<td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td>${it.ancho||'—'}<\/td><td>${it.largo||'—'}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
-    else tbody += `<td>${it.tipo||'—'}<\/td><td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
+    else tbody += `<td>${it.tipo||'—'}<\/td><td style="font-family:ui-monospace,monospace;font-weight:600">${it.codigo}<\/td><td>${it.ubicacion||'—'}<\/td><td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`;
     tbody += `<td><button class="del-btn" onclick="_removeItem(${it._partidaIdx},${it.id})" style="font-size:13px"><i class="ti ti-x"><\/i><\/button><\/td><\/tr>`;
   });
 
   const totalVal = isPT ? items.length : items.reduce((s,it)=>s+(Number(it.cantidad)||0),0);
   const totalFormatted = Math.round(totalVal*1000)/1000;
-  const totalCols = isPT ? 1 : isCable ? 2 : isMalla ? 3 : 2;
+  const totalCols = isPT ? 1 : isCable ? 2 : isMalla ? 3 : 3;
   const totalUM = isPT ? 'UND' : (isMalla ? 'M2' : 'ML');
   const totalRow = `<tr class="total-row">
     <td colspan="${totalCols}">TOTAL AUTOMÁTICO<\/td>
@@ -1014,6 +1036,27 @@ function _previewArea(i) {
 }
 
 const _perfInyMode = {}; // {partidaIdx: 'perforacion'|'inyeccion'}
+
+// Expande un rango de códigos correlativos (ej. "P01" -> "P20") en la lista completa de códigos.
+// Ambos códigos deben compartir el mismo prefijo y terminar en un número. Devuelve null si no
+// se puede interpretar como rango válido. Conserva el ancho de ceros a la izquierda del código de inicio.
+function _parsearRangoCodigos(desde, hasta) {
+  const re = /^(.*?)(\d+)\s*$/;
+  const mD = (desde||'').trim().match(re);
+  const mH = (hasta||'').trim().match(re);
+  if (!mD || !mH) return null;
+  const [, prefD, numD] = mD;
+  const [, prefH, numH] = mH;
+  if (prefD !== prefH) return null;
+  const n1 = parseInt(numD, 10);
+  const n2 = parseInt(numH, 10);
+  if (isNaN(n1) || isNaN(n2) || n2 < n1) return null;
+  if ((n2 - n1) > 500) return null; // límite de seguridad ante errores de tipeo
+  const ancho = numD.length;
+  const codigos = [];
+  for (let n = n1; n <= n2; n++) codigos.push(prefD + String(n).padStart(ancho, '0'));
+  return codigos;
+}
 function _setPerfInyMode(i, mode) {
   _perfInyMode[i] = mode;
   const btnP = document.getElementById('btn-perf-'+i);
@@ -1036,9 +1079,7 @@ function _addItem(i) {
   const meta   = getMeta();
   _ensurePV(i);
 
-  let item = {
-    id: _controlId++,
-    _partidaIdx: i,
+  const base = {
     fecha:  meta.fecha||'',
     frente: meta.frente||'',
     sistema: p.sis||'',
@@ -1046,14 +1087,16 @@ function _addItem(i) {
     sub:     p.s||'',
     elemento:'', tipo:'', actividad:'',
     codigo:'', cantidad:0, unidad: p.u,
-    ancho:'', largo:''
+    ancho:'', largo:'', ubicacion:''
   };
+
+  let itemsToAdd = [];
 
   if (cat === 'pulltest') {
     const el = document.getElementById('pv-pt-'+i);
     const cod = el ? el.value.trim() : '';
     if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
-    item = {...item, elemento:'Perno', tipo:'Ensayo', actividad:'Pull Test', codigo:cod, cantidad:1, unidad:'UND'};
+    itemsToAdd = [{ ...base, id:_controlId++, _partidaIdx:i, elemento:'Perno', tipo:'Ensayo', actividad:'Pull Test', codigo:cod, cantidad:1, unidad:'UND' }];
     if(el) el.value='';
     if(el) el.focus();
   }
@@ -1064,10 +1107,10 @@ function _addItem(i) {
     const cod   = codEl   ? codEl.value.trim() : '';
     const ancho = anchoEl ? parseFloat(anchoEl.value)||0 : 0;
     const largo = largoEl ? parseFloat(largoEl.value)||0 : 0;
-    if (!cod)         { showToast('Ingresa el código de malla ⚠️'); return; }
+    if (!cod)          { showToast('Ingresa el código de malla ⚠️'); return; }
     if (!ancho||!largo){ showToast('Ingresa ancho y largo ⚠️'); return; }
     const area = Math.round(ancho*largo*1000)/1000;
-    item = {...item, elemento:'Malla', tipo: p.t || 'Malla', actividad:'Instalación', codigo:cod, cantidad:area, unidad:'M2', ancho, largo};
+    itemsToAdd = [{ ...base, id:_controlId++, _partidaIdx:i, elemento:'Malla', tipo: p.t || 'Malla', actividad:'Instalación', codigo:cod, cantidad:area, unidad:'M2', ancho, largo }];
     if(codEl) codEl.value='';
     if(anchoEl) anchoEl.value='';
     if(largoEl) largoEl.value='';
@@ -1086,56 +1129,78 @@ function _addItem(i) {
     const tipo  = tipoEl  ? tipoEl.value : '';
     if (!desde||!hasta){ showToast('Ingresa punto inicio y fin ⚠️'); return; }
     if (!ml)           { showToast('Ingresa los ML de cable ⚠️'); return; }
-    item = {...item, elemento:'Cable', tipo: tipo||'Cable Bolt', actividad:'Instalación', codigo: desde+' - '+hasta, cantidad:ml, unidad:'ML'};
+    itemsToAdd = [{ ...base, id:_controlId++, _partidaIdx:i, elemento:'Cable', tipo: tipo||'Cable Bolt', actividad:'Instalación', codigo: desde+' - '+hasta, cantidad:ml, unidad:'ML' }];
     if(desdeEl) desdeEl.value='';
     if(hastaEl) hastaEl.value='';
     if(mlEl)    mlEl.value='';
     if(desdeEl) desdeEl.focus();
   }
   else if (cat === 'ml' && tipoML === 'inyeccion') {
-    const codEl = document.getElementById('pv-cod-'+i);
-    const mlEl  = document.getElementById('pv-ml-'+i);
-    const cod   = codEl ? codEl.value.trim() : '';
+    const desdeEl = document.getElementById('pv-cod-desde-'+i);
+    const hastaEl = document.getElementById('pv-cod-hasta-'+i);
+    const mlEl    = document.getElementById('pv-ml-'+i);
+    const ubicEl  = document.getElementById('pv-ubic-'+i);
+    const desde = desdeEl ? desdeEl.value.trim() : '';
+    const hasta = hastaEl ? hastaEl.value.trim() : '';
     const ml    = mlEl  ? parseFloat(mlEl.value)||0 : 0;
-    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
-    if (!ml)  { showToast('Ingresa los ML ⚠️'); return; }
-    item = {...item, elemento:'Perno', tipo:'Inyección', actividad:'Inyección', codigo:cod, cantidad:ml, unidad:'ML'};
-    if(codEl) codEl.value='';
-    if(mlEl)  mlEl.value='';
-    if(codEl) codEl.focus();
+    const ubicacion = ubicEl ? ubicEl.value : '';
+    if (!desde) { showToast('Ingresa el código de inicio ⚠️'); return; }
+    if (!ml)    { showToast('Ingresa los ML ⚠️'); return; }
+    const codigos = _parsearRangoCodigos(desde, hasta || desde);
+    if (!codigos) { showToast('Revisa el rango de códigos (ej. P01 → P20) ⚠️'); return; }
+    itemsToAdd = codigos.map(cod => ({ ...base, id:_controlId++, _partidaIdx:i, elemento:'Perno', tipo:'Inyección', actividad:'Inyección', codigo:cod, cantidad:ml, unidad:'ML', ubicacion }));
+    if(desdeEl) desdeEl.value='';
+    if(hastaEl) hastaEl.value='';
+    if(mlEl)    mlEl.value='';
+    if(desdeEl) desdeEl.focus();
   }
   else if (cat === 'perf-iny') {
-    const mode   = _perfInyMode[i] || 'perforacion';
-    const tipoEl = document.getElementById('pv-tipo-'+i);
-    const codEl  = document.getElementById('pv-cod-'+i);
-    const mlEl   = document.getElementById('pv-ml-'+i);
-    const tipo   = tipoEl ? tipoEl.value : 'BAHE';
-    const cod    = codEl  ? codEl.value.trim() : '';
-    const ml     = mlEl   ? parseFloat(mlEl.value)||0 : 0;
-    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
-    if (!ml)  { showToast('Ingresa los ML ⚠️'); return; }
+    const mode    = _perfInyMode[i] || 'perforacion';
+    const tipoEl  = document.getElementById('pv-tipo-'+i);
+    const desdeEl = document.getElementById('pv-cod-desde-'+i);
+    const hastaEl = document.getElementById('pv-cod-hasta-'+i);
+    const mlEl    = document.getElementById('pv-ml-'+i);
+    const ubicEl  = document.getElementById('pv-ubic-'+i);
+    const tipo    = tipoEl ? tipoEl.value : 'BAHE';
+    const desde   = desdeEl ? desdeEl.value.trim() : '';
+    const hasta   = hastaEl ? hastaEl.value.trim() : '';
+    const ml      = mlEl   ? parseFloat(mlEl.value)||0 : 0;
+    const ubicacion = ubicEl ? ubicEl.value : '';
+    if (!desde) { showToast('Ingresa el código de inicio ⚠️'); return; }
+    if (!ml)    { showToast('Ingresa los ML ⚠️'); return; }
+    const codigos = _parsearRangoCodigos(desde, hasta || desde);
+    if (!codigos) { showToast('Revisa el rango de códigos (ej. P01 → P20) ⚠️'); return; }
     const esPerf = mode === 'perforacion';
-    item = {...item, elemento:'Perno', tipo: esPerf?tipo:'Inyección', actividad: esPerf?'Perforación':'Inyección', codigo:cod, cantidad:ml, unidad:'ML'};
-    if(codEl) codEl.value='';
-    if(mlEl)  mlEl.value='';
-    if(codEl) codEl.focus();
+    itemsToAdd = codigos.map(cod => ({ ...base, id:_controlId++, _partidaIdx:i, elemento:'Perno', tipo: esPerf?tipo:'Inyección', actividad: esPerf?'Perforación':'Inyección', codigo:cod, cantidad:ml, unidad:'ML', ubicacion }));
+    if(desdeEl) desdeEl.value='';
+    if(hastaEl) hastaEl.value='';
+    if(mlEl)    mlEl.value='';
+    if(desdeEl) desdeEl.focus();
   }
-  else { // perforacion
-    const tipoEl = document.getElementById('pv-tipo-'+i);
-    const codEl  = document.getElementById('pv-cod-'+i);
-    const mlEl   = document.getElementById('pv-ml-'+i);
-    const tipo   = tipoEl ? tipoEl.value : '';
-    const cod    = codEl  ? codEl.value.trim() : '';
-    const ml     = mlEl   ? parseFloat(mlEl.value)||0 : 0;
-    if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
-    if (!ml)  { showToast('Ingresa los ML perforados ⚠️'); return; }
-    item = {...item, elemento:'Perno', tipo: tipo||'BAHE', actividad:'Perforación', codigo:cod, cantidad:ml, unidad:'ML'};
-    if(codEl) codEl.value='';
-    if(mlEl)  mlEl.value='';
-    if(codEl) codEl.focus();
+  else { // perforacion (default ML)
+    const tipoEl  = document.getElementById('pv-tipo-'+i);
+    const desdeEl = document.getElementById('pv-cod-desde-'+i);
+    const hastaEl = document.getElementById('pv-cod-hasta-'+i);
+    const mlEl    = document.getElementById('pv-ml-'+i);
+    const ubicEl  = document.getElementById('pv-ubic-'+i);
+    const tipo    = tipoEl ? tipoEl.value : '';
+    const desde   = desdeEl ? desdeEl.value.trim() : '';
+    const hasta   = hastaEl ? hastaEl.value.trim() : '';
+    const ml      = mlEl   ? parseFloat(mlEl.value)||0 : 0;
+    const ubicacion = ubicEl ? ubicEl.value : '';
+    if (!desde) { showToast('Ingresa el código de inicio ⚠️'); return; }
+    if (!ml)    { showToast('Ingresa los ML perforados ⚠️'); return; }
+    const codigos = _parsearRangoCodigos(desde, hasta || desde);
+    if (!codigos) { showToast('Revisa el rango de códigos (ej. P01 → P20) ⚠️'); return; }
+    itemsToAdd = codigos.map(cod => ({ ...base, id:_controlId++, _partidaIdx:i, elemento:'Perno', tipo: tipo||'BAHE', actividad:'Perforación', codigo:cod, cantidad:ml, unidad:'ML', ubicacion }));
+    if(desdeEl) desdeEl.value='';
+    if(hastaEl) hastaEl.value='';
+    if(mlEl)    mlEl.value='';
+    if(desdeEl) desdeEl.focus();
   }
 
-  partidaValores[i].items.push(item);
+  if (!itemsToAdd.length) return;
+  partidaValores[i].items.push(...itemsToAdd);
   _recalc(i);
   saveDraft();
 
@@ -1157,7 +1222,8 @@ function _addItem(i) {
     }
     _updateCardUI(i);
   }
-  showToast(item.codigo + ' agregado ✅');
+  const primero = itemsToAdd[0], ultimo = itemsToAdd[itemsToAdd.length-1];
+  showToast(itemsToAdd.length > 1 ? `${itemsToAdd.length} pernos agregados (${primero.codigo}–${ultimo.codigo}) ✅` : (primero.codigo + ' agregado ✅'));
 }
 
 function _removeItem(i, itemId) {
@@ -2326,7 +2392,7 @@ function _buildBitacoraRows() {
 // Hoja/sección CONTROL_SOSTENIMIENTO: Longitud (ML de pernos/inyección/cable) o Ancho×Largo (malla).
 function _buildControlSostenimientoRows() {
   const meta = getMeta();
-  const headers = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Longitud','Ancho','Largo','Unidad'];
+  const headers = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Ubicación','Longitud','Ancho','Largo','Unidad'];
   const rows = controlItems.map(c => [
     c.fecha || meta.fecha || '',
     c.frente || meta.frente || '',
@@ -2336,6 +2402,7 @@ function _buildControlSostenimientoRows() {
     c.tipo || '',
     c.actividad || '',
     c.codigo || '',
+    c.ubicacion || '',
     (c.unidad === 'ML' && c.cantidad !== '' && c.cantidad !== undefined) ? c.cantidad : '',
     c.ancho || '',
     c.largo || '',
@@ -2524,7 +2591,7 @@ function _construirWorkbookRDC() {
 
   // Ancho columnas CONTROL_SOSTENIMIENTO
   wsCS['!cols'] = [
-    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8}
+    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8}
   ];
 
   // Estilo cabecera hoja CONTROL: fondo verde oscuro
