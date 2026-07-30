@@ -249,6 +249,13 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
       <div class="field"><label>Supervisor</label><select id="f-supervisor"></select></div>
     </div>
   </div>
+  <div class="card" id="sketches-anteriores-card" style="display:none">
+    <div class="card-title"><i class="ti ti-photo"></i>Últimos sketches de este frente</div>
+    <div id="sketches-anteriores-body"></div>
+    <div id="sketches-ver-mas-wrap" style="display:none;text-align:center;margin-top:12px">
+      <button id="sketches-ver-mas-btn" class="btn-secondary" onclick="_cargarMasSketchesAnteriores()"><i class="ti ti-clock-down"></i> Ver más antiguos</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title"><i class="ti ti-users"></i>Personal presente</div>
     <div class="grid3" style="margin-bottom:10px">
@@ -501,6 +508,15 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
 
 <button class="secondary-btn" style="width:100%;justify-content:center;margin-top:4px" onclick="mostrarPantallaRaiz('inicio')"><i class="ti ti-arrow-left"></i>Volver al menú principal</button>
 
+<!-- Lightbox para ver en grande un sketch anterior (con zoom y descarga) -->
+<div id="sketch-lightbox" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.9);z-index:1000;align-items:center;justify-content:center;flex-direction:column;padding:24px;overflow:hidden" onclick="if(event.target===this) _cerrarSketchLightbox()">
+  <img id="sketch-lightbox-img" style="max-width:100%;max-height:70vh;border-radius:var(--r-md);box-shadow:var(--shadow-md);touch-action:none;transition:transform .1s;cursor:zoom-in">
+  <div id="sketch-lightbox-nombre" style="color:#fff;margin-top:12px;font-size:13px;text-align:center"></div>
+  <p style="color:rgba(255,255,255,.55);font-size:11px;margin-top:4px">Pellizca, usa la rueda del mouse o doble clic para hacer zoom</p>
+  <button onclick="event.stopPropagation();_descargarSketchActual()" style="margin-top:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);padding:10px 18px;font-family:'Inter',inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="ti ti-download"></i>Descargar</button>
+  <button onclick="event.stopPropagation();_cerrarSketchLightbox()" aria-label="Cerrar" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>
+</div>
+
 </div><!-- .app --><!-- fin #pantalla-rdc -->
 
 <!-- ═══════════════ PANTALLA REGISTRO FOTOGRÁFICO ═══════════════ -->
@@ -568,11 +584,40 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
     </div>
 
     <div class="foto-tipo-panel" id="panel-foto-sketch" style="display:none">
-      <p class="note" style="margin-bottom:10px">Selecciona una o varias fotos desde tu galería.</p>
-      <input type="file" id="foto-input-sketch" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch',event)">
-      <button class="add-btn" onclick="document.getElementById('foto-input-sketch').click()"><i class="ti ti-photo-plus"></i>Seleccionar fotos</button>
-      <p class="note" id="contador-sketch" style="margin-top:6px;font-weight:600"></p>
-      <div id="foto-thumbs-sketch" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+      <p class="note" style="margin-bottom:12px">Toca el tipo para agregar sus fotos. Puedes registrar varios tipos en la misma sesión.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+
+        <div>
+          <input type="file" id="foto-input-sketch_perf" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch_perf',event)">
+          <button id="btn-sketch_perf" onclick="document.getElementById('foto-input-sketch_perf').click()" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 6px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);min-height:82px">
+            <i class="ti ti-tool" style="font-size:22px"></i>
+            <span>Perforación</span>
+            <span id="badge-sketch_perf" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+          </button>
+          <div id="foto-thumbs-sketch_perf" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+        </div>
+
+        <div>
+          <input type="file" id="foto-input-sketch_iny" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch_iny',event)">
+          <button id="btn-sketch_iny" onclick="document.getElementById('foto-input-sketch_iny').click()" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 6px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);min-height:82px">
+            <i class="ti ti-droplet" style="font-size:22px"></i>
+            <span>Inyección</span>
+            <span id="badge-sketch_iny" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+          </button>
+          <div id="foto-thumbs-sketch_iny" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+        </div>
+
+        <div>
+          <input type="file" id="foto-input-sketch_malla" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch_malla',event)">
+          <button id="btn-sketch_malla" onclick="document.getElementById('foto-input-sketch_malla').click()" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 6px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);min-height:82px">
+            <i class="ti ti-grid-dots" style="font-size:22px"></i>
+            <span>Malla</span>
+            <span id="badge-sketch_malla" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+          </button>
+          <div id="foto-thumbs-sketch_malla" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -1468,7 +1513,208 @@ function onFrenteChange() {
   partidaValores = {};
   renderMetradosPartidas();
   saveDraft();
+  _cargarSketchesAnteriores();
 }
+
+// ==================== ÚLTIMOS SKETCHES DEL FRENTE (referencia visual) ====================
+// Puramente informativo: nunca debe interferir con el formulario ni con el envío del reporte.
+const SKETCH_PREVIEW_URL = 'https://default01d952a2601948aa80282d9a49e865.6f.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/14/workflows/9af000fdbea9477ea83a1c457775c624/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=f7iPM4eFYWGaPIGtiXLUijmzChr9iFCgXbz5lUwrOb0';
+let _sketchesAnterioresReqId = 0;
+let _sketchesAnterioresActuales = [];
+let _paginaSketchActual = 0;
+
+async function _cargarSketchesAnteriores() {
+  _paginaSketchActual = 0;
+  _sketchesAnterioresActuales = [];
+
+  const card = document.getElementById('sketches-anteriores-card');
+  const body = document.getElementById('sketches-anteriores-body');
+  const verMasWrap = document.getElementById('sketches-ver-mas-wrap');
+  if (!card || !body) return;
+
+  const frente = document.getElementById('f-frente').value;
+  const solicitudId = ++_sketchesAnterioresReqId;
+
+  if (!frente) {
+    card.style.display = 'none';
+    if (verMasWrap) verMasWrap.style.display = 'none';
+    return;
+  }
+
+  card.style.display = '';
+  if (verMasWrap) verMasWrap.style.display = 'none';
+  body.innerHTML = '<div class="empty-msg"><i class="ti ti-loader-2"></i> Cargando sketches anteriores...</div>';
+
+  await _fetchSketchPagina(0, solicitudId, true);
+}
+
+async function _cargarMasSketchesAnteriores() {
+  const btn = document.getElementById('sketches-ver-mas-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i> Cargando...'; }
+  _paginaSketchActual++;
+  await _fetchSketchPagina(_paginaSketchActual, _sketchesAnterioresReqId, false);
+}
+
+async function _fetchSketchPagina(pagina, solicitudId, esRecarga) {
+  const frente = document.getElementById('f-frente').value;
+  const body = document.getElementById('sketches-anteriores-body');
+  const card = document.getElementById('sketches-anteriores-card');
+  const verMasWrap = document.getElementById('sketches-ver-mas-wrap');
+  const btn = document.getElementById('sketches-ver-mas-btn');
+
+  try {
+    const respuesta = await fetch(SKETCH_PREVIEW_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frente, pagina })
+    });
+    if (solicitudId !== _sketchesAnterioresReqId) return;
+    if (!respuesta.ok) throw new Error('HTTP ' + respuesta.status);
+
+    const datos = await respuesta.json();
+    const fotos = Array.isArray(datos.fotos) ? datos.fotos : [];
+    const hayMas = !!datos.hayMas;
+
+    const startIdx = esRecarga ? 0 : _sketchesAnterioresActuales.length;
+    if (esRecarga) {
+      _sketchesAnterioresActuales = fotos;
+    } else {
+      _sketchesAnterioresActuales = _sketchesAnterioresActuales.concat(fotos);
+    }
+
+    if (esRecarga) {
+      if (!fotos.length) {
+        body.innerHTML = '<div class="empty-msg">Aún no hay sketches registrados para este frente.</div>';
+        if (verMasWrap) verMasWrap.style.display = 'none';
+        return;
+      }
+      body.innerHTML = '<div id="sketches-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>';
+    }
+
+    const grid = document.getElementById('sketches-grid');
+    if (grid) {
+      fotos.forEach((s, i) => {
+        const idx = startIdx + i;
+        const etiqueta = _etiquetaDesdeNombre(s.nombre);
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div style="border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;aspect-ratio:1/1;background:var(--surface2);cursor:pointer" onclick="_verSketchGrande(${idx})"><img src="data:image/jpeg;base64,${s.contenidoArchivo}" style="width:100%;height:100%;object-fit:cover;display:block" alt="${(s.nombre||'').replace(/"/g,'&quot;')}"></div>${etiqueta ? `<div style="font-size:10.5px;color:var(--text3);text-align:center;margin-top:4px;line-height:1.3">${etiqueta}</div>` : ''}`;
+        grid.appendChild(wrap);
+      });
+    }
+
+    if (verMasWrap && btn) {
+      if (hayMas) {
+        verMasWrap.style.display = '';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-clock-down"></i> Ver más antiguos';
+      } else {
+        verMasWrap.style.display = 'none';
+      }
+    }
+  } catch (e) {
+    if (solicitudId !== _sketchesAnterioresReqId) return;
+    if (esRecarga) card.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-clock-down"></i> Ver más antiguos'; }
+  }
+}
+
+// Traduce la etiqueta PERF/INY/MALLA embebida en el nombre del archivo a texto legible.
+// Si el nombre no trae una etiqueta reconocible (ej. sketches subidos antes de este cambio), no muestra nada.
+function _etiquetaDesdeNombre(nombre) {
+  if (!nombre) return '';
+  const m = /_([A-Z]+(?:-[A-Z]+)*)_\d+\.jpe?g$/i.exec(nombre);
+  if (!m) return '';
+  const mapa = { PERF: 'Perforación', INY: 'Inyección', MALLA: 'Malla' };
+  const partes = m[1].toUpperCase().split('-');
+  const traducidas = partes.map(p => mapa[p]).filter(Boolean);
+  if (traducidas.length !== partes.length) return ''; // alguna parte no reconocida: mejor no mostrar nada
+  return traducidas.join(' + ');
+}
+
+let _sketchLightboxIdx = null;
+
+function _verSketchGrande(idx) {
+  const s = _sketchesAnterioresActuales[idx];
+  if (!s) return;
+  _sketchLightboxIdx = idx;
+  document.getElementById('sketch-lightbox-img').src = `data:image/jpeg;base64,${s.contenidoArchivo}`;
+  document.getElementById('sketch-lightbox-nombre').textContent = s.nombre || '';
+  document.getElementById('sketch-lightbox').style.display = 'flex';
+  _resetSketchZoom();
+}
+
+function _cerrarSketchLightbox() {
+  document.getElementById('sketch-lightbox').style.display = 'none';
+  _resetSketchZoom();
+}
+
+function _descargarSketchActual() {
+  const s = _sketchesAnterioresActuales[_sketchLightboxIdx];
+  if (!s) return;
+  const a = document.createElement('a');
+  a.href = `data:image/jpeg;base64,${s.contenidoArchivo}`;
+  a.download = s.nombre || 'sketch.jpg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ── Zoom del lightbox: rueda del mouse / doble clic en laptop, pellizco en celular ──
+let _sketchZoom = { scale: 1, pinchDist0: null, scale0: 1 };
+
+function _resetSketchZoom() {
+  _sketchZoom = { scale: 1, pinchDist0: null, scale0: 1 };
+  const img = document.getElementById('sketch-lightbox-img');
+  if (img) img.style.transform = 'scale(1)';
+}
+
+function _aplicarSketchZoom(scale) {
+  _sketchZoom.scale = Math.min(4, Math.max(1, scale));
+  const img = document.getElementById('sketch-lightbox-img');
+  if (img) img.style.transform = `scale(${_sketchZoom.scale})`;
+}
+
+function _distanciaTouch(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function _initSketchLightboxZoom() {
+  const img = document.getElementById('sketch-lightbox-img');
+  if (!img) return;
+
+  img.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    _aplicarSketchZoom(_sketchZoom.scale + (e.deltaY < 0 ? 0.25 : -0.25));
+  }, { passive: false });
+
+  img.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    _aplicarSketchZoom(_sketchZoom.scale > 1 ? 1 : 2.5);
+  });
+
+  img.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      _sketchZoom.pinchDist0 = _distanciaTouch(e.touches);
+      _sketchZoom.scale0 = _sketchZoom.scale;
+    }
+  }, { passive: true });
+
+  img.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && _sketchZoom.pinchDist0) {
+      e.preventDefault();
+      const factor = _distanciaTouch(e.touches) / _sketchZoom.pinchDist0;
+      _aplicarSketchZoom(_sketchZoom.scale0 * factor);
+    }
+  }, { passive: false });
+
+  img.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) _sketchZoom.pinchDist0 = null;
+  });
+}
+_initSketchLightboxZoom();
+// ==================== FIN ÚLTIMOS SKETCHES DEL FRENTE ====================
 function renderHitos(preserve) {
   const prevVals = {};
   if (preserve !== false) {
@@ -3053,6 +3299,7 @@ function loadDraft() {
   document.getElementById('f-sector').value = data.meta.sector || '';
   onSectorChange();
   document.getElementById('f-frente').value = data.meta.frente || '';
+  _cargarSketchesAnteriores();
   // cuadrilla field removed
   document.getElementById('f-capataz').value = data.meta.capataz || '';
   document.getElementById('f-supervisor').value = data.meta.supervisor || '';
@@ -3196,12 +3443,15 @@ const POWER_AUTOMATE_FOTOS_URL = 'https://default01d952a2601948aa80282d9a49e865.
 
 // Cada tipo de foto tiene su propia selección y su propia categoría/nombrado de archivo.
 const FOTO_TIPOS = {
-  diarias: { categoria: 'Fotos RDC', label: 'Fotos diarias' },
-  redline: { categoria: 'Redlines', label: 'Redline' },
-  sketch:  { categoria: 'Sketch', label: 'Sketch de avance' }
+  diarias:      { categoria: 'Fotos RDC', label: 'Fotos diarias' },
+  redline:      { categoria: 'Redlines',  label: 'Redline' },
+  sketch:       { categoria: 'Sketch',    label: 'Sketch de avance' },
+  sketch_perf:  { categoria: 'Sketch',    label: 'Sketch - Perforación' },
+  sketch_iny:   { categoria: 'Sketch',    label: 'Sketch - Inyección' },
+  sketch_malla: { categoria: 'Sketch',    label: 'Sketch - Malla' }
 };
 
-let fotosSeleccionadas = { diarias: [], redline: [], sketch: [] };
+let fotosSeleccionadas = { diarias: [], redline: [], sketch_perf: [], sketch_iny: [], sketch_malla: [] };
 let fotosSeleccionadasId = 0;
 
 function _hoyISO() {
@@ -3289,13 +3539,28 @@ function renderFotoThumbs(tipoFoto) {
 
 // Contador por tipo (dentro de cada panel) + resumen combinado antes de enviar.
 function _actualizarContadoresFotos() {
-  Object.keys(FOTO_TIPOS).forEach(t => {
+  ['diarias', 'redline'].forEach(t => {
     const n = fotosSeleccionadas[t].length;
     const elPanel = document.getElementById('contador-' + t);
     if (elPanel) elPanel.textContent = n === 0 ? 'Sin fotos seleccionadas' : (n === 1 ? '1 foto seleccionada' : `${n} fotos seleccionadas`);
     const elResumen = document.getElementById('resumen-conteo-' + t);
     if (elResumen) elResumen.textContent = n;
   });
+  let sketchTotal = 0;
+  ['sketch_perf', 'sketch_iny', 'sketch_malla'].forEach(t => {
+    const n = fotosSeleccionadas[t].length;
+    sketchTotal += n;
+    const badge = document.getElementById('badge-' + t);
+    const btn = document.getElementById('btn-' + t);
+    if (badge) { badge.textContent = n + (n === 1 ? ' foto' : ' fotos'); badge.style.display = n > 0 ? '' : 'none'; }
+    if (btn) {
+      btn.style.borderColor = n > 0 ? 'var(--green)' : 'var(--border)';
+      btn.style.background  = n > 0 ? 'var(--green-bg)' : 'var(--surface)';
+      btn.style.color       = n > 0 ? 'var(--green-text)' : 'var(--text2)';
+    }
+  });
+  const elResumenSketch = document.getElementById('resumen-conteo-sketch');
+  if (elResumenSketch) elResumenSketch.textContent = sketchTotal;
   const esCapataz = document.getElementById('foto-rol').value === 'Capataz';
   const filaRedline = document.getElementById('resumen-conteo-redline-fila');
   const filaSketch = document.getElementById('resumen-conteo-sketch-fila');
@@ -3337,10 +3602,13 @@ function _mostrarEstadoFotos(tipo, mensajeHtml) {
   box.innerHTML = mensajeHtml;
 }
 
+
 function _nombreArchivoFoto(tipoFoto, idx, ctx) {
   const { rol, nombreSinEspacios, frente, fecha } = ctx;
-  if (tipoFoto === 'redline') return `Redline_${frente}_${fecha}.jpg`;
-  if (tipoFoto === 'sketch')  return `Sketch_${frente}_${fecha}_${idx + 1}.jpg`;
+  if (tipoFoto === 'redline')      return `Redline_${frente}_${fecha}.jpg`;
+  if (tipoFoto === 'sketch_perf')  return `Sketch_${frente}_${fecha}_PERF_${idx + 1}.jpg`;
+  if (tipoFoto === 'sketch_iny')   return `Sketch_${frente}_${fecha}_INY_${idx + 1}.jpg`;
+  if (tipoFoto === 'sketch_malla') return `Sketch_${frente}_${fecha}_MALLA_${idx + 1}.jpg`;
   return `${rol}_${nombreSinEspacios}_${idx + 1}.jpg`; // diarias
 }
 
@@ -3403,11 +3671,12 @@ async function enviarFotos() {
     showToast('Las fotos diarias son obligatorias — selecciona al menos una ⚠️');
     return;
   }
-
   const tiposAEnviar = ['diarias'];
   if (rol === 'Supervisor') {
-    if (fotosSeleccionadas.redline.length) tiposAEnviar.push('redline');
-    if (fotosSeleccionadas.sketch.length) tiposAEnviar.push('sketch');
+    if (fotosSeleccionadas.redline.length)      tiposAEnviar.push('redline');
+    if (fotosSeleccionadas.sketch_perf.length)  tiposAEnviar.push('sketch_perf');
+    if (fotosSeleccionadas.sketch_iny.length)   tiposAEnviar.push('sketch_iny');
+    if (fotosSeleccionadas.sketch_malla.length) tiposAEnviar.push('sketch_malla');
   }
 
   const ctx = { rol, nombre, nombreSinEspacios: nombre.replace(/\s+/g, ''), frente, fecha };
