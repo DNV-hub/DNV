@@ -512,7 +512,7 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
 <div id="sketch-lightbox" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.9);z-index:1000;align-items:center;justify-content:center;flex-direction:column;padding:24px;overflow:hidden" onclick="if(event.target===this) _cerrarSketchLightbox()">
   <img id="sketch-lightbox-img" style="max-width:100%;max-height:70vh;border-radius:var(--r-md);box-shadow:var(--shadow-md);touch-action:none;transition:transform .1s;cursor:zoom-in">
   <div id="sketch-lightbox-nombre" style="color:#fff;margin-top:12px;font-size:13px;text-align:center"></div>
-  <p style="color:rgba(255,255,255,.55);font-size:11px;margin-top:4px">Pellizca, usa la rueda del mouse o doble clic para hacer zoom</p>
+  <p style="color:rgba(255,255,255,.55);font-size:11px;margin-top:4px">Pellizca o rueda = zoom · Arrastra para moverse · Doble toque = restablecer</p>
   <button onclick="event.stopPropagation();_descargarSketchActual()" style="margin-top:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);padding:10px 18px;font-family:'Inter',inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="ti ti-download"></i>Descargar</button>
   <button onclick="event.stopPropagation();_cerrarSketchLightbox()" aria-label="Cerrar" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>
 </div>
@@ -1659,19 +1659,31 @@ function _descargarSketchActual() {
   document.body.removeChild(a);
 }
 
-// ── Zoom del lightbox: rueda del mouse / doble clic en laptop, pellizco en celular ──
-let _sketchZoom = { scale: 1, pinchDist0: null, scale0: 1 };
+// ── Zoom + pan del lightbox: rueda / pellizco para zoom, arrastre para mover ──
+let _sketchZoom = {
+  scale: 1, panX: 0, panY: 0,
+  pinchDist0: null, scale0: 1, panX0: 0, panY0: 0,
+  isDragging: false, mouseX0: 0, mouseY0: 0,
+  touchDragId: null, touchDragX0: 0, touchDragY0: 0
+};
 
 function _resetSketchZoom() {
-  _sketchZoom = { scale: 1, pinchDist0: null, scale0: 1 };
+  _sketchZoom.scale = 1; _sketchZoom.panX = 0; _sketchZoom.panY = 0;
+  _sketchZoom.pinchDist0 = null; _sketchZoom.isDragging = false; _sketchZoom.touchDragId = null;
   const img = document.getElementById('sketch-lightbox-img');
-  if (img) img.style.transform = 'scale(1)';
+  if (img) { img.style.transform = ''; img.style.cursor = 'zoom-in'; img.style.transition = 'transform .15s'; }
 }
 
-function _aplicarSketchZoom(scale) {
-  _sketchZoom.scale = Math.min(4, Math.max(1, scale));
+function _aplicarSketchZoom(scale, px, py) {
+  const s = Math.min(5, Math.max(1, scale));
+  const x = s <= 1 ? 0 : (px !== undefined ? px : _sketchZoom.panX);
+  const y = s <= 1 ? 0 : (py !== undefined ? py : _sketchZoom.panY);
+  _sketchZoom.scale = s; _sketchZoom.panX = x; _sketchZoom.panY = y;
   const img = document.getElementById('sketch-lightbox-img');
-  if (img) img.style.transform = `scale(${_sketchZoom.scale})`;
+  if (img) {
+    img.style.transform = s <= 1 ? '' : `translate(${x}px,${y}px) scale(${s})`;
+    img.style.cursor = s > 1 ? (_sketchZoom.isDragging ? 'grabbing' : 'grab') : 'zoom-in';
+  }
 }
 
 function _distanciaTouch(touches) {
@@ -1684,20 +1696,52 @@ function _initSketchLightboxZoom() {
   const img = document.getElementById('sketch-lightbox-img');
   if (!img) return;
 
+  // Zoom con rueda del mouse
   img.addEventListener('wheel', (e) => {
     e.preventDefault();
-    _aplicarSketchZoom(_sketchZoom.scale + (e.deltaY < 0 ? 0.25 : -0.25));
+    _aplicarSketchZoom(_sketchZoom.scale + (e.deltaY < 0 ? 0.3 : -0.3));
   }, { passive: false });
 
+  // Doble clic / doble toque: toggle zoom ↔ reset
   img.addEventListener('dblclick', (e) => {
     e.stopPropagation();
-    _aplicarSketchZoom(_sketchZoom.scale > 1 ? 1 : 2.5);
+    _aplicarSketchZoom(_sketchZoom.scale > 1 ? 1 : 2.5, 0, 0);
   });
 
+  // ── Pan con mouse (escritorio) ──
+  img.addEventListener('mousedown', (e) => {
+    if (_sketchZoom.scale <= 1) return;
+    e.preventDefault();
+    _sketchZoom.isDragging = true;
+    _sketchZoom.mouseX0 = e.clientX - _sketchZoom.panX;
+    _sketchZoom.mouseY0 = e.clientY - _sketchZoom.panY;
+    img.style.cursor = 'grabbing';
+    img.style.transition = 'none';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!_sketchZoom.isDragging) return;
+    _aplicarSketchZoom(_sketchZoom.scale, e.clientX - _sketchZoom.mouseX0, e.clientY - _sketchZoom.mouseY0);
+  });
+  document.addEventListener('mouseup', () => {
+    if (!_sketchZoom.isDragging) return;
+    _sketchZoom.isDragging = false;
+    const i = document.getElementById('sketch-lightbox-img');
+    if (i) { i.style.cursor = _sketchZoom.scale > 1 ? 'grab' : 'zoom-in'; i.style.transition = 'transform .15s'; }
+  });
+
+  // ── Touch: pellizco = zoom, 1 dedo = pan ──
   img.addEventListener('touchstart', (e) => {
     if (e.touches.length === 2) {
       _sketchZoom.pinchDist0 = _distanciaTouch(e.touches);
       _sketchZoom.scale0 = _sketchZoom.scale;
+      _sketchZoom.panX0 = _sketchZoom.panX;
+      _sketchZoom.panY0 = _sketchZoom.panY;
+      _sketchZoom.touchDragId = null;
+    } else if (e.touches.length === 1 && _sketchZoom.scale > 1) {
+      _sketchZoom.touchDragId = e.touches[0].identifier;
+      _sketchZoom.touchDragX0 = e.touches[0].clientX - _sketchZoom.panX;
+      _sketchZoom.touchDragY0 = e.touches[0].clientY - _sketchZoom.panY;
+      img.style.transition = 'none';
     }
   }, { passive: true });
 
@@ -1705,12 +1749,20 @@ function _initSketchLightboxZoom() {
     if (e.touches.length === 2 && _sketchZoom.pinchDist0) {
       e.preventDefault();
       const factor = _distanciaTouch(e.touches) / _sketchZoom.pinchDist0;
-      _aplicarSketchZoom(_sketchZoom.scale0 * factor);
+      _aplicarSketchZoom(_sketchZoom.scale0 * factor, _sketchZoom.panX0, _sketchZoom.panY0);
+    } else if (e.touches.length === 1 && _sketchZoom.touchDragId !== null && _sketchZoom.scale > 1) {
+      e.preventDefault();
+      const t = e.touches[0];
+      _aplicarSketchZoom(_sketchZoom.scale, t.clientX - _sketchZoom.touchDragX0, t.clientY - _sketchZoom.touchDragY0);
     }
   }, { passive: false });
 
   img.addEventListener('touchend', (e) => {
     if (e.touches.length < 2) _sketchZoom.pinchDist0 = null;
+    if (e.touches.length === 0) {
+      if (_sketchZoom.touchDragId !== null) img.style.transition = 'transform .15s';
+      _sketchZoom.touchDragId = null;
+    }
   });
 }
 _initSketchLightboxZoom();
