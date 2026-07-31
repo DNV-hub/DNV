@@ -1295,7 +1295,9 @@ function rebuildControlItems() {
       all.push({
         ...it,
         fecha:  it.fecha  || meta.fecha  || '',
-        frente: it.frente || frente
+        frente: it.frente || frente,
+        partidaCodigo: p.e || '',
+        partidaNombre: p.n || ''
       });
     });
   });
@@ -2603,18 +2605,26 @@ function _buildRecursosRows() {
     validos.forEach((it, i) => rows.push([i+1, it.desc, Number(it.cant), horas]));
   };
 
-  // Mano de obra directa
-  addSeccion('MANO DE OBRA DIRECTA', [
+  // Igual que addSeccion, pero sin filtrar: siempre muestra todos los recursos base,
+  // aunque no se hayan llenado (cantidad en 0).
+  const addSeccionSiempre = (titulo, items) => {
+    if (items.length === 0) return;
+    rows.push(['', titulo, '', '']);
+    items.forEach((it, i) => rows.push([i+1, it.desc, Number(it.cant)||0, horas]));
+  };
+
+  // Mano de obra directa (recursos base, siempre se listan aunque queden en 0;
+  // la Vigía es personal de mano de obra directa, no indirecta)
+  addSeccionSiempre('MANO DE OBRA DIRECTA', [
     { desc:'Capataz',  cant: document.getElementById('f-capataces').value },
     { desc:'Operario', cant: document.getElementById('f-operarios').value },
     { desc:'Oficial',  cant: document.getElementById('f-oficiales').value },
-    { desc:'Peón',     cant: document.getElementById('f-peones').value }
+    { desc:'Peón',     cant: document.getElementById('f-peones').value },
+    { desc:'Vigía',    cant: document.getElementById('f-vigias').value }
   ]);
 
-  // Mano de obra indirecta
-  const indirecta = [
-    { desc:'Vigía', cant: document.getElementById('f-vigias').value }
-  ];
+  // Mano de obra indirecta (roles adicionales, solo aplican a ciertos sectores)
+  const indirecta = [];
   if (meta.sector === 'A: 4000 - SALA ELECTRICA') {
     indirecta.push(
       { desc:'Ingeniero residente',    cant: document.getElementById('f-ing-residente')  ? document.getElementById('f-ing-residente').value  : 0 },
@@ -2683,7 +2693,7 @@ function _buildBitacoraRows() {
 // Hoja/sección CONTROL_SOSTENIMIENTO: Longitud (ML de pernos/inyección/cable) o Ancho×Largo (malla).
 function _buildControlSostenimientoRows() {
   const meta = getMeta();
-  const headers = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Ubicación','Longitud','Ancho','Largo','Unidad'];
+  const headers = ['Fecha','Frente','Sistema','Zona de Sistema','Elemento','Tipo','Actividad','Código','Ubicación','Longitud','Ancho','Largo','Unidad','Código Partida (ETD)','Nombre de Partida'];
   const rows = controlItems.map(c => [
     c.fecha || meta.fecha || '',
     c.frente || meta.frente || '',
@@ -2697,7 +2707,9 @@ function _buildControlSostenimientoRows() {
     (c.unidad === 'ML' && c.cantidad !== '' && c.cantidad !== undefined) ? c.cantidad : '',
     c.ancho || '',
     c.largo || '',
-    c.unidad || ''
+    c.unidad || '',
+    c.partidaCodigo || '',
+    c.partidaNombre || ''
   ]);
   return { headers, rows };
 }
@@ -2882,7 +2894,7 @@ function _construirWorkbookRDC() {
 
   // Ancho columnas CONTROL_SOSTENIMIENTO
   wsCS['!cols'] = [
-    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8}
+    {wch:12},{wch:16},{wch:12},{wch:10},{wch:10},{wch:16},{wch:14},{wch:12},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8},{wch:16},{wch:34}
   ];
 
   // Estilo cabecera hoja CONTROL: fondo verde oscuro
@@ -3255,7 +3267,7 @@ function exportarJSON() {
       hora: r.hora,
       detalle_15min: quarterLabels(r.hora).map((lbl,idx)=>({hora:lbl, descripcion:(r.descs||[])[idx]||''})).filter(x=>x.descripcion.trim()!=='')
     })),
-    control_sostenimiento: controlItems.map(c=>({fecha:c.fecha,frente:c.frente,sistema:c.sistema,sector:c.sector,elemento:c.elemento,tipo:c.tipo,actividad:c.actividad,codigo:c.codigo,cantidad:c.cantidad,unidad:c.unidad})),
+    control_sostenimiento: controlItems.map(c=>({fecha:c.fecha,frente:c.frente,sistema:c.sistema,sector:c.sector,elemento:c.elemento,tipo:c.tipo,actividad:c.actividad,codigo:c.codigo,cantidad:c.cantidad,unidad:c.unidad,partidaCodigo:c.partidaCodigo,partidaNombre:c.partidaNombre})),
     equipos_maquinaria: getEquiposRegistrados(),
     stand_by: {
       total_minutos: getStandbyTotalMin(),
