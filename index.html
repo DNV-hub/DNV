@@ -700,11 +700,18 @@ const _tele = { inicio: null, tabs: [] };
 let _teleTab = null, _teleTi = null;
 
 
+// Detecta partidas de instalación de accesorios (placas, tuercas, etc) por su nombre,
+// ya que en el catálogo no vienen con columna 'c' propia.
+function _esAccesorios(p) {
+  const n = (p.n || '').toLowerCase();
+  return n.indexOf('accesorio') !== -1;
+}
+
 function _cat(p) {
   // Determina la categoría de una partida SOLO basándose en la columna 'c' del Excel
-  // Si no tiene 'c' definido → simple (solo campo numérico)
+  // Si no tiene 'c' definido → simple (solo campo numérico), salvo accesorios (disgregado)
   const c = (p.c || '').trim().toLowerCase();
-  if (!c) return 'simple';
+  if (!c) return _esAccesorios(p) ? 'accesorios' : 'simple';
   if (c === 'perf-iny') return 'perf-iny';
   if (c === 'pull test' || c === 'Pull test' || c === 'PULL TEST') return 'pulltest';
   if (c === 'malla')     return 'm2';
@@ -733,6 +740,17 @@ function _recalc(i) {
   _ensurePV(i);
   const items = partidaValores[i].items;
   if (!items.length) { partidaValores[i].met = ''; return; }
+
+  const frente = document.getElementById('f-frente') ? document.getElementById('f-frente').value : '';
+  const lista  = PARTIDAS[frente] || [];
+  const p      = lista[i];
+  if (p && _cat(p) === 'accesorios') {
+    const totalPlacas  = items.filter(it => it.tipo === 'Placa').reduce((s,it) => s + (Number(it.cantidad)||0), 0);
+    const totalTuercas = items.filter(it => it.tipo === 'Tuerca').reduce((s,it) => s + (Number(it.cantidad)||0), 0);
+    partidaValores[i].met = Math.min(totalPlacas, totalTuercas);
+    return;
+  }
+
   const isPullTest = items[0] && items[0].actividad === 'Pull Test';
   const total = isPullTest
     ? items.length
@@ -794,6 +812,30 @@ function _buildForm(p, i, cat, tipoML) {
       <\/div>
       ${_buildItemsTable((partidaValores[i]&&partidaValores[i].items?partidaValores[i].items:[]).map(it=>({...it,_partidaIdx:i})),p,'perf-iny','perforacion')}
     `;
+  }
+
+  if (cat === 'accesorios') {
+    return `
+      <div class="alert alert-blue" style="margin-bottom:10px;padding:8px 10px">
+        <i class="ti ti-info-circle" style="flex-shrink:0"><\/i>
+        <span>Registra por separado <strong>Placas<\/strong>, <strong>Tuercas<\/strong> y otros accesorios. El metrado (UND) se calcula automáticamente con los <strong>pares completos<\/strong> (Placa + Tuerca).<\/span>
+      <\/div>
+      <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+        <div class="field" style="min-width:120px"><label style="font-size:11px">Tipo<\/label>
+          <select id="pv-acc-tipo-${i}" onchange="_toggleAccDetalle(${i})">
+            <option value="Placa">Placa<\/option>
+            <option value="Tuerca">Tuerca<\/option>
+            <option value="Otro">Otro accesorio<\/option>
+          <\/select>
+        <\/div>
+        <div class="field" id="pv-acc-detalle-wrap-${i}" style="min-width:140px;display:none"><label style="font-size:11px">¿Cuál accesorio?<\/label>
+          <input type="text" id="pv-acc-detalle-${i}" placeholder="Ej: Arandela">
+        <\/div>
+        <div class="field" style="min-width:90px"><label style="font-size:11px">Cantidad<\/label>
+          <input type="number" min="0" step="1" id="pv-acc-cant-${i}" placeholder="0" onkeydown="if(event.key==='Enter')_addItem(${i})">
+        <\/div>
+        <button onclick="_addItem(${i})" class="ctrl-add-btn" style="height:38px;align-self:end"><i class="ti ti-plus"><\/i><\/button>
+      <\/div>`;
   }
 
   if (cat === 'pulltest') {
@@ -901,6 +943,26 @@ function _buildForm(p, i, cat, tipoML) {
 // ── Construir tabla de items registrados ───────────────────────────────────
 function _buildItemsTable(items, p, cat, tipoML) {
   if (!items.length) return '';
+
+  if (cat === 'accesorios') {
+    const totalPlacas  = items.filter(it => it.tipo === 'Placa').reduce((s,it) => s + (Number(it.cantidad)||0), 0);
+    const totalTuercas = items.filter(it => it.tipo === 'Tuerca').reduce((s,it) => s + (Number(it.cantidad)||0), 0);
+    const totalOtros   = items.filter(it => it.tipo === 'Otro').reduce((s,it) => s + (Number(it.cantidad)||0), 0);
+    const pares = Math.min(totalPlacas, totalTuercas);
+    let tbody2 = '';
+    items.forEach(it => {
+      tbody2 += `<tr><td>${it.tipo}${it.tipo==='Otro' && it.detalle ? ' — '+it.detalle : ''}<\/td>`
+        + `<td style="text-align:right;font-weight:700">${it.cantidad}<\/td>`
+        + `<td><button class="del-btn" onclick="_removeItem(${it._partidaIdx},${it.id})" style="font-size:13px"><i class="ti ti-x"><\/i><\/button><\/td><\/tr>`;
+    });
+    return `<table class="ctrl-table">
+      <thead><tr><th>Tipo<\/th><th style="text-align:right">Cantidad<\/th><th style="width:28px"><\/th><\/tr><\/thead>
+      <tbody>${tbody2}
+        <tr><td colspan="2" style="font-size:12px;color:var(--text2)">Placas: ${totalPlacas} · Tuercas: ${totalTuercas}${totalOtros?(' · Otros: '+totalOtros):''}<\/td><td><\/td><\/tr>
+        <tr class="total-row"><td colspan="2">PARES COMPLETOS (Placa+Tuerca)<\/td><td style="text-align:right;font-size:15px">${pares} UND<\/td><\/tr>
+      <\/tbody><\/table>`;
+  }
+
   const isPT = cat === 'pulltest';
   const isCable = tipoML === 'cable';
   const isMalla = cat === 'm2';
@@ -1107,6 +1169,13 @@ function _setPerfInyMode(i, mode) {
   if (codEl) codEl.focus();
 }
 
+function _toggleAccDetalle(i) {
+  const sel  = document.getElementById('pv-acc-tipo-'+i);
+  const wrap = document.getElementById('pv-acc-detalle-wrap-'+i);
+  if (!sel || !wrap) return;
+  wrap.style.display = sel.value === 'Otro' ? '' : 'none';
+}
+
 function _addItem(i) {
   const frente = document.getElementById('f-frente').value;
   const lista  = PARTIDAS[frente] || [];
@@ -1130,7 +1199,20 @@ function _addItem(i) {
 
   let itemsToAdd = [];
 
-  if (cat === 'pulltest') {
+  if (cat === 'accesorios') {
+    const selTipo = document.getElementById('pv-acc-tipo-'+i);
+    const elDet   = document.getElementById('pv-acc-detalle-'+i);
+    const elCant  = document.getElementById('pv-acc-cant-'+i);
+    const tipoAcc = selTipo ? selTipo.value : 'Placa';
+    const detalle = elDet ? elDet.value.trim() : '';
+    const cant    = elCant ? Number(elCant.value) : 0;
+    if (!cant || cant <= 0) { showToast('Ingresa una cantidad válida ⚠️'); return; }
+    if (tipoAcc === 'Otro' && !detalle) { showToast('Indica qué accesorio es ⚠️'); return; }
+    itemsToAdd = [{ ...base, id:_controlId++, _partidaIdx:i, elemento:'Accesorio', tipo:tipoAcc, detalle: tipoAcc==='Otro'?detalle:'', actividad:'Instalación de accesorio', cantidad:cant, unidad:'UND' }];
+    if (elDet) elDet.value = '';
+    if (elCant) { elCant.value=''; elCant.focus(); }
+  }
+  else if (cat === 'pulltest') {
     const el = document.getElementById('pv-pt-'+i);
     const cod = el ? el.value.trim() : '';
     if (!cod) { showToast('Ingresa el código del perno ⚠️'); return; }
@@ -1261,7 +1343,11 @@ function _addItem(i) {
     _updateCardUI(i);
   }
   const primero = itemsToAdd[0], ultimo = itemsToAdd[itemsToAdd.length-1];
-  showToast(itemsToAdd.length > 1 ? `${itemsToAdd.length} pernos agregados (${primero.codigo}–${ultimo.codigo}) ✅` : (primero.codigo + ' agregado ✅'));
+  if (cat === 'accesorios') {
+    showToast(`${primero.tipo}${primero.detalle?' ('+primero.detalle+')':''}: ${primero.cantidad} agregado ✅`);
+  } else {
+    showToast(itemsToAdd.length > 1 ? `${itemsToAdd.length} pernos agregados (${primero.codigo}–${ultimo.codigo}) ✅` : (primero.codigo + ' agregado ✅'));
+  }
 }
 
 function _removeItem(i, itemId) {
@@ -1291,6 +1377,7 @@ function rebuildControlItems() {
   const all    = [];
   lista.forEach((p, i) => {
     if (!partidaValores[i]||!partidaValores[i].items) return;
+    if (_cat(p) === 'accesorios') return; // los pares de accesorios no aplican al esquema ML/M2 de este reporte
     partidaValores[i].items.forEach(it => {
       all.push({
         ...it,
