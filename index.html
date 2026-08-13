@@ -3773,6 +3773,7 @@ async function terminarYEnviar() {
 
     if (respuesta.status === 202) {
       reporteEnviado = true;
+      _actualizarBotonNuevo();
       _guardarDatosSticky();
       localStorage.removeItem(STORAGE_KEY);
       showToast('Reporte enviado ✅');
