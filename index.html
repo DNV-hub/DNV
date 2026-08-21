@@ -243,14 +243,16 @@ input,select,textarea{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-
 <div class="app" id="pantalla-rdc" style="display:none">
 
 <!-- HEADER -->
-<header class="app-header" style="position:relative;padding-left:44px;padding-right:44px">
-  <button onclick="mostrarPantallaRaiz('inicio')" style="position:absolute;left:4px;top:50%;transform:translateY(-55%);width:38px;height:38px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-size:20px;font-weight:700;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Volver">←</button>
+<header class="app-header" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 12px 8px">
   <div class="app-logo">
     <i class="ti ti-clipboard-list"></i>
     <h1>Reporte Diario de Campo</h1>
   </div>
-  <button onclick="showTab('resumen')" style="position:absolute;right:4px;top:50%;transform:translateY(-55%);border:none;background:var(--blue);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);color:#fff;padding:4px 8px;min-width:46px;min-height:38px;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Resumen" title="Ver Resumen"><i class="ti ti-send" style="font-size:16px;line-height:1"></i><span style="font-size:8.5px;font-weight:700;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;line-height:1;font-family:'Nunito','Poppins','Segoe UI Rounded',system-ui,sans-serif">Resumen</span></button>
-  <p>Sostenimiento y mantenimiento de talud ⛰️</p>
+  <p style="margin:0 0 2px;font-size:11px;opacity:.75">Sostenimiento y mantenimiento de talud ⛰️</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px">
+    <button onclick="mostrarPantallaRaiz('inicio')" style="width:38px;height:38px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-size:20px;font-weight:700;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Volver">←</button>
+    <button onclick="showTab('resumen')" style="border:none;background:var(--blue);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);color:#fff;padding:4px 8px;min-width:46px;min-height:38px;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Resumen" title="Ver Resumen"><i class="ti ti-send" style="font-size:16px;line-height:1"></i><span style="font-size:8.5px;font-weight:700;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;line-height:1;font-family:'Nunito','Poppins','Segoe UI Rounded',system-ui,sans-serif">Resumen</span></button>
+  </div>
 </header>
 
 <!-- TABS -->
