@@ -3301,15 +3301,37 @@ function getEquiposRegistrados() {
   return { perforacion: perf, soporte: sop };
 }
 function getPartidasEjecutadas() {
-  const frente = document.getElementById('f-frente').value;
-  const lista = PARTIDAS[frente] || [];
   const out = [];
-  lista.forEach((p,i) => {
-    const v = partidaValores[i];
-    if (v && v.met) out.push({nombre:p.n, met:Number(v.met), um:p.u, edt:p.e||'', sub:p.s||'', manual:false});
+  // Bloque 1 — Preliminares
+  PARTIDAS_PRELIMINARES.forEach((p, i) => {
+    const v = blq1Valores[i];
+    if (v !== '' && v !== undefined && v !== null && Number(v) > 0) {
+      out.push({nombre: p.n, met: Number(v), um: p.u, sub: '1. Preliminares', manual: false});
+    }
   });
+  // Bloque 2 — Críticas (totales)
+  const _pPerf = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Perforación');
+  const _pIny  = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Inyección');
+  const _pMal  = controlItems.filter(c => c.elemento === 'Malla');
+  const _pCab  = controlItems.filter(c => c.elemento === 'Cable');
+  const tPerf = _pPerf.reduce((s,c) => s + Number(c.cantidad||0), 0);
+  const tIny  = _pIny.reduce((s,c) => s + Number(c.cantidad||0), 0);
+  const tMal  = _pMal.reduce((s,c) => s + Number(c.cantidad||0), 0);
+  const tCab  = _pCab.reduce((s,c) => s + Number(c.cantidad||0), 0);
+  if (tPerf > 0) out.push({nombre:'Perforaciones', met:Math.round(tPerf*100)/100, um:'ML', sub:'2. Críticas', manual:false});
+  if (tIny  > 0) out.push({nombre:'Inyecciones',   met:Math.round(tIny*100)/100,  um:'ML', sub:'2. Críticas', manual:false});
+  if (tMal  > 0) out.push({nombre:'Instalación de mallas', met:Math.round(tMal*100)/100, um:'M2', sub:'2. Críticas', manual:false});
+  if (tCab  > 0) out.push({nombre:'Instalación de cable',  met:Math.round(tCab*100)/100, um:'ML', sub:'2. Críticas', manual:false});
+  // Bloque 3 — Complementarias
+  PARTIDAS_COMPLEMENTARIAS.forEach((p, i) => {
+    const v = blq3Valores[i];
+    if (v !== '' && v !== undefined && v !== null && Number(v) > 0) {
+      out.push({nombre: p.n, met: Number(v), um: p.u, sub: '3. Complementarias', manual: false});
+    }
+  });
+  // Metrados manuales
   metradosManuales.forEach(m => {
-    out.push({nombre:m.nombre, met:Number(m.met), um:m.um||'', edt:'', sub:'', manual:true});
+    if (m.partida && Number(m.met) > 0) out.push({nombre:m.partida, met:Number(m.met), um:m.um||'', sub:'', manual:true});
   });
   return out;
 }
@@ -3477,7 +3499,7 @@ function showTab(tab) {
   tabs.forEach(t => { const el = document.getElementById('tab-'+t); if (el) el.classList.toggle('visible', t===tab); });
   document.querySelectorAll('.tab-bar .tab').forEach((btn,i) => btn.classList.toggle('active', tabs[i] === tab));
   _bnavSync(tab);
-  if (tab === 'resumen') { rebuildControlItems(); buildResumen(); }
+  if (tab === 'resumen') { buildResumen(); }
   if (tab === 'prog') renderProgRows();
   if (tab === 'metrados') { renderMetradosPartidas(); renderMetradosManuales(); }
   if (tab === 'standby') renderStandbyRows();
@@ -3539,7 +3561,6 @@ function _totalPersonal() {
 }
 
 function buildResumen() {
-  rebuildControlItems();
   _actualizarBotonNuevo();
   const meta = getMeta();
   const frente = document.getElementById('f-frente').value;
@@ -3595,30 +3616,51 @@ function buildResumen() {
   }
   document.getElementById('metrado-body').innerHTML = bodyHtml || '<tr><td colspan="3" style="color:var(--text3);text-align:center;padding:16px">Sin metrados ingresados aún — ve a la pestaña Metrados<\/td><\/tr>';
 
-  // Control de Sostenimiento resumen
+  // Control de Sostenimiento resumen — tabla por columnas
   const codSection = document.getElementById('ctrl-resumen-section');
   if (controlItems.length > 0) {
     codSection.style.display = '';
-    const byTipo = {};
-    controlItems.forEach(c => {
-      const key = c.actividad + (c.tipo ? ' — ' + c.tipo : '');
-      if (!byTipo[key]) byTipo[key] = { items: [], codigos: [], sub: c.sub||'' };
-      byTipo[key].items.push(c);
-      byTipo[key].codigos.push(c.codigo);
-    });
-    let codHtml = '';
-    let _lastSubCtrl = null;
-    Object.entries(byTipo).forEach(([key, grupo]) => {
-      const _si = grupo.items[0];
-      const _sz = _si ? [_si.sistema, _si.zona].filter(Boolean).join('-Z') : '';
-      const _ssub = grupo.sub || '';
-      if (_ssub && _ssub !== _lastSubCtrl) {
-        _lastSubCtrl = _ssub;
-        codHtml += '<div style="margin:10px 0 4px;padding:4px 8px;background:linear-gradient(90deg,var(--blue-bg),transparent);border-left:2px solid var(--blue);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-text)">'+_ssub+'<\/div>';
-      }
-      codHtml += '<div style="margin-bottom:8px">'+'<strong style="font-size:13px">'+key+(_sz?' ('+_sz+')':'')+':<\/strong> '+'<span style="font-size:13px;font-family:ui-monospace,Menlo,monospace">'+grupo.codigos.join(', ')+'<\/span><\/div>';
-    });
-    codHtml += `<div style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px">${controlItems.length} elemento(s) total<\/div>`;
+    const _ctrlHdr = (label, color) =>
+      `<tr><td colspan="4" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${color};background:var(--bg2);padding:5px 8px">${label}<\/td><\/tr>`;
+    const _ctrlRow = (cod, tipoDiam, ubic, medida) =>
+      `<tr style="border-bottom:1px solid var(--border-sm)">
+        <td style="padding:5px 6px;font-family:ui-monospace,monospace;font-size:12px">${cod||'—'}<\/td>
+        <td style="padding:5px 6px;font-size:12px;color:var(--text3)">${tipoDiam||'—'}<\/td>
+        <td style="padding:5px 6px;font-size:12px;color:var(--text3)">${ubic||'—'}<\/td>
+        <td style="padding:5px 6px;font-size:12px;font-weight:600;text-align:right;white-space:nowrap">${medida||'—'}<\/td>
+      <\/tr>`;
+    let codHtml = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'
+      + '<tr style="background:var(--bg2)">'
+      + '<th style="padding:5px 6px;font-size:11px;text-align:left;color:var(--text3)">Código<\/th>'
+      + '<th style="padding:5px 6px;font-size:11px;color:var(--text3)">Tipo/Ø<\/th>'
+      + '<th style="padding:5px 6px;font-size:11px;color:var(--text3)">Ubic.<\/th>'
+      + '<th style="padding:5px 6px;font-size:11px;color:var(--text3);text-align:right">Long/Área<\/th><\/tr>';
+    // Perforaciones
+    const _cPerf = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Perforación');
+    if (_cPerf.length) {
+      codHtml += _ctrlHdr('Perforaciones','#F59E0B');
+      _cPerf.forEach(c => codHtml += _ctrlRow(c.codigo, [c.tipo,c.diametro].filter(Boolean).join(' / '), c.ubicacion, c.cantidad+' ML'));
+    }
+    // Inyecciones
+    const _cIny = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Inyección');
+    if (_cIny.length) {
+      codHtml += _ctrlHdr('Inyecciones','#6366F1');
+      _cIny.forEach(c => codHtml += _ctrlRow(c.codigo, [c.tipo,c.diametro].filter(Boolean).join(' / '), c.ubicacion, c.cantidad+' ML'));
+    }
+    // Mallas
+    const _cMal = controlItems.filter(c => c.elemento === 'Malla');
+    if (_cMal.length) {
+      codHtml += _ctrlHdr('Mallas','#10B981');
+      _cMal.forEach(c => codHtml += _ctrlRow(c.codigo, c.tipo, '—', c.cantidad+' M²'));
+    }
+    // Cables
+    const _cCab = controlItems.filter(c => c.elemento === 'Cable');
+    if (_cCab.length) {
+      codHtml += _ctrlHdr('Cables','#EF4444');
+      _cCab.forEach(c => codHtml += _ctrlRow(c.codigo, c.tipo, '—', c.cantidad+' ML'));
+    }
+    codHtml += '</table></div>';
+    codHtml += `<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right">${controlItems.length} elemento(s) total<\/div>`;
     document.getElementById('ctrl-resumen-body').innerHTML = codHtml;
   } else {
     codSection.style.display = 'none';
@@ -3737,7 +3779,7 @@ function buildTextoWsp() {
     let _lsw = null;
     ejecutadasWsp.forEach(p=>{
       if (p.sub && p.sub !== _lsw) { _lsw = p.sub; t += '_'+p.sub+'_\n'; }
-      t += '• '+(p.edt?p.edt+' ':'')+( p.nombre||p.n)+(p.manual?' (nueva)':'')+': *'+p.met+' '+(p.um||p.u||'')+'*\n';
+      t += '• '+p.nombre+(p.manual?' (nueva)':'')+': *'+p.met+' '+p.um+'*\n';
     });
   } else {
     t += 'Sin metrados registrados.\n';
@@ -4352,7 +4394,6 @@ function _buildReporteWspLineas() {
 // Construye el libro de Excel completo (todas las hojas) y lo devuelve sin descargarlo.
 // Lo usan tanto exportarXLSX() (descarga local) como terminarYEnviar() (envío a Power Automate).
 function _construirWorkbookRDC() {
-  rebuildControlItems();
 
   const { headers, values } = _buildRdcRow();
 
@@ -4781,7 +4822,6 @@ window.addEventListener('online', () => _reintentarColaPendientes(true));
 // ==================== FIN ENVÍO DEL REPORTE ====================
 
 function exportarCSV() {
-  rebuildControlItems();
   const meta = getMeta();
   const fecha = meta.fecha || 'sin-fecha';
   const frente = meta.frente || 'frente';
@@ -4823,7 +4863,6 @@ function exportarCSV() {
   showToast('Exportado para Excel 📊✅');
 }
 function exportarJSON() {
-  rebuildControlItems();
   const meta = getMeta();
   const frente = meta.frente || 'frente';
   const fecha = meta.fecha || 'sin-fecha';
