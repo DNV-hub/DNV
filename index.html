@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1647,7 +1647,7 @@ function _getPlanoFromPrefijo(frente, zona, sost) {
 }
 function _buildCodigo(prefijo, numero) {
   if (!prefijo) return '';
-  return prefijo + String(numero).padStart(3,'0');
+  return prefijo + numero;
 }
 function _togglePartLibres() {
   const body = document.getElementById('partlibre-body');
@@ -1990,7 +1990,7 @@ function _addCritico(tipo) {
     if (!ancho || !largo) { showToast('⚠️ Ingresa ancho y largo'); return; }
     const m2 = Math.round(ancho*largo*1000)/1000;
     const codigoManual = (document.getElementById('c2-malla-codigo') || {}).value || '';
-    const codigo = codigoManual || (prefijo ? prefijo + String(_controlId+1).padStart(3,'0') : '');
+    const codigo = codigoManual || (prefijo ? prefijo + (_controlId+1) : '');
     const mallaHIni = (document.getElementById('c2-malla-hinicio')||{}).value||'';
     const mallaHFin = (document.getElementById('c2-malla-hfin')||{}).value||'';
     controlItems.push({id:_controlId++, fecha:meta.fecha||'', frente, sistema:sost, zona, elemento:'Malla', tipo:tipoMalla, actividad:'Instalación', codigo, ubicacion:'', cantidad:m2, unidad:'M2', ancho, largo, diametro:'', plano, tipoPerforadora:'', horaInicio:mallaHIni, horaFin:mallaHFin, partidaCodigo:'2. Críticas', partidaNombre:'Instalación de mallas'});
@@ -2037,7 +2037,7 @@ function _addCritico(tipo) {
     if (!ml)  { showToast('⚠️ Ingresa la longitud'); return; }
     const fin = (n2&&n2>=n1)?n2:n1;
     if (fin-n1>200) { showToast('⚠️ Rango máximo 200'); return; }
-    for (let n=n1; n<=fin; n++) { const cod=prefijo?(prefijo+letra+String(n).padStart(3,'0')):(letra?letra+String(n).padStart(3,'0'):''); controlItems.push({id:_controlId++, fecha:meta.fecha||'', frente, sistema:sost, zona, elemento:'Perno', tipo:tipoPerno, actividad:actLabel, codigo:cod, ubicacion, cantidad:ml, unidad:'ML', ancho:'', largo:'', diametro:diamPerno, plano, tipoPerforadora:perfRadio, horaInicio:horaIni, horaFin:horaFin2, partidaCodigo:'2. Críticas', partidaNombre:actLabel==='Perforación'?'Perforaciones':'Inyecciones'}); }
+    for (let n=n1; n<=fin; n++) { const cod=prefijo?(prefijo+letra+n):(letra?letra+n:''); controlItems.push({id:_controlId++, fecha:meta.fecha||'', frente, sistema:sost, zona, elemento:'Perno', tipo:tipoPerno, actividad:actLabel, codigo:cod, ubicacion, cantidad:ml, unidad:'ML', ancho:'', largo:'', diametro:diamPerno, plano, tipoPerforadora:perfRadio, horaInicio:horaIni, horaFin:horaFin2, partidaCodigo:'2. Críticas', partidaNombre:actLabel==='Perforación'?'Perforaciones':'Inyecciones'}); }
     const libCheck = prefijo?_lookupPerno(frente,_buildCodigo(prefijo,n1)):null;
     if (libCheck&&ml&&Math.abs(ml-libCheck.l)>0.001) showToast('⚠️ ML '+ml+' difiere de biblioteca');
     else showToast('✅ '+(fin-n1+1)+' '+actLabel.toLowerCase()+'(s)');
@@ -3281,25 +3281,6 @@ function renderEquiposManuales() {
     `).join('');
   }
 }
-function getEquiposRegistrados() {
-  const perf = [];
-  EQUIPOS_PERFORACION_FIJOS.forEach((n,i) => {
-    const el = document.getElementById('eqp-perf-'+i);
-    const v = el ? el.value : '';
-    if (v !== '' && Number(v) > 0) perf.push({ nombre: n, cantidad: Number(v) });
-  });
-  equiposPerforacionManual.forEach(m => perf.push({ nombre: m.nombre, cantidad: m.cantidad }));
-
-  const sop = [];
-  EQUIPOS_SOPORTE_FIJOS.forEach((n,i) => {
-    const el = document.getElementById('eqp-sop-'+i);
-    const v = el ? el.value : '';
-    if (v !== '' && Number(v) > 0) sop.push({ nombre: n, cantidad: Number(v) });
-  });
-  equiposSoporteManual.forEach(m => sop.push({ nombre: m.nombre, cantidad: m.cantidad }));
-
-  return { perforacion: perf, soporte: sop };
-}
 function getPartidasEjecutadas() {
   const out = [];
   // Bloque 1 — Preliminares
@@ -3788,18 +3769,14 @@ function buildTextoWsp() {
 
   // Equipos y maquinaria — eliminado del reporte WSP
 
-  // Bitácora de actividades
-  const lineasBitacora = [];
-  bitacoraActiv.forEach(r => {
-    if (!(r.actividad||'').trim()) return;
-    lineasBitacora.push(r.hora ? `${r.hora} — ${r.actividad.trim()}` : r.actividad.trim());
-  });
-  const terminoJornadaIdx = currentHitos.length - 1;
-  const terminoJornadaVal = document.getElementById('hito-'+terminoJornadaIdx) ? document.getElementById('hito-'+terminoJornadaIdx).value : '';
-  if (lineasBitacora.length || terminoJornadaVal) {
+  // Bitácora auto-generada desde metrados
+  const _bitAll = _buildBitacoraEntradas();
+  if (_bitAll.length) {
     t += `*BITÁCORA DE ACTIVIDADES* 📝\n`;
-    lineasBitacora.forEach(l => { t += `• ${l}\n`; });
-    if (terminoJornadaVal) t += `• ${currentHitos[terminoJornadaIdx]}: ${terminoJornadaVal}\n`;
+    _bitAll.forEach(e => {
+      const horaTxt = e.hi ? (e.hf ? `${e.hi} - ${e.hf}` : e.hi) + ' — ' : '';
+      t += `• ${horaTxt}${e.texto}\n`;
+    });
     t += `\n`;
   }
 
@@ -4050,9 +4027,10 @@ function _parseDate(fechaStr) {
   if (!fechaStr) return '';
   const parts = fechaStr.split('-');
   if (parts.length !== 3) return fechaStr;
-  const [y, m, d] = parts.map(Number);
+  const [y, m, d] = parts;
   if (!y || !m || !d) return fechaStr;
-  return new Date(y, m - 1, d);
+  // Retorna texto DD/MM/YYYY — evita desfase de zona horaria en SheetJS
+  return `${d.padStart(2,'0')}/${m.padStart(2,'0')}/${y}`;
 }
 
 function _buildRdcRow() {
@@ -4125,34 +4103,55 @@ function _buildRdcRow() {
 function _buildMetradosRows() {
   const meta = getMeta();
   const f = _parseDate(meta.fecha || ''), fr = meta.frente || '';
-  const headers = ['Fecha','Frente','Bloque','Partida','Unidad','Metrado','Hora Inicio','Hora Fin'];
+  const headers = ['Fecha','Frente','Bloque','Partida','Unidad','Metrado','Hora Inicio','Hora Fin','Duración (h)','Rendimiento','N° Pernos','Pernos/h'];
   const rows = [];
+
+  const _durH = (hi, hf) => {
+    if (!hi || !hf) return '';
+    const [hh1,mm1] = hi.split(':').map(Number);
+    const [hh2,mm2] = hf.split(':').map(Number);
+    const mins = (hh2*60+mm2) - (hh1*60+mm1);
+    return mins > 0 ? Math.round(mins/60*100)/100 : '';
+  };
+  const _rend = (met, dur, u) => (dur && met) ? Math.round(met/dur*100)/100 + ' ' + u + '/h' : '';
+
   // Bloque 1
   PARTIDAS_PRELIMINARES.forEach((p, i) => {
     const v = blq1Valores[i];
     const met = (v !== undefined && v !== '' && v !== null) ? Number(v) : 0;
     const hor = blq1Horarios[i] || {};
-    rows.push([f, fr, '1. Preliminares', p.n, p.u, met, hor.inicio || '', hor.fin || '']);
+    const dur = _durH(hor.inicio, hor.fin);
+    rows.push([f, fr, '1. Preliminares', p.n, p.u, met, hor.inicio||'', hor.fin||'', dur, _rend(met,dur,p.u), '', '']);
   });
-  // Bloque 2: totales por sección (desde controlItems)
-  const perfML  = controlItems.filter(c => c.elemento==='Perno' && c.actividad==='Perforación').reduce((s,c)=>s+(Number(c.cantidad)||0),0);
-  const inyML   = controlItems.filter(c => c.elemento==='Perno' && c.actividad==='Inyección').reduce((s,c)=>s+(Number(c.cantidad)||0),0);
-  const mallaM2 = controlItems.filter(c => c.elemento==='Malla').reduce((s,c)=>s+(Number(c.cantidad)||0),0);
-  const cableML = controlItems.filter(c => c.elemento==='Cable').reduce((s,c)=>s+(Number(c.cantidad)||0),0);
-  if (perfML)  rows.push([f, fr, '2. Críticas', 'Perforaciones', 'ML', perfML, '', '']);
-  if (inyML)   rows.push([f, fr, '2. Críticas', 'Inyecciones', 'ML', inyML, '', '']);
-  if (mallaM2) rows.push([f, fr, '2. Críticas', 'Instalación de mallas', 'M2', mallaM2, '', '']);
-  if (cableML) rows.push([f, fr, '2. Críticas', 'Instalación de cable', 'ML', cableML, '', '']);
+
+  // Bloque 2 — Críticas con rendimiento
+  const _grp2 = (items, partida, u, conPernos) => {
+    if (!items.length) return;
+    const tot = Math.round(items.reduce((s,c)=>s+(Number(c.cantidad)||0),0)*100)/100;
+    const hi = items.map(c=>c.horaInicio).filter(Boolean).sort()[0]||'';
+    const hf = items.map(c=>c.horaFin).filter(Boolean).sort().reverse()[0]||'';
+    const dur = _durH(hi, hf);
+    const nPernos = conPernos ? items.length : '';
+    const pernosH = (conPernos && dur && items.length) ? Math.round(items.length/dur*100)/100+' pernos/h' : '';
+    rows.push([f, fr, '2. Críticas', partida, u, tot, hi, hf, dur, _rend(tot,dur,u), nPernos, pernosH]);
+  };
+  _grp2(controlItems.filter(c=>c.elemento==='Perno'&&c.actividad==='Perforación'), 'Perforaciones', 'ML', true);
+  _grp2(controlItems.filter(c=>c.elemento==='Perno'&&c.actividad==='Inyección'),   'Inyecciones',   'ML', true);
+  _grp2(controlItems.filter(c=>c.elemento==='Malla'), 'Instalación de mallas', 'M2', false);
+  _grp2(controlItems.filter(c=>c.elemento==='Cable'), 'Instalación de cable',  'ML', false);
+
   // Bloque 3
   PARTIDAS_COMPLEMENTARIAS.forEach((p, i) => {
     const v = blq3Valores[i];
     const met = (v !== undefined && v !== '' && v !== null) ? Number(v) : 0;
     const hor = blq3Horarios[i] || {};
-    rows.push([f, fr, '3. Complementarias', p.n, p.u, met, hor.inicio || '', hor.fin || '']);
+    const dur = _durH(hor.inicio, hor.fin);
+    rows.push([f, fr, '3. Complementarias', p.n, p.u, met, hor.inicio||'', hor.fin||'', dur, _rend(met,dur,p.u), '', '']);
   });
+
   // Libres
   metradosManuales.forEach(m => {
-    rows.push([f, fr, 'Libre', m.nombre, m.um || '', Number(m.met), '', '']);
+    rows.push([f, fr, 'Libre', m.nombre, m.um||'', Number(m.met), '', '', '', '', '', '']);
   });
   return { headers, rows };
 }
@@ -4215,45 +4214,74 @@ function _buildRecursosRows() {
 
 // Hoja/sección BITACORA: al inicio la restricción de acceso (si hubo) y el registro de jornada
 // (hitos con hora), y luego todo lo registrado en el módulo Actividades (por cuarto de hora).
+// Genera entradas de bitácora desde metrados (compartida por WhatsApp y Excel)
+function _buildBitacoraEntradas() {
+  const _hMin = h => { if (!h) return Infinity; const [hh,mm]=h.split(':').map(Number); return hh*60+(mm||0); };
+  const entradas = [];
+  // Bloque 1 — Preliminares
+  PARTIDAS_PRELIMINARES.forEach((p,i) => {
+    const v = blq1Valores[i];
+    if (!v || Number(v) <= 0) return;
+    const hor = blq1Horarios[i] || {};
+    entradas.push({ sortKey:_hMin(hor.inicio), hi:hor.inicio||'', hf:hor.fin||'', texto:`Se realizó ${p.n} con un total de ${Number(v)} ${p.u}` });
+  });
+  // Bloque 2 — Críticas agrupadas
+  const _grp = (items, textoFn) => {
+    if (!items.length) return;
+    const total = Math.round(items.reduce((s,c)=>s+Number(c.cantidad||0),0)*100)/100;
+    const codigos = items.map(c=>c.codigo||'—').join(', ');
+    const hi = items.map(c=>c.horaInicio).filter(Boolean).sort()[0]||'';
+    const hf = items.map(c=>c.horaFin).filter(Boolean).sort().reverse()[0]||'';
+    entradas.push({ sortKey:_hMin(hi), hi, hf, texto:textoFn(total,codigos) });
+  };
+  _grp(controlItems.filter(c=>c.elemento==='Perno'&&c.actividad==='Perforación'), (t,c)=>`Se realizaron perforaciones con un total de ${t} ML — Pernos: ${c}`);
+  _grp(controlItems.filter(c=>c.elemento==='Perno'&&c.actividad==='Inyección'),   (t,c)=>`Se realizaron inyecciones con un total de ${t} ML — Pernos: ${c}`);
+  _grp(controlItems.filter(c=>c.elemento==='Malla'),  (t,c)=>`Se realizó la instalación de malla con un total de ${t} M2, con los paños: ${c}`);
+  _grp(controlItems.filter(c=>c.elemento==='Cable'),  (t,c)=>`Se instalaron cables con un total de ${t} ML: ${c}`);
+  // Bloque 3 — Complementarias
+  PARTIDAS_COMPLEMENTARIAS.forEach((p,i) => {
+    const v = blq3Valores[i];
+    if (!v || Number(v) <= 0) return;
+    const hor = blq3Horarios[i] || {};
+    entradas.push({ sortKey:_hMin(hor.inicio), hi:hor.inicio||'', hf:hor.fin||'', texto:`Se realizó ${p.n} con un total de ${Number(v)} ${p.u}` });
+  });
+  const conH = entradas.filter(e=>e.hi).sort((a,b)=>a.sortKey-b.sortKey);
+  const sinH = entradas.filter(e=>!e.hi);
+  return [...conH, ...sinH];
+}
+
 function _buildBitacoraRows() {
   const meta = getMeta();
   const headers = ['Fecha','Frente','Hora Inicio','Hora Fin','Actividad'];
-  const eventos = []; // {hora, actividad}
+  const eventos = [];
 
-  // 1. Restricción para llegar al frente (si la hubo)
+  // 1. Restricción para llegar al frente
   const tuvoRestriccion = document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked;
   if (tuvoRestriccion) {
     const desc = (document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '').trim();
     const desde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
-    if (desde) {
-      eventos.push({ hora: desde, actividad: 'Restricción para llegar al frente' + (desc ? ': ' + desc : '') });
-    }
+    const hasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    eventos.push({ hi:desde, hf:hasta, actividad:'Restricción para llegar al frente'+(desc?': '+desc:''), sortKey:desde||'ZZ' });
   }
 
-  // 2. Registro de jornada (hitos con hora registrada)
-  currentHitos.forEach((h, i) => {
+  // 2. Registro de jornada (hitos)
+  currentHitos.forEach((h,i) => {
     const el = document.getElementById('hito-'+i);
     const hora = el ? el.value : '';
-    if (hora) eventos.push({ hora, actividad: h });
+    if (hora) eventos.push({ hi:hora, hf:'', actividad:h, sortKey:hora });
   });
 
-  // 3. Actividades de bitácora
-  bitacoraActiv.forEach(r => {
-    if (!(r.actividad||'').trim()) return;
-    eventos.push({ hora: r.hora || '', actividad: r.actividad.trim() });
+  // 3. Actividades de metrados (auto-generadas)
+  _buildBitacoraEntradas().forEach(e => {
+    eventos.push({ hi:e.hi, hf:e.hf, actividad:e.texto, sortKey:e.hi||'ZZ' });
   });
 
-  // Orden cronológico de todos los eventos del día
-  eventos.sort((a,b) => a.hora.localeCompare(b.hora));
+  eventos.sort((a,b) => a.sortKey.localeCompare(b.sortKey));
 
-  // La hora fin de cada fila es la hora inicio de la siguiente (traslapada, sin huecos).
-  // La última fila queda sin hora fin (no hay evento posterior registrado).
-  const items = eventos.map((ev, i) => {
-    const horaFin = (i < eventos.length - 1) ? eventos[i+1].hora : '';
-    return [_parseDate(meta.fecha||''), meta.frente||'', ev.hora, horaFin, ev.actividad];
-  });
-
-  return { headers, rows: items };
+  const rows = eventos.map(ev => [
+    _parseDate(meta.fecha||''), meta.frente||'', ev.hi||'', ev.hf||'', ev.actividad
+  ]);
+  return { headers, rows };
 }
 
 // Hoja/sección CONTROL_SOSTENIMIENTO: Longitud (ML de pernos/inyección/cable) o Ancho×Largo (malla).
@@ -4297,8 +4325,8 @@ function _buildEquiposRows() {
   const equipos = getEquiposRegistrados();
   const headers = ['Fecha','Frente','Categoría','Equipo','Cantidad'];
   const rows = [
-    ...equipos.perforacion.map(e => [meta.fecha||'', meta.frente||'', 'Perforación', e.nombre, e.cantidad]),
-    ...equipos.soporte.map(e => [meta.fecha||'', meta.frente||'', 'Soporte operativo', e.nombre, e.cantidad])
+    ...equipos.perforacion.map(e => [_parseDate(meta.fecha)||'', meta.frente||'', 'Perforación', e.nombre, e.cantidad]),
+    ...equipos.soporte.map(e => [_parseDate(meta.fecha)||'', meta.frente||'', 'Soporte operativo', e.nombre, e.cantidad])
   ];
   return { headers, rows };
 }
@@ -4424,7 +4452,7 @@ function _construirWorkbookRDC() {
   // ===== HOJA METRADOS (vertical: EDT / Partida / Unidad / Metrado) =====
   const { headers: metHeaders, rows: metRows } = _buildMetradosRows();
   const wsMET = XLSX.utils.aoa_to_sheet([metHeaders, ...metRows]);
-  wsMET['!cols'] = [{wch:12},{wch:16},{wch:12},{wch:55},{wch:10},{wch:12},{wch:12},{wch:12}];
+  wsMET['!cols'] = [{wch:12},{wch:16},{wch:14},{wch:55},{wch:8},{wch:10},{wch:11},{wch:11},{wch:12},{wch:18},{wch:10},{wch:14}];
   metHeaders.forEach((_,i)=>{
     const cellRef = XLSX.utils.encode_cell({r:0, c:i});
     if (!wsMET[cellRef]) return;
@@ -4504,21 +4532,6 @@ function _construirWorkbookRDC() {
   });
 
   XLSX.utils.book_append_sheet(wb, wsCS, 'CONTROL_SOSTENIMIENTO');
-
-  // ===== HOJA EQUIPOS =====
-  const { headers: eqHeaders, rows: eqRows } = _buildEquiposRows();
-  const wsEQ = XLSX.utils.aoa_to_sheet([eqHeaders, ...eqRows]);
-  wsEQ['!cols'] = [{wch:12},{wch:18},{wch:20},{wch:30},{wch:10}];
-  eqHeaders.forEach((_,i)=>{
-    const cellRef = XLSX.utils.encode_cell({r:0, c:i});
-    if (!wsEQ[cellRef]) return;
-    wsEQ[cellRef].s = {
-      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
-      fill: { fgColor: { rgb: 'D97706' } },
-      alignment: { horizontal: 'center', wrapText: true }
-    };
-  });
-  XLSX.utils.book_append_sheet(wb, wsEQ, 'EQUIPOS');
 
   // ===== HOJA STAND_BY =====
   const { headers: sbHeaders, rows: sbSheetRows } = _buildStandByExportRows();
@@ -5086,7 +5099,12 @@ function loadDraft() {
   cables = data.cables || [];
   cableId = data.cableId || 0;
 
-  controlItems = data.controlItems || [];
+  controlItems = (data.controlItems || []).map(c => ({
+    ...c,
+    // Migración: quitar ceros a la izquierda del número al final del código
+    // "Z01/A-003" → "Z01/A-3", "Z01/A-R003" → "Z01/A-R3"
+    codigo: (c.codigo||'').replace(/(\d+)$/, n => String(parseInt(n,10)))
+  }));
   controlId = data.controlId || controlItems.length;
   // Nota: controlItems se reconstruye desde partidaValores con rebuildControlItems();
   // las funciones de render antiguas (renderCables/renderControlItems) ya no existen.
