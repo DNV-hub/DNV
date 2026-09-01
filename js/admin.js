@@ -1,8 +1,17 @@
 // ==================== FUNCIONES ADMIN ====================
 const ADMIN_PASSWORD = 'admin123'; // Cambia esto por una contraseña más segura
+// La contraseña vive en este archivo JS, visible para cualquiera que abra las herramientas
+// de desarrollador — es solo un candado suave contra toques accidentales, no seguridad real.
+// Por eso "recordar en este dispositivo" (localStorage) no reduce la seguridad: no había
+// seguridad real que proteger.
+const ADMIN_AUTH_KEY = 'rdc_admin_auth_v1';
 
 // ==================== FUNCIONES ADMIN (Global Scope) ====================
 function abrirPanelAdmin() {
+  if (localStorage.getItem(ADMIN_AUTH_KEY) === 'true') {
+    _mostrarPanelAdmin();
+    return;
+  }
   const modal = document.getElementById('admin-login-modal');
   if (modal) {
     modal.style.display = 'flex';
@@ -16,16 +25,48 @@ function cerrarPanelAdmin() {
   document.getElementById('admin-password').value = '';
 }
 
+function _mostrarPanelAdmin() {
+  document.getElementById('admin-login-modal').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+  cargarListasAdmin();
+}
+
 function autenticarAdmin() {
   const password = document.getElementById('admin-password').value;
   if (password === ADMIN_PASSWORD) {
-    document.getElementById('admin-login-modal').style.display = 'none';
-    document.getElementById('admin-panel').style.display = 'block';
-    cargarListasAdmin();
+    if (document.getElementById('admin-recordar').checked) {
+      localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+    }
+    _mostrarPanelAdmin();
   } else {
     alert('❌ Contraseña incorrecta');
     document.getElementById('admin-password').value = '';
   }
+}
+
+function cerrarSesionAdmin() {
+  if (!confirm('¿Cerrar sesión de administrador en este dispositivo?\n\nLa próxima vez que entres, va a pedir la contraseña de nuevo.')) return;
+  localStorage.removeItem(ADMIN_AUTH_KEY);
+  cerrarPanelAdmin();
+}
+
+// ==================== ACORDEÓN DEL PANEL ADMIN ====================
+let _adminAccordionAbierto = null;
+
+function _toggleAdminAccordion(key) {
+  _adminAccordionAbierto = (_adminAccordionAbierto === key) ? null : key;
+  _aplicarAdminAccordion();
+}
+
+function _aplicarAdminAccordion() {
+  ['sup', 'cap', 'sect'].forEach(k => {
+    const body = document.getElementById('admin-acc-body-' + k);
+    const chev = document.getElementById('admin-acc-chev-' + k);
+    if (!body) return;
+    const abrir = _adminAccordionAbierto === k;
+    body.style.display = abrir ? 'block' : 'none';
+    if (chev) chev.style.transform = abrir ? 'rotate(180deg)' : 'rotate(0deg)';
+  });
 }
 
 // Eliminar deja el registro en la tabla con estado:false (borrado lógico), así que
@@ -114,14 +155,19 @@ async function cargarListasAdmin() {
     for (const sect of (sects||[])) {
       const { data: frentes } = await window.supabase.from('frentes').select('id, nombre').eq('sector_id', sect.id).eq('estado', true).order('orden');
       const botonesSector = `<button onclick="agregarFrenteSector(${sect.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px">+ Frente</button><button onclick="eliminarSector(${sect.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button>`;
-      sectHtml += `<div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:4px">`;
-      sectHtml += _filaArrastrable('sectores', sect.id, sect.nombre, botonesSector, null, 'background:var(--surface);font-weight:600;margin-bottom:8px;');
+      // El sector completo (con sus frentes adentro) es la unidad que se arrastra, no solo su
+      // encabezado — si solo el encabezado fuera arrastrable, container.parentElement apuntaría
+      // a la tarjeta de ESTE sector nada más, y nunca vería a los demás sectores como hermanos.
+      const dragSector = `data-tabla="sectores" data-id="${sect.id}" draggable="true" ondragstart="event.stopPropagation();_dragStart(event,'sectores',${sect.id},null)" ondragover="event.stopPropagation();event.preventDefault()" ondrop="event.stopPropagation();_dropRow(event,'sectores',${sect.id},null)"`;
+      sectHtml += `<div ${dragSector} style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:4px;cursor:grab">`;
+      sectHtml += `<div style="font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px"><span style="color:var(--text3)">☰</span><span style="flex:1">${sect.nombre}</span>${botonesSector}</div>`;
       (frentes||[]).forEach(f => {
         sectHtml += _filaArrastrable('frentes', f.id, f.nombre, `<button onclick="eliminarFrente(${f.id})" style="background:none;border:none;color:#dc2626;cursor:pointer">✕</button>`, sect.id, 'background:var(--surface);font-size:11px;padding:4px 8px;');
       });
       sectHtml += '</div>';
     }
     document.getElementById('admin-sect-lista').innerHTML = sectHtml;
+    _aplicarAdminAccordion();
   } catch (e) {
     console.error('Error cargando listas:', e);
   }
