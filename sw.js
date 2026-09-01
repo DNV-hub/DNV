@@ -3,13 +3,25 @@
 // en localStorage y los exports (.xlsx/.csv/.json) se generan como Blob en el propio navegador,
 // ninguno de los dos pasa por una petición de red que este Service Worker pueda tocar.
 
-const CACHE_NAME = 'rdc-cache-v1';
+const CACHE_NAME = 'rdc-cache-v2';
 const APP_SHELL = [
-  './Reporte_Diario_Campo.html',
+  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './css/variables.css',
+  './css/reset.css',
+  './css/layout.css',
+  './css/components.css',
+  './js/config.js',
+  './js/supabase.js',
+  './js/utils.js',
+  './js/rdc.js',
+  './js/admin.js',
+  './js/navegacion.js',
+  './js/fotos.js',
+  './js/main.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -47,7 +59,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copia));
           return res;
         })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match('./Reporte_Diario_Campo.html')))
+        .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
     );
     return;
   }

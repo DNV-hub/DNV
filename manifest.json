@@ -2,7 +2,7 @@
   "name": "Reporte Diario de Campo",
   "short_name": "RDC",
   "description": "Reporte Diario de Campo — sostenimiento y mantenimiento de talud",
-  "start_url": "./Reporte_Diario_Campo.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
