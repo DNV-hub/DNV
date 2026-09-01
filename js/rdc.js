@@ -438,16 +438,16 @@ function _renderCard(p, i) {
 
 // ==================== METRADOS — 3 BLOQUES ====================
 function _zonasFrente(frente) {
-  const rows = PREFIJOS_FRENTE.filter(r => r.f === frente);
+  const rows = PREFIJOS.filter(r => r.f === frente);
   if (!rows.length) return [];
   return [...new Set(rows.map(r => r.z))];
 }
 function _sostsFrente(frente, zona) {
-  const rows = PREFIJOS_FRENTE.filter(r => r.f === frente && r.z === zona);
+  const rows = PREFIJOS.filter(r => r.f === frente && r.z === zona);
   return [...new Set(rows.map(r => r.s))];
 }
 function _getPrefijosInfo(frente, zona, sost) {
-  const row = PREFIJOS_FRENTE.find(r => r.f === frente && r.z === zona && r.s === sost);
+  const row = PREFIJOS.find(r => r.f === frente && r.z === zona && r.s === sost);
   if (!row) return {prefijos:[], plano:'', isManual:false};
   if (row.s === 'Manual') return {prefijos:[], plano:'', isManual:true};
   const prefijos = row.p ? row.p.split(',').map(x => x.trim()).filter(Boolean) : [];

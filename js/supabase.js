@@ -38,6 +38,10 @@ const supabase = window.supabase;
 let SECTORES = {};
 let SUPERVISORES = [];
 let CAPATACES = [];
+// Codificación por frente/zona/sostenimiento (antes era la constante fija PREFIJOS_FRENTE
+// en config.js; ahora vive en la tabla "prefijos" y se administra desde el panel admin).
+// Misma forma de fila {f,z,s,p,pl} que usaba PREFIJOS_FRENTE, para no tocar rdc.js más de lo necesario.
+let PREFIJOS = [];
 
 // Función para cargar datos desde Supabase
 async function cargarDatosSupabase() {
@@ -67,6 +71,10 @@ async function cargarDatosSupabase() {
       });
     }
     console.log('✅ SECTORES cargados:', SECTORES);
+
+    const { data: prefData } = await window.supabase.from('prefijos').select('frente, zona, sost, prefijo, plano').eq('estado', true).order('orden');
+    PREFIJOS = (prefData || []).map(p => ({ f: p.frente, z: p.zona, s: p.sost, p: p.prefijo, pl: p.plano }));
+    console.log('✅ Prefijos cargados:', PREFIJOS);
   } catch (error) {
     console.error('❌ Error cargando Supabase:', error);
   }

@@ -489,6 +489,41 @@
         </div>
       </div>
 
+      <!-- ACORDEÓN: Códigos y Prefijos -->
+      <div style="border:1px solid var(--border);border-radius:var(--r-md);margin-top:10px;overflow:hidden">
+        <button type="button" onclick="_toggleAdminAccordion('pref')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--surface2);border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--text)">
+          <span>🔢 Códigos y Prefijos</span>
+          <i class="ti ti-chevron-down" id="admin-acc-chev-pref" style="transition:transform .15s"></i>
+        </button>
+        <div id="admin-acc-body-pref" style="display:none;padding:14px">
+          <div class="alert alert-blue" style="margin-bottom:12px">
+            <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+            <span>Define cómo se arma el código de cada perno (ej. <strong>Z09/A-1</strong>) según Frente, Zona y Sostenimiento. Deja Sostenimiento como <strong>Manual</strong> (y Prefijo/Plano vacíos) si ese frente no usa códigos automáticos.</span>
+          </div>
+          <div style="margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:var(--r-sm)">
+            <label style="display:block;margin-bottom:8px;font-size:12px;font-weight:600">Nuevo prefijo</label>
+            <div style="display:grid;gap:8px">
+              <select id="admin-pref-frente" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface)">
+                <option value="">— Selecciona un frente —</option>
+              </select>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input type="text" id="admin-pref-zona" placeholder="Zona (ej. Zona 1, o vacío)" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface)">
+                <input type="text" id="admin-pref-sost" placeholder="Sostenimiento (ej. ACTIVO)" list="admin-pref-sost-opts" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface)">
+                <datalist id="admin-pref-sost-opts">
+                  <option value="ACTIVO"><option value="PASIVO"><option value="BD"><option value="Manual">
+                </datalist>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input type="text" id="admin-pref-prefijo" placeholder="Prefijo (ej. Z09/A-)" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface)">
+                <input type="text" id="admin-pref-plano" placeholder="Plano (ej. CE1062)" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface)">
+              </div>
+              <button onclick="agregarPrefijo()" class="btn-primary" style="padding:8px 14px">+ Agregar prefijo</button>
+            </div>
+          </div>
+          <div id="admin-pref-lista" style="font-size:12px"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

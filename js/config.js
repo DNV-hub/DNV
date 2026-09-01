@@ -419,37 +419,8 @@ const EQUIPOS_SOPORTE_FIJOS = ['Retroexcavadora','Camión grúa','Camión Barand
 const UBICACIONES_PERNO = ['Cabecera','Cuerpo','Pie','Lateral','Viento'];
 
 // ==================== PREFIJOS POR FRENTE ====================
-const PREFIJOS_FRENTE = [
-  {f:'OPB',z:'A',s:'BD',p:'GB/A-',pl:'CE1072'},
-  {f:'OPB',z:'B',s:'BD',p:'GB/B-',pl:'CE1073'},
-  {f:'OPB',z:'C',s:'BD',p:'GB/C-',pl:'CE1074'},
-  {f:'BPN - 32',z:'',s:'Manual',p:'',pl:''},
-  {f:'POZA PC-003',z:'',s:'Manual',p:'',pl:''},
-  {f:'ACCESO POZA PC-003',z:'',s:'Manual',p:'',pl:''},
-  {f:'ZCM08',z:'',s:'ACTIVO',p:'A-08/P,A2-08/P,A1-08/P',pl:'CE1047'},
-  {f:'ZCM08',z:'1',s:'PASIVO',p:'ZCM-08/P',pl:'CE1046'},
-  {f:'ZCM08',z:'2',s:'PASIVO',p:'ZCM-08/P',pl:'CE1046'},
-  {f:'ZCM08',z:'3',s:'PASIVO',p:'P3-08/P',pl:'CE1047'},
-  {f:'ZCM09',z:'',s:'ACTIVO',p:'Z09/A-',pl:'CE1062'},
-  {f:'ZCM09',z:'',s:'PASIVO',p:'Z09/P-',pl:'CE1066'},
-  {f:'VM-08',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-07',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-06',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-05',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-04',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-01',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-16',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-13',z:'',s:'Manual',p:'',pl:''},
-  {f:'VM-12',z:'',s:'Manual',p:'',pl:''},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Zona 1',s:'ACTIVO',p:'Z01/A-',pl:'CE1001'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Lateral 1',s:'PASIVO',p:'L01/P-',pl:'CE1004'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Zona 3',s:'PASIVO',p:'Z03/P-',pl:'CE1005'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Zona 3',s:'ACTIVO',p:'Z03/A-',pl:'CE1002'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Zona 2',s:'PASIVO',p:'Z02/P-',pl:'CE1005'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Zona 2',s:'ACTIVO',p:'Z02/A-',pl:'CE1002'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Lateral 2',s:'PASIVO',p:'L02/P-',pl:'CE1006'},
-  {f:'PLATAFORMA SALA ELECTRICA',z:'Lateral 2',s:'ACTIVO',p:'L02/A-',pl:'CE1003'},
-];
+// Se movió a la tabla "prefijos" de Supabase (administrable desde el panel admin) —
+// ver js/supabase.js (variable PREFIJOS) y migraciones-sql/2026-09-01-tabla-prefijos.sql.
 const PARTIDAS_PRELIMINARES = [
   {n:'Movilización interna',u:'GLB'},
   {n:'Habilitación de facilidades',u:'GLB'},
