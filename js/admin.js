@@ -28,11 +28,25 @@ function autenticarAdmin() {
   }
 }
 
+// Eliminar deja el registro en la tabla con estado:false (borrado lógico), así que
+// "agregar" un nombre que ya existió antes choca con la restricción UNIQUE de la
+// columna nombre. Este helper reactiva el registro inactivo en vez de insertar uno nuevo.
+async function _upsertActivo(tabla, nombre) {
+  const { data: existentes, error: errSel } = await window.supabase.from(tabla).select('id, estado').eq('nombre', nombre);
+  if (errSel) return { error: errSel };
+  const existente = (existentes || [])[0];
+  if (existente) {
+    if (existente.estado) return { error: { message: `Ya existe "${nombre}" en la lista.` } };
+    return await window.supabase.from(tabla).update({ estado: true }).eq('id', existente.id);
+  }
+  return await window.supabase.from(tabla).insert([{ nombre, estado: true }]);
+}
+
 async function agregarSupervisor() {
   const nombre = document.getElementById('admin-sup-nombre').value.trim();
   if (!nombre) { alert('Ingresa un nombre'); return; }
   try {
-    const { error } = await window.supabase.from('supervisores').insert([{ nombre, estado: true }]);
+    const { error } = await _upsertActivo('supervisores', nombre);
     if (error) throw error;
     document.getElementById('admin-sup-nombre').value = '';
     cargarListasAdmin();
@@ -48,7 +62,7 @@ async function agregarCapataz() {
   const nombre = document.getElementById('admin-cap-nombre').value.trim();
   if (!nombre) { alert('Ingresa un nombre'); return; }
   try {
-    const { error } = await window.supabase.from('capataces').insert([{ nombre, estado: true }]);
+    const { error } = await _upsertActivo('capataces', nombre);
     if (error) throw error;
     document.getElementById('admin-cap-nombre').value = '';
     cargarListasAdmin();
@@ -64,7 +78,7 @@ async function agregarSector() {
   const nombre = document.getElementById('admin-sect-nombre').value.trim();
   if (!nombre) { alert('Ingresa un nombre'); return; }
   try {
-    const { error } = await window.supabase.from('sectores').insert([{ nombre, estado: true }]);
+    const { error } = await _upsertActivo('sectores', nombre);
     if (error) throw error;
     document.getElementById('admin-sect-nombre').value = '';
     cargarListasAdmin();
@@ -90,7 +104,7 @@ async function cargarListasAdmin() {
     let sectHtml = '';
     for (const sect of (sects||[])) {
       const { data: frentes } = await window.supabase.from('frentes').select('id, nombre').eq('sector_id', sect.id).eq('estado', true);
-      sectHtml += `<div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:4px"><div style="font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between"><span>${sect.nombre}</span><button onclick="agregarFrenteSector(${sect.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px">+ Frente</button></div>`;
+      sectHtml += `<div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:4px"><div style="font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between"><span>${sect.nombre}</span><span style="display:flex;gap:10px;align-items:center"><button onclick="agregarFrenteSector(${sect.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px">+ Frente</button><button onclick="eliminarSector(${sect.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button></span></div>`;
       (frentes||[]).forEach(f => {
         sectHtml += `<div style="font-size:11px;padding:4px 8px;margin:4px 0;background:var(--surface);border-radius:2px;display:flex;justify-content:space-between"><span>${f.nombre}</span><button onclick="eliminarFrente(${f.id})" style="background:none;border:none;color:#dc2626;cursor:pointer">✕</button></div>`;
       });
@@ -126,6 +140,18 @@ async function eliminarCapataz(id) {
   }
 }
 
+async function eliminarSector(id) {
+  if (!confirm('¿Eliminar sector? Sus frentes quedarán ocultos también.')) return;
+  try {
+    await window.supabase.from('sectores').update({ estado: false }).eq('id', id);
+    cargarListasAdmin();
+    await cargarDatosSupabase();
+    initSelects();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
 async function eliminarFrente(id) {
   if (!confirm('¿Eliminar frente?')) return;
   try {
@@ -142,7 +168,16 @@ async function agregarFrenteSector(sectorId) {
   const nombre = prompt('Nombre del frente:');
   if (!nombre) return;
   try {
-    const { error } = await window.supabase.from('frentes').insert([{ nombre, sector_id: sectorId, estado: true }]);
+    const { data: existentes, error: errSel } = await window.supabase.from('frentes').select('id, estado').eq('sector_id', sectorId).eq('nombre', nombre);
+    if (errSel) throw errSel;
+    const existente = (existentes || [])[0];
+    let error;
+    if (existente) {
+      if (existente.estado) { alert(`Ya existe "${nombre}" en este sector.`); return; }
+      ({ error } = await window.supabase.from('frentes').update({ estado: true }).eq('id', existente.id));
+    } else {
+      ({ error } = await window.supabase.from('frentes').insert([{ nombre, sector_id: sectorId, estado: true }]));
+    }
     if (error) throw error;
     cargarListasAdmin();
     await cargarDatosSupabase();
