@@ -2575,16 +2575,23 @@ function buildTextoWsp() {
   // Control de Sostenimiento en WhatsApp — nuevo formato
   if (controlItems.length > 0) {
     t += '*CONTROL DE SOSTENIMIENTO* 🔩\n';
-    // Pernos (perf + iny)
-    const pernos = controlItems.filter(c => c.elemento === 'Perno');
-    if (pernos.length) {
-      t += `*Pernos: ${pernos.length} un.*\n`;
-      pernos.forEach(c => {
+    // Pernos, separados por actividad — antes se listaban todos juntos y no se podía
+    // distinguir cuáles eran de perforación y cuáles de inyección.
+    const gruposPerno = [
+      { label: 'Perforación', items: controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Perforación') },
+      { label: 'Inyección',   items: controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Inyección') },
+      { label: 'Otros',       items: controlItems.filter(c => c.elemento === 'Perno' && c.actividad !== 'Perforación' && c.actividad !== 'Inyección') },
+    ];
+    gruposPerno.forEach(g => {
+      if (!g.items.length) return;
+      const totalG = g.items.reduce((s,c) => s + Number(c.cantidad||0), 0);
+      t += `*Pernos — ${g.label}: ${g.items.length} un. (${Math.round(totalG*100)/100} ${g.items[0].unidad||'ML'})*\n`;
+      g.items.forEach(c => {
         const cod = c.codigo || c.codigoPerno || '—';
         const long = c.cantidad ? c.cantidad + ' ' + (c.unidad||'ML') : '—';
         t += `  ${cod} — ${long}\n`;
       });
-    }
+    });
     // Mallas
     const mallas = controlItems.filter(c => c.elemento === 'Malla');
     if (mallas.length) {
