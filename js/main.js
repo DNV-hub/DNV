@@ -14,7 +14,6 @@ async function inicializarApp() {
   loadDraft();
   renderProgRows();
   renderProgAdicRows();
-  _initEquiposDatalist();
   _renderBitacora();
   _initSupervisor();
   _actualizarBotonNuevo();

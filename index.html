@@ -147,20 +147,27 @@
       <div id="personal-sala-electrica-rows"></div>
     </div>
   </div>
-  <!-- Equipos (simplificado) -->
+  <!-- Equipos — acordeón con stepper por equipo -->
   <div class="card">
-    <div class="card-title"><i class="ti ti-tool"></i>Equipos en frente</div>
-    <p class="note" style="margin-bottom:10px">Registra los equipos presentes en la jornada.</p>
-    <div id="equipos-lista-rows"></div>
-    <div style="display:grid;grid-template-columns:1fr 80px 36px;gap:8px;align-items:end;margin-top:10px">
-      <div class="field"><label style="font-size:11px">Equipo</label>
-        <select id="eq-nombre" onchange="_onEquipoSelChange()">
-          <option value="">— Seleccionar equipo —</option>
-        </select>
-        <input type="text" id="eq-nombre-otro" placeholder="Describe el equipo…" autocomplete="off" style="display:none;margin-top:6px" onkeydown="if(event.key==='Enter')_addEquipo()">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleEquiposAcordeon()">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="card-title" style="margin:0"><i class="ti ti-tool"></i>Equipos en frente</div>
+        <span id="badge-equipos" style="font-size:11px;color:var(--text3);font-weight:400"></span>
       </div>
-      <div class="field"><label style="font-size:11px">Cantidad</label><input type="number" min="0" step="1" id="eq-cantidad" placeholder="0" onkeydown="if(event.key==='Enter')_addEquipo()"></div>
-      <button class="ctrl-add-btn" onclick="_addEquipo()" style="height:38px;align-self:end">+</button>
+      <i class="ti ti-chevron-down" id="chev-equipos" style="flex-shrink:0;color:var(--text2)"></i>
+    </div>
+    <div id="equipos-body" style="display:none;margin-top:10px">
+      <p class="note" style="margin-bottom:8px">Toca <strong>+</strong> junto al equipo para sumarlo, o escribe la cantidad exacta.</p>
+      <div id="equipos-catalogo-rows"></div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Equipo no listado</div>
+        <div id="equipos-manual-rows"></div>
+        <div style="display:grid;grid-template-columns:1fr 70px 36px;gap:8px;align-items:end;margin-top:8px">
+          <div class="field" style="margin:0"><input type="text" id="eq-nombre-otro" placeholder="Describe el equipo…" autocomplete="off" onkeydown="if(event.key==='Enter')_addEquipoOtro()"></div>
+          <div class="field" style="margin:0"><input type="number" min="0" step="1" id="eq-cantidad" placeholder="0" onkeydown="if(event.key==='Enter')_addEquipoOtro()"></div>
+          <button class="ctrl-add-btn" onclick="_addEquipoOtro()" style="height:38px">+</button>
+        </div>
+      </div>
     </div>
   </div>
   </div>

@@ -1992,43 +1992,71 @@ function renderEquiposFijos() {
     `).join('');
   }
 }
-// ─── Equipos unificados (nueva UI en tab Datos) ───
-function _initEquiposDatalist() {
-  const sel = document.getElementById('eq-nombre');
-  if (!sel) return;
-  let opts = '<option value="">— Seleccionar equipo —</option>';
-  opts += '<optgroup label="Perforación">' + EQUIPOS_PERFORACION_FIJOS.map(n => `<option value="${n}">${n}</option>`).join('') + '</optgroup>';
-  opts += '<optgroup label="Soporte operativo">' + EQUIPOS_SOPORTE_FIJOS.map(n => `<option value="${n}">${n}</option>`).join('') + '</optgroup>';
-  opts += '<option value="__otro__">Otro…</option>';
-  sel.innerHTML = opts;
+// ─── Equipos unificados (acordeón + stepper por equipo, en tab Datos) ───
+function _toggleEquiposAcordeon() {
+  const body = document.getElementById('equipos-body');
+  const chev = document.getElementById('chev-equipos');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (chev) chev.className = 'ti ti-chevron-' + (open ? 'down' : 'up');
 }
-function _onEquipoSelChange() {
-  const sel = document.getElementById('eq-nombre');
-  const otro = document.getElementById('eq-nombre-otro');
-  if (!sel || !otro) return;
-  otro.style.display = sel.value === '__otro__' ? '' : 'none';
-  if (sel.value === '__otro__') otro.focus();
+function _equipoCatLista(cat) { return cat === 'perf' ? EQUIPOS_PERFORACION_FIJOS : EQUIPOS_SOPORTE_FIJOS; }
+function _equipoCantidad(nombre) {
+  const e = equiposLista.find(x => x.nombre === nombre);
+  return e ? e.cantidad : 0;
 }
-function _addEquipo() {
-  const sel = document.getElementById('eq-nombre');
-  const otro = document.getElementById('eq-nombre-otro');
-  let nombre = '';
-  if (sel && sel.value === '__otro__') {
-    nombre = otro ? otro.value.trim() : '';
-  } else {
-    nombre = sel ? sel.value : '';
-  }
-  const cant = parseInt((document.getElementById('eq-cantidad') || {}).value) || 0;
-  if (!nombre.trim()) { showToast('⚠️ Selecciona o describe el equipo'); return; }
-  if (!cant) { showToast('⚠️ Ingresa la cantidad'); return; }
-  equiposLista.push({ id: equiposListaId++, nombre: nombre.trim(), cantidad: cant });
-  if (sel) { sel.value = ''; }
-  if (otro) { otro.value = ''; otro.style.display = 'none'; }
-  const ce = document.getElementById('eq-cantidad'); if (ce) ce.value = '';
-  if (sel) sel.focus();
+function _equipoRowHTML(cat, i, nombre) {
+  const id = 'eq-' + cat + '-' + i;
+  return '<div class="person-row">'
+    + '<span class="person-row-label">' + nombre + '</span>'
+    + '<div class="stepper">'
+    + '<button type="button" class="stepper-btn" onclick="_equipoCatStep(\'' + cat + '\',' + i + ',-1)" aria-label="Restar">−</button>'
+    + '<input type="number" min="0" step="1" inputmode="numeric" value="' + _equipoCantidad(nombre) + '" id="' + id + '" class="stepper-input"'
+    + ' onblur="_equipoCatSet(\'' + cat + '\',' + i + ',this.value)">'
+    + '<button type="button" class="stepper-btn" onclick="_equipoCatStep(\'' + cat + '\',' + i + ',1)" aria-label="Sumar">+</button>'
+    + '</div>'
+    + '</div>';
+}
+// Sube/baja o crea/elimina la entrada en equiposLista según la cantidad quede en 0 o no.
+function _equipoCatSet(cat, i, val) {
+  const nombre = _equipoCatLista(cat)[i];
+  const cant = Math.max(0, Math.round(parseFloat(val) || 0));
+  const inp = document.getElementById('eq-' + cat + '-' + i);
+  if (inp) inp.value = cant;
+  const e = equiposLista.find(x => x.nombre === nombre);
+  if (cant <= 0) { if (e) equiposLista = equiposLista.filter(x => x !== e); }
+  else if (e) { e.cantidad = cant; }
+  else { equiposLista.push({ id: equiposListaId++, nombre, cantidad: cant }); }
+  saveDraft();
+  _actualizarBadgeEquipos();
+}
+function _equipoCatStep(cat, i, delta) {
+  const inp = document.getElementById('eq-' + cat + '-' + i);
+  if (!inp) return;
+  const next = Math.max(0, Math.round((parseFloat(inp.value) || 0) + delta));
+  _equipoCatSet(cat, i, next);
+}
+function _addEquipoOtro() {
+  const nombreEl = document.getElementById('eq-nombre-otro');
+  const cantEl   = document.getElementById('eq-cantidad');
+  const nombre = nombreEl ? nombreEl.value.trim() : '';
+  const cant   = parseInt((cantEl || {}).value) || 0;
+  if (!nombre) { showToast('⚠️ Describe el equipo'); return; }
+  if (!cant)   { showToast('⚠️ Ingresa la cantidad'); return; }
+  equiposLista.push({ id: equiposListaId++, nombre, cantidad: cant });
+  if (nombreEl) nombreEl.value = '';
+  if (cantEl)   cantEl.value = '';
+  if (nombreEl) nombreEl.focus();
   _renderEquiposLista();
   saveDraft();
   showToast('✅ Equipo agregado');
+}
+function _actualizarBadgeEquipos() {
+  const badge = document.getElementById('badge-equipos');
+  if (!badge) return;
+  const n = equiposLista.length;
+  badge.textContent = n ? n + ' equipo' + (n === 1 ? '' : 's') : '';
 }
 const _MEDIAS_HORAS = Array.from({length:36}, (_,i) => { const h=Math.floor(i/2)+5, m=i%2===0?'00':'30'; return `${String(h).padStart(2,'0')}:${m}`; });
 function _bitacoraHoraOpts(sel='') { return '<option value="">--:--</option>'+_MEDIAS_HORAS.map(h=>`<option${h===sel?' selected':''}>${h}</option>`).join(''); }
@@ -2072,17 +2100,29 @@ function _removeEquipo(id) {
   _renderEquiposLista();
   saveDraft();
 }
+// Re-renderiza catálogo (steppers) + lista de equipos no catalogados (con eliminar) + badge del acordeón.
 function _renderEquiposLista() {
-  const cont = document.getElementById('equipos-lista-rows');
-  if (!cont) return;
-  if (!equiposLista.length) { cont.innerHTML = ''; return; }
-  cont.innerHTML = equiposLista.map(e =>
-    `<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)">
-      <span style="flex:1;font-size:13px">${e.nombre}</span>
-      <span style="font-size:14px;font-weight:700;color:var(--blue);min-width:24px;text-align:right">${e.cantidad}</span>
-      <button class="del-btn" onclick="_removeEquipo(${e.id})" aria-label="Eliminar">×</button>
-    </div>`
-  ).join('');
+  const contCat = document.getElementById('equipos-catalogo-rows');
+  if (contCat) {
+    let html = '<div class="subtitulo-header">Perforación</div>';
+    html += EQUIPOS_PERFORACION_FIJOS.map((n,i) => _equipoRowHTML('perf', i, n)).join('');
+    html += '<div class="subtitulo-header">Soporte operativo</div>';
+    html += EQUIPOS_SOPORTE_FIJOS.map((n,i) => _equipoRowHTML('sop', i, n)).join('');
+    contCat.innerHTML = html;
+  }
+  const contManual = document.getElementById('equipos-manual-rows');
+  if (contManual) {
+    const catalogo = new Set([...EQUIPOS_PERFORACION_FIJOS, ...EQUIPOS_SOPORTE_FIJOS]);
+    const manuales = equiposLista.filter(e => !catalogo.has(e.nombre));
+    contManual.innerHTML = manuales.map(e =>
+      `<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)">
+        <span style="flex:1;font-size:13px">${e.nombre}</span>
+        <span style="font-size:14px;font-weight:700;color:var(--blue);min-width:24px;text-align:right">${e.cantidad}</span>
+        <button class="del-btn" onclick="_removeEquipo(${e.id})" aria-label="Eliminar">×</button>
+      </div>`
+    ).join('');
+  }
+  _actualizarBadgeEquipos();
 }
 function getEquiposRegistrados() {
   // Compatibilidad export: clasifica por nombre si está en lista soporte
