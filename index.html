@@ -418,10 +418,11 @@
       <label>Contraseña</label>
       <input type="password" id="admin-password" placeholder="Ingresa la contraseña" style="font-size:16px;padding:10px 12px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text);width:100%;box-sizing:border-box">
     </div>
-    <div class="field" style="flex-direction:row;align-items:center;gap:8px;margin-top:10px">
-      <input type="checkbox" id="admin-recordar" checked style="width:16px;height:16px;accent-color:var(--amber)">
-      <label for="admin-recordar" style="font-weight:400;font-size:12px">Recordar en este dispositivo</label>
-    </div>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:14px;cursor:pointer;user-select:none;font-size:13px;color:var(--text2);font-weight:500">
+      <input type="checkbox" id="admin-recordar" checked style="position:absolute;opacity:0;width:1px;height:1px">
+      <span class="admin-toggle-track"></span>
+      Recordar en este dispositivo
+    </label>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button onclick="cerrarPanelAdmin()" class="btn-secondary" style="flex:1">Cancelar</button>
       <button onclick="autenticarAdmin()" class="btn-primary" style="flex:1">Entrar</button>
@@ -602,7 +603,12 @@
             <span style="font-size:22px">🕸</span><span>Malla</span>
             <span id="badge-sketch_malla" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
           </button>
-          <div id="foto-thumbs-sketch_malla" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+          <div id="foto-thumbs-sketch_malla" style="display:grid;grid-template-columns:ralter table supervisores add column if not exists orden integer;
+alter table capataces    add column if not exists orden integer;
+alter table sectores     add column if not exists orden integer;
+alter table frentes      add column if not exists orden integer;
+-- (+ 4 updates para rellenar el orden inicial, están en el archivo completo)
+epeat(2,1fr);gap:5px;margin-top:8px"></div>
         </div>
       </div>
     </div>

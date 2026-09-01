@@ -7,8 +7,21 @@ const ADMIN_PASSWORD = 'admin123'; // Cambia esto por una contraseña más segur
 const ADMIN_AUTH_KEY = 'rdc_admin_auth_v1';
 
 // ==================== FUNCIONES ADMIN (Global Scope) ====================
+// localStorage puede fallar (modo privado, almacenamiento bloqueado, etc.) — si eso lanza
+// una excepción sin capturar aquí, el panel admin se queda sin poder abrirse ni cerrarse.
+// Estos dos helpers absorben ese error y devuelven "no recordado" en vez de romper el flujo.
+function _leerAdminRecordado() {
+  try { return localStorage.getItem(ADMIN_AUTH_KEY) === 'true'; } catch (e) { return false; }
+}
+function _guardarAdminRecordado(valor) {
+  try {
+    if (valor) localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+    else localStorage.removeItem(ADMIN_AUTH_KEY);
+  } catch (e) { console.warn('No se pudo recordar el dispositivo:', e); }
+}
+
 function abrirPanelAdmin() {
-  if (localStorage.getItem(ADMIN_AUTH_KEY) === 'true') {
+  if (_leerAdminRecordado()) {
     _mostrarPanelAdmin();
     return;
   }
@@ -34,9 +47,7 @@ function _mostrarPanelAdmin() {
 function autenticarAdmin() {
   const password = document.getElementById('admin-password').value;
   if (password === ADMIN_PASSWORD) {
-    if (document.getElementById('admin-recordar').checked) {
-      localStorage.setItem(ADMIN_AUTH_KEY, 'true');
-    }
+    _guardarAdminRecordado(document.getElementById('admin-recordar').checked);
     _mostrarPanelAdmin();
   } else {
     alert('❌ Contraseña incorrecta');
@@ -46,7 +57,7 @@ function autenticarAdmin() {
 
 function cerrarSesionAdmin() {
   if (!confirm('¿Cerrar sesión de administrador en este dispositivo?\n\nLa próxima vez que entres, va a pedir la contraseña de nuevo.')) return;
-  localStorage.removeItem(ADMIN_AUTH_KEY);
+  _guardarAdminRecordado(false);
   cerrarPanelAdmin();
 }
 

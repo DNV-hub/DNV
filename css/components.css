@@ -112,3 +112,10 @@
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:#111827;color:#fff;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:var(--shadow-md)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ADMIN TOGGLE ("Recordar en este dispositivo") */
+.admin-toggle-track{position:relative;width:42px;height:24px;flex-shrink:0;background:var(--border-md);border-radius:999px;transition:background .15s}
+.admin-toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+#admin-recordar:checked + .admin-toggle-track{background:var(--amber)}
+#admin-recordar:checked + .admin-toggle-track::after{left:21px}
+#admin-recordar:focus-visible + .admin-toggle-track{outline:2px solid var(--blue);outline-offset:2px}
