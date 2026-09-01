@@ -2,6 +2,7 @@
 // ==================== INIT ====================
 renderPersonalPresente();
 renderHitos();
+_renderFormNuevoRegistro();
 renderRows();
 _renderEquiposLista();
 renderMetradosPartidas();

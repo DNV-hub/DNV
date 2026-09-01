@@ -102,9 +102,6 @@
   <button class="bnav-item" id="bnav-metrados" onclick="showTab('metrados')">
     <i class="ti ti-ruler-measure"></i><span>Metrados</span>
   </button>
-  <button class="bnav-item" id="bnav-standby" onclick="showTab('standby')">
-    <i class="ti ti-clock-pause"></i><span>Stand By</span>
-  </button>
   <button class="bnav-item" id="bnav-obs" onclick="showTab('obs')">
     <i class="ti ti-note"></i><span>Obs/Prog</span>
   </button>
@@ -178,10 +175,10 @@
   <div class="card">
     <label class="toggle-row" style="margin-bottom:0">
       <input type="checkbox" id="f-truckshop" onchange="toggleRestriccion()">
-      <span>⚠️ ¿Tuviste restricciones para llegar a tu frente de trabajo?</span>
+      <span>¿Tuviste restricciones para llegar a tu frente de trabajo?</span>
     </label>
     <div id="restriccion-detalle" style="display:none;margin-top:12px">
-      <div class="alert alert-amber" style="margin-bottom:10px">⚠️ Completa los datos de la restricción.</div>
+      <div class="alert alert-amber" style="margin-bottom:10px"><i class="ti ti-alert-triangle" style="flex-shrink:0"></i><span>Completa los datos de la restricción.</span></div>
       <div class="field" style="margin-bottom:10px">
         <label>¿Cuál fue la restricción?</label>
         <textarea id="f-restriccion-desc" placeholder="Describe la restricción..."></textarea>
@@ -196,25 +193,26 @@
   <div class="card" style="border-left:4px solid var(--text2)">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togHitosAcordeon()">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:14px;font-weight:700;color:var(--text2)">🚩 Hitos de inicio de jornada</span>
+        <i class="ti ti-flag-3" style="color:var(--text2);font-size:16px"></i>
+        <span style="font-size:14px;font-weight:700;color:var(--text2)">Hitos de inicio de jornada</span>
         <span id="badge-hitos" style="font-size:11px;color:var(--text3);font-weight:400"></span>
       </div>
-      <span id="chev-hitos" style="color:var(--text2);font-size:18px;transition:transform .2s">▼</span>
+      <i class="ti ti-chevron-down" id="chev-hitos" style="color:var(--text2);font-size:18px"></i>
     </div>
     <div id="hitos-body" style="margin-top:12px">
       <div id="hitos-rows"></div>
       <div class="hito-row">
-        <span class="hito-label">🍱 Salida a refrigerio/almuerzo</span>
+        <span class="hito-label">Salida a refrigerio/almuerzo</span>
         <input type="time" id="f-almuerzo-salida" value="00:00" onchange="saveDraft()">
       </div>
       <div class="hito-row">
-        <span class="hito-label">🍱 Retorno de refrigerio/almuerzo</span>
+        <span class="hito-label">Retorno de refrigerio/almuerzo</span>
         <input type="time" id="f-almuerzo-retorno" value="00:00" onchange="saveDraft()">
       </div>
       <p class="note" style="margin-top:10px">Registra estos hitos una vez al inicio del turno.</p>
     </div>
   </div>
-  <!-- Bitácora de Campo -->
+  <!-- Bitácora de Campo — línea de tiempo fusionada con Stand By -->
   <div class="card" style="padding:14px 16px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
       <div>
@@ -228,41 +226,29 @@
         </div>
         <div style="text-align:right">
           <div id="bita-stat-count" style="font-size:17px;font-weight:800;color:var(--text)">0</div>
-          <div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;font-weight:600">Actividades</div>
+          <div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;font-weight:600">Registros</div>
         </div>
       </div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title"><i class="ti ti-bolt"></i>Entrada Rápida</div>
-    <div class="field"><label>Hora de Inicio</label><input type="time" id="bita-nueva-hora"></div>
-    <div class="field" style="margin-bottom:0"><label>Descripción de Actividad</label><textarea id="bita-nueva-desc" placeholder="Escribir actividad…"></textarea></div>
-    <button class="btn-primary" style="width:100%;margin-top:12px" onclick="_addBitacoraRapida()"><i class="ti ti-plus"></i>Agregar a Bitácora</button>
+    <div class="card-title"><i class="ti ti-bolt"></i>Agregar Registro</div>
+    <div class="tipo-toggle">
+      <button type="button" class="tipo-btn active" id="tipo-btn-actividad" onclick="_setTipoNuevoRegistro('actividad')">Actividad</button>
+      <button type="button" class="tipo-btn" id="tipo-btn-standby" onclick="_setTipoNuevoRegistro('standby')">Stand By</button>
+    </div>
+    <div id="nuevo-registro-form" style="margin-top:12px"></div>
   </div>
   <div class="card">
-    <div class="card-title"><i class="ti ti-list-check"></i>Actividades Registradas — <span id="frente-actual" style="text-transform:none;font-weight:400;color:var(--blue-text)">selecciona frente en Datos</span></div>
-    <p class="note" style="margin-bottom:8px">Los metrados van en <strong>Metrados</strong>.</p>
-    <div id="bitacora-rows"></div>
+    <div class="card-title"><i class="ti ti-list-check"></i>Línea de Tiempo — <span id="frente-actual" style="text-transform:none;font-weight:400;color:var(--blue-text)">selecciona frente en Datos</span></div>
+    <div id="standby-total" style="display:none;margin-bottom:10px;padding:11px 13px;background:var(--red-bg);border:1px solid #FCA5A5;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red-text)"></div>
+    <div id="timeline-rows"></div>
   </div>
   </div>
 
 <!-- ═══════════════ TAB ACTIVIDADES ═══════════════ -->
 
 <!-- ═══════════════ TAB EQUIPOS ═══════════════ -->
-
-<!-- ═══════════════ TAB STAND BY ═══════════════ -->
-<div id="tab-standby" class="screen">
-  <div class="card">
-    <div class="card-title"><i class="ti ti-clock-pause"></i>Stand By de la jornada</div>
-    <div class="alert alert-blue">
-      <i class="ti ti-info-circle" style="flex-shrink:0"></i>
-      <span>Registra los <strong>tiempos de paralización (Stand By)</strong> de la jornada: actividad afectada, horario y causa. El total se calcula automáticamente descontando el horario de almuerzo (pestaña Datos) si se cruza con el rango registrado.</span>
-    </div>
-    <div id="standby-rows"></div>
-    <div id="standby-total" style="display:none;margin-top:10px;padding:11px 13px;background:var(--red-bg);border:1px solid #FCA5A5;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red-text)"></div>
-    <button class="add-btn" onclick="addStandbyRow()"><i class="ti ti-plus"></i>Agregar Stand By</button>
-  </div>
-  </div>
 
 <!-- ═══════════════ TAB METRADOS ═══════════════ -->
 <div id="tab-metrados" class="screen">

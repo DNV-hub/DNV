@@ -1450,13 +1450,16 @@ function getStandbyTotalMin() {
   return getStandbyRegistrados().reduce((s,r) => s + (r.minutos||0), 0);
 }
 function addStandbyRow() {
-  standbyRows.push({ id: standbyId++, actividad:'', desde:'', hasta:'', causa:'', causaOtro:'', comentario:'', responsable:'', totalHoras:'', totalMinutos:'' });
-  renderStandbyRows();
+  const id = standbyId++;
+  standbyRows.push({ id, actividad:'', desde:'', hasta:'', causa:'', causaOtro:'', comentario:'', responsable:'', totalHoras:'', totalMinutos:'' });
+  _registroAbierto = { tipo:'standby', id };
+  _renderBitacora();
   saveDraft();
 }
 function removeStandbyRow(id) {
   standbyRows = standbyRows.filter(r => r.id !== id);
-  renderStandbyRows();
+  if (_registroAbierto && _registroAbierto.tipo === 'standby' && _registroAbierto.id === id) _registroAbierto = null;
+  _renderBitacora();
   saveDraft();
 }
 function updateStandby(id, field, val) {
@@ -1503,73 +1506,10 @@ function _renderStandbyTotal() {
     box.style.display = 'none';
   }
 }
-function renderStandbyRows() {
-  const container = document.getElementById('standby-rows');
-  if (!container) return;
-  if (standbyRows.length === 0) {
-    container.innerHTML = '<div class="empty-msg">Sin Stand By registrados. Presiona el botón para agregar.</div>';
-    _renderStandbyTotal();
-    return;
-  }
-  container.innerHTML = '';
-  standbyRows.forEach((r, idx) => {
-    const min = _sbMinutosFila(r);
-    const esTiempoTotal = r.causa === CAUSA_TIEMPO_TOTAL;
-    const causasOpts = CAUSAS_STANDBY.map(c => `<option ${r.causa===c?'selected':''}>${c}</option>`).join('');
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:12px;border:1.5px solid var(--border);border-radius:var(--r-md);margin-bottom:10px;background:var(--surface2)';
-    div.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:11px;font-weight:800;background:var(--red-bg);color:var(--red-text);border-radius:20px;padding:3px 10px">ITEM ${idx+1}</span>
-        <span style="flex:1"></span>
-        <button class="del-btn" onclick="removeStandbyRow(${r.id})" aria-label="Eliminar">×</button>
-      </div>
-      <div class="field" style="margin-bottom:8px">
-        <label>Actividad afectada</label>
-        <input type="text" placeholder="Ej: Perforación de pernos, instalación de malla..." value="${(r.actividad||'').replace(/"/g,'&quot;')}" onchange="updateStandby(${r.id},'actividad',this.value)">
-      </div>
-      <div id="sb-tiempo-normal-${r.id}" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;${esTiempoTotal?'display:none':''}">
-        <div class="field"><label>Desde</label><input type="time" value="${r.desde||''}" onchange="updateStandby(${r.id},'desde',this.value)"></div>
-        <div class="field"><label>Hasta</label><input type="time" value="${r.hasta||''}" onchange="updateStandby(${r.id},'hasta',this.value)"></div>
-        <div class="field"><label>Total</label>
-          <div id="sb-tot-${r.id}" style="display:flex;align-items:center;height:38px;padding:0 11px;border:1.5px dashed var(--border-md);border-radius:var(--r-md);font-size:14px;font-weight:700;color:${(min!==null&&min>0)?'var(--red-text)':'var(--text3)'}">${_sbFmt(min)}</div>
-        </div>
-      </div>
-      <div id="sb-tiempo-total-${r.id}" style="margin-bottom:8px;${esTiempoTotal?'':'display:none'}">
-        <p class="note" style="margin-bottom:8px">⏱️ Este tipo de Stand By se registra como <strong>tiempo total del día</strong>.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div class="field"><label>Horas</label><input type="number" min="0" step="1" placeholder="0" value="${r.totalHoras||''}" onchange="updateStandby(${r.id},'totalHoras',this.value)"></div>
-          <div class="field"><label>Minutos</label><input type="number" min="0" max="59" step="1" placeholder="0" value="${r.totalMinutos||''}" onchange="updateStandby(${r.id},'totalMinutos',this.value)"></div>
-          <div class="field"><label>Total</label>
-            <div id="sb-tot-total-${r.id}" style="display:flex;align-items:center;height:38px;padding:0 11px;border:1.5px dashed var(--border-md);border-radius:var(--r-md);font-size:14px;font-weight:700;color:${(min!==null&&min>0)?'var(--red-text)':'var(--text3)'}">${_sbFmt(min)}</div>
-          </div>
-        </div>
-      </div>
-      <div class="field" style="margin-bottom:8px">
-        <label>Causa</label>
-        <select onchange="updateStandby(${r.id},'causa',this.value)">
-          <option value="">— Seleccionar causa —</option>
-          ${causasOpts}
-          <option value="OTRO" ${r.causa==='OTRO'?'selected':''}>OTRO (especificar)</option>
-        </select>
-      </div>
-      <div class="field" id="sb-otro-${r.id}" style="margin-bottom:8px;${r.causa==='OTRO'?'':'display:none'}">
-        <label>Especificar otra causa</label>
-        <input type="text" placeholder="Describe la causa..." value="${(r.causaOtro||'').replace(/"/g,'&quot;')}" onchange="updateStandby(${r.id},'causaOtro',this.value)">
-      </div>
-      <div class="field" style="margin-bottom:8px">
-        <label>Responsable de la liberación</label>
-        <input type="text" placeholder="Nombre (puede ser externo)" value="${(r.responsable||'').replace(/"/g,'&quot;')}" onchange="updateStandby(${r.id},'responsable',this.value)">
-      </div>
-      <div class="field">
-        <label>Comentarios <span style="font-weight:400;color:var(--text3)">(opcional)</span></label>
-        <textarea placeholder="Detalles adicionales del Stand By..." style="min-height:52px" onchange="updateStandby(${r.id},'comentario',this.value)">${(r.comentario||'').replace(/</g,'&lt;')}</textarea>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-  _renderStandbyTotal();
-}
+// La pestaña "Stand By" dedicada desapareció: ahora se fusiona con la Bitácora en la
+// línea de tiempo de Jornada (ver _renderBitacora). Este alias evita tener que tocar
+// cada lugar que todavía llama renderStandbyRows() (boot, reset, loadDraft).
+function renderStandbyRows() { _renderBitacora(); }
 // ==================== FIN MÓDULO STAND BY ====================
 
 function toggleRestriccion() {
@@ -2059,54 +1999,210 @@ function _actualizarBadgeEquipos() {
   badge.textContent = n ? n + ' equipo' + (n === 1 ? '' : 's') : '';
 }
 const _MEDIAS_HORAS = Array.from({length:36}, (_,i) => { const h=Math.floor(i/2)+5, m=i%2===0?'00':'30'; return `${String(h).padStart(2,'0')}:${m}`; });
-function _addBitacora(hora='', actividad='') {
+function _escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ==================== LÍNEA DE TIEMPO — Bitácora + Stand By fusionados (tab Jornada) ====================
+function _addBitacora(hora='', horaFin='', actividad='') {
   const id = bitacoraActivId++;
-  bitacoraActiv.push({ id, hora, actividad });
+  bitacoraActiv.push({ id, hora, horaFin, actividad });
   _renderBitacora();
   saveDraft();
 }
 function _delBitacora(id) {
   bitacoraActiv = bitacoraActiv.filter(r => r.id !== id);
+  if (_registroAbierto && _registroAbierto.tipo === 'actividad' && _registroAbierto.id === id) _registroAbierto = null;
   _renderBitacora();
   saveDraft();
 }
-function _escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-// Bitácora ordenada por hora (más antigua primero), como un registro cronológico del turno.
-function _bitacoraOrdenada() {
-  return [...bitacoraActiv].sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+function _updActividad(id, campo, val) {
+  const r = bitacoraActiv.find(x => x.id === id);
+  if (!r) return;
+  r[campo] = val;
+  saveDraft();
+  _renderBitacora();
+}
+function _actividadMinutos(r) { return (r.hora && r.horaFin) ? _sbMinutos(r.hora, r.horaFin) : null; }
+
+// Solo un registro abierto para edición a la vez (mismo patrón que los demás acordeones de la app).
+let _registroAbierto = null;
+function _toggleRegistroAbierto(tipo, id) {
+  _registroAbierto = (_registroAbierto && _registroAbierto.tipo === tipo && _registroAbierto.id === id) ? null : { tipo, id };
+  _renderBitacora();
+}
+function _timelineDurBadge(min) {
+  return (min !== null && min !== undefined && min > 0) ? `<span class="timeline-dur">${_sbFmt(min)}</span>` : '';
+}
+
+function _timelineActividadHTML(r) {
+  const abierto = _registroAbierto && _registroAbierto.tipo === 'actividad' && _registroAbierto.id === r.id;
+  if (abierto) {
+    return `
+      <div class="timeline-card">
+        <div class="grid2" style="margin-bottom:8px">
+          <div class="field" style="margin:0"><label>Hora Inicio</label><input type="time" value="${r.hora||''}" onchange="_updActividad(${r.id},'hora',this.value)"></div>
+          <div class="field" style="margin:0"><label>Hora Fin</label><input type="time" value="${r.horaFin||''}" onchange="_updActividad(${r.id},'horaFin',this.value)"></div>
+        </div>
+        <div class="field" style="margin-bottom:0"><label>Descripción de Actividad</label><textarea onchange="_updActividad(${r.id},'actividad',this.value)">${_escHtml(r.actividad||'')}</textarea></div>
+        <div class="timeline-foot">
+          <button class="del-btn" onclick="_delBitacora(${r.id})" aria-label="Eliminar">×</button>
+          <button class="timeline-edit-btn" onclick="_toggleRegistroAbierto('actividad',${r.id})" aria-label="Listo"><i class="ti ti-check"></i></button>
+        </div>
+      </div>`;
+  }
+  const min = _actividadMinutos(r);
+  return `
+    <div class="timeline-card">
+      <div class="timeline-head">
+        <span class="timeline-time"><i class="ti ti-clock"></i>${_escHtml(r.hora||'--:--')}${r.horaFin?`<span class="fin">${_escHtml(r.horaFin)}</span>`:''}</span>
+        ${_timelineDurBadge(min)}
+      </div>
+      <div class="timeline-desc">${_escHtml(r.actividad || 'Sin descripción')}</div>
+      <div class="timeline-foot">
+        <button class="timeline-edit-btn" onclick="_toggleRegistroAbierto('actividad',${r.id})" aria-label="Editar"><i class="ti ti-pencil"></i></button>
+      </div>
+    </div>`;
+}
+// Reutiliza exactamente los mismos campos/ids que updateStandby() ya sabe parchear.
+function _timelineStandbyHTML(r) {
+  const abierto = _registroAbierto && _registroAbierto.tipo === 'standby' && _registroAbierto.id === r.id;
+  const min = _sbMinutosFila(r);
+  if (abierto) {
+    const esTiempoTotal = r.causa === CAUSA_TIEMPO_TOTAL;
+    const causasOpts = CAUSAS_STANDBY.map(c => `<option ${r.causa===c?'selected':''}>${c}</option>`).join('');
+    return `
+      <div class="timeline-card standby">
+        <div class="field" style="margin-bottom:8px">
+          <label>Actividad afectada</label>
+          <input type="text" placeholder="Ej: Perforación de pernos, instalación de malla..." value="${_escHtml(r.actividad||'')}" onchange="updateStandby(${r.id},'actividad',this.value)">
+        </div>
+        <div id="sb-tiempo-normal-${r.id}" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;${esTiempoTotal?'display:none':''}">
+          <div class="field"><label>Desde</label><input type="time" value="${r.desde||''}" onchange="updateStandby(${r.id},'desde',this.value)"></div>
+          <div class="field"><label>Hasta</label><input type="time" value="${r.hasta||''}" onchange="updateStandby(${r.id},'hasta',this.value)"></div>
+          <div class="field"><label>Total</label>
+            <div id="sb-tot-${r.id}" style="display:flex;align-items:center;height:38px;padding:0 11px;border:1.5px dashed var(--border-md);border-radius:var(--r-md);font-size:14px;font-weight:700;color:${(min!==null&&min>0)?'var(--red-text)':'var(--text3)'}">${_sbFmt(min)}</div>
+          </div>
+        </div>
+        <div id="sb-tiempo-total-${r.id}" style="margin-bottom:8px;${esTiempoTotal?'':'display:none'}">
+          <p class="note" style="margin-bottom:8px">Este tipo de Stand By se registra como <strong>tiempo total del día</strong>.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div class="field"><label>Horas</label><input type="number" min="0" step="1" placeholder="0" value="${r.totalHoras||''}" onchange="updateStandby(${r.id},'totalHoras',this.value)"></div>
+            <div class="field"><label>Minutos</label><input type="number" min="0" max="59" step="1" placeholder="0" value="${r.totalMinutos||''}" onchange="updateStandby(${r.id},'totalMinutos',this.value)"></div>
+            <div class="field"><label>Total</label>
+              <div id="sb-tot-total-${r.id}" style="display:flex;align-items:center;height:38px;padding:0 11px;border:1.5px dashed var(--border-md);border-radius:var(--r-md);font-size:14px;font-weight:700;color:${(min!==null&&min>0)?'var(--red-text)':'var(--text3)'}">${_sbFmt(min)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:8px">
+          <label>Causa</label>
+          <select onchange="updateStandby(${r.id},'causa',this.value)">
+            <option value="">— Seleccionar causa —</option>
+            ${causasOpts}
+            <option value="OTRO" ${r.causa==='OTRO'?'selected':''}>OTRO (especificar)</option>
+          </select>
+        </div>
+        <div class="field" id="sb-otro-${r.id}" style="margin-bottom:8px;${r.causa==='OTRO'?'':'display:none'}">
+          <label>Especificar otra causa</label>
+          <input type="text" placeholder="Describe la causa..." value="${_escHtml(r.causaOtro||'')}" onchange="updateStandby(${r.id},'causaOtro',this.value)">
+        </div>
+        <div class="field" style="margin-bottom:8px">
+          <label>Responsable de la liberación</label>
+          <input type="text" placeholder="Nombre (puede ser externo)" value="${_escHtml(r.responsable||'')}" onchange="updateStandby(${r.id},'responsable',this.value)">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Comentarios <span style="font-weight:400;color:var(--text3)">(opcional)</span></label>
+          <textarea placeholder="Detalles adicionales del Stand By..." style="min-height:52px" onchange="updateStandby(${r.id},'comentario',this.value)">${_escHtml(r.comentario||'')}</textarea>
+        </div>
+        <div class="timeline-foot">
+          <button class="del-btn" onclick="removeStandbyRow(${r.id})" aria-label="Eliminar">×</button>
+          <button class="timeline-edit-btn" onclick="_toggleRegistroAbierto('standby',${r.id})" aria-label="Listo"><i class="ti ti-check"></i></button>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="timeline-card standby">
+      <div class="timeline-head">
+        <span class="timeline-time"><i class="ti ti-clock"></i>${_escHtml(r.desde||'--:--')}${r.hasta?`<span class="fin">${_escHtml(r.hasta)}</span>`:''}</span>
+        ${_timelineDurBadge(min)}
+      </div>
+      <span class="timeline-badge-standby">STAND BY</span>
+      <div class="timeline-title">${_escHtml(_sbCausaEfectiva(r) || 'Sin causa registrada')}</div>
+      <div class="timeline-box">
+        <div class="timeline-box-row"><label>Actividad afectada</label><div class="val">${_escHtml(r.actividad || '—')}</div></div>
+        <div class="timeline-box-row"><label>Responsable de la liberación</label><div class="val">${_escHtml(r.responsable || '—')}</div></div>
+      </div>
+      <div class="timeline-foot">
+        <button class="timeline-edit-btn" onclick="_toggleRegistroAbierto('standby',${r.id})" aria-label="Editar"><i class="ti ti-pencil"></i></button>
+      </div>
+    </div>`;
 }
 function _renderBitacora() {
-  const cont = document.getElementById('bitacora-rows');
+  const cont = document.getElementById('timeline-rows');
   if (cont) {
-    if (!bitacoraActiv.length) {
-      cont.innerHTML = '<div class="empty-msg">Sin actividades registradas.</div>';
+    const items = [
+      ...bitacoraActiv.map(r => ({ tipo:'actividad', hora:r.hora||'', r })),
+      ...standbyRows.map(r => ({ tipo:'standby', hora:r.desde||'', r })),
+    ].sort((a,b) => (a.hora||'zz').localeCompare(b.hora||'zz'));
+    if (!items.length) {
+      cont.innerHTML = '<div class="empty-msg">Sin registros. Agrega una actividad o un Stand By arriba.</div>';
     } else {
-      cont.innerHTML = _bitacoraOrdenada().map(r => `
-        <div class="bita-log-row">
-          <div class="bita-log-time">${_escHtml(r.hora || '--:--')}</div>
-          <div class="bita-log-desc">${_escHtml(r.actividad || 'Sin descripción')}</div>
-          <button class="del-btn" onclick="_delBitacora(${r.id})" aria-label="Eliminar">×</button>
-        </div>`).join('');
+      cont.innerHTML = items.map(it => it.tipo === 'actividad' ? _timelineActividadHTML(it.r) : _timelineStandbyHTML(it.r)).join('');
     }
   }
   _actualizarStatsBitacora();
+  _renderStandbyTotal();
 }
 function _actualizarStatsBitacora() {
   const countEl = document.getElementById('bita-stat-count');
-  if (countEl) countEl.textContent = bitacoraActiv.length;
+  if (countEl) countEl.textContent = bitacoraActiv.length + standbyRows.length;
   const horasEl = document.getElementById('bita-stat-horas');
   if (horasEl) horasEl.textContent = typeof _tiempoEfectivo === 'function' ? _tiempoEfectivo() : '—';
 }
-// "Entrada Rápida": agrega la actividad y limpia el formulario para la siguiente.
-function _addBitacoraRapida() {
-  const horaEl = document.getElementById('bita-nueva-hora');
-  const descEl = document.getElementById('bita-nueva-desc');
-  const hora = horaEl ? horaEl.value : '';
-  const desc = descEl ? descEl.value.trim() : '';
-  if (!hora) { showToast('⚠️ Ingresa la hora de inicio'); return; }
-  if (!desc) { showToast('⚠️ Describe la actividad'); return; }
-  _addBitacora(hora, desc);
-  if (descEl) { descEl.value = ''; descEl.focus(); }
+
+// ── "Agregar Registro": toggle Actividad / Stand By ──
+let _tipoNuevoRegistro = 'actividad';
+function _setTipoNuevoRegistro(tipo) {
+  _tipoNuevoRegistro = tipo;
+  const btnAct = document.getElementById('tipo-btn-actividad');
+  const btnSb  = document.getElementById('tipo-btn-standby');
+  if (btnAct) btnAct.classList.toggle('active', tipo === 'actividad');
+  if (btnSb)  btnSb.classList.toggle('active', tipo === 'standby');
+  _renderFormNuevoRegistro();
+}
+function _renderFormNuevoRegistro() {
+  const cont = document.getElementById('nuevo-registro-form');
+  if (!cont) return;
+  if (_tipoNuevoRegistro === 'actividad') {
+    cont.innerHTML = `
+      <div class="grid2" style="margin-bottom:8px">
+        <div class="field" style="margin:0"><label>Hora Inicio</label><input type="time" id="bita-nueva-hora"></div>
+        <div class="field" style="margin:0"><label>Hora Fin</label><input type="time" id="bita-nueva-horafin"></div>
+      </div>
+      <div class="field" style="margin-bottom:0"><label>Descripción de Actividad</label><textarea id="bita-nueva-desc" placeholder="Escribir actividad…"></textarea></div>
+      <button class="btn-primary" style="width:100%;margin-top:12px" onclick="_agregarRegistroNuevo()"><i class="ti ti-plus"></i>Agregar a Bitácora</button>`;
+  } else {
+    cont.innerHTML = `
+      <p class="note" style="margin-bottom:10px">Se agrega un registro de Stand By en blanco, listo para completar con actividad afectada, horario, causa y responsable.</p>
+      <button class="btn-primary" style="width:100%" onclick="_agregarRegistroNuevo()"><i class="ti ti-plus"></i>Agregar Stand By</button>`;
+  }
+}
+function _agregarRegistroNuevo() {
+  if (_tipoNuevoRegistro === 'actividad') {
+    const horaEl = document.getElementById('bita-nueva-hora');
+    const finEl  = document.getElementById('bita-nueva-horafin');
+    const descEl = document.getElementById('bita-nueva-desc');
+    const hora = horaEl ? horaEl.value : '';
+    const fin  = finEl ? finEl.value : '';
+    const desc = descEl ? descEl.value.trim() : '';
+    if (!hora) { showToast('⚠️ Ingresa la hora de inicio'); return; }
+    if (!desc) { showToast('⚠️ Describe la actividad'); return; }
+    _addBitacora(hora, fin, desc);
+    if (finEl)  finEl.value = '';
+    if (descEl) { descEl.value = ''; descEl.focus(); }
+  } else {
+    addStandbyRow();
+    const el = document.getElementById('timeline-rows');
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
 }
 function _removeEquipo(id) {
   equiposLista = equiposLista.filter(e => e.id !== id);
@@ -2154,7 +2250,7 @@ function _togHitosAcordeon() {
   if (!body) return;
   const open = body.style.display !== 'none';
   body.style.display = open ? 'none' : '';
-  if (chev) chev.textContent = open ? '▶' : '▼';
+  if (chev) chev.className = 'ti ti-chevron-' + (open ? 'right' : 'down');
 }
 function addEquipoManual(tipo) {
   const nombreId = tipo === 'perforacion' ? 'eqperf-manual-nombre' : 'eqsop-manual-nombre';
@@ -2330,6 +2426,8 @@ function _softReset() {
   progAdicRows = []; progAdicId = 0;
   metradosManuales = []; metradosManualId = 0;
   standbyRows = []; standbyId = 0;
+  bitacoraActiv = []; bitacoraActivId = 0;
+  _registroAbierto = null;
   reporteEnviado = false;
   reporteFinalizadoSinEnvio = false;
   Object.keys(_perfInyMode).forEach(k => delete _perfInyMode[k]);
@@ -2365,6 +2463,7 @@ function _softReset() {
   renderMetradosPartidas();
   renderMetradosManuales();
   renderStandbyRows();
+  _setTipoNuevoRegistro('actividad');
   renderProgRows();
   renderProgAdicRows();
 

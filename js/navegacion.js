@@ -1,7 +1,7 @@
 // ==================== BOTTOM NAV + SWIPE ====================
-const _BNAV_MAP = {datos:'bnav-datos',jornada:'bnav-jornada',metrados:'bnav-metrados',standby:'bnav-standby',obs:'bnav-obs'};
+const _BNAV_MAP = {datos:'bnav-datos',jornada:'bnav-jornada',metrados:'bnav-metrados',obs:'bnav-obs'};
 const _MAS_TABS = new Set([]);
-const _TAB_ORDER = ['datos','jornada','metrados','standby','obs','resumen'];
+const _TAB_ORDER = ['datos','jornada','metrados','obs','resumen'];
 let _currentTab = 'datos';
 let _swX = 0, _swY = 0;
 document.addEventListener('touchstart', e => { _swX = e.touches[0].clientX; _swY = e.touches[0].clientY; }, {passive:true});
@@ -31,18 +31,18 @@ function showTab(tab) {
   if (_teleTab && _teleTi) { _tele.tabs.push({tab:_teleTab, entrada:_teleTi.toTimeString().slice(0,8), salida:_now.toTimeString().slice(0,8), seg:Math.round((_now-_teleTi)/1000)}); }
   _teleTab = tab; _teleTi = _now; _currentTab = tab;
   if (!_tele.inicio) _tele.inicio = _now;
-  const tabs = ['datos','jornada','metrados','standby','obs','resumen'];
+  const tabs = ['datos','jornada','metrados','obs','resumen'];
   tabs.forEach(t => { const el = document.getElementById('tab-'+t); if (el) el.classList.toggle('visible', t===tab); });
   document.querySelectorAll('.tab-bar .tab').forEach((btn,i) => btn.classList.toggle('active', tabs[i] === tab));
   _bnavSync(tab);
   if (tab === 'resumen') { buildResumen(); }
   if (tab === 'prog') renderProgRows();
   if (tab === 'metrados') { renderMetradosPartidas(); renderMetradosManuales(); }
-  if (tab === 'standby') renderStandbyRows();
   if (tab === 'jornada') {
     const frenteEl = document.getElementById('f-frente');
     const fa = document.getElementById('frente-actual');
     if (frenteEl && fa) fa.textContent = frenteEl.value || 'selecciona un frente en "Datos"';
+    _renderBitacora();
   }
   window.scrollTo({top:0, behavior:'smooth'});
 }
