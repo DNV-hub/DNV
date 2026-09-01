@@ -1449,13 +1449,6 @@ function getStandbyRegistrados() {
 function getStandbyTotalMin() {
   return getStandbyRegistrados().reduce((s,r) => s + (r.minutos||0), 0);
 }
-function addStandbyRow() {
-  const id = standbyId++;
-  standbyRows.push({ id, actividad:'', desde:'', hasta:'', causa:'', causaOtro:'', comentario:'', responsable:'', totalHoras:'', totalMinutos:'' });
-  _registroAbierto = { tipo:'standby', id };
-  _renderBitacora();
-  saveDraft();
-}
 function removeStandbyRow(id) {
   standbyRows = standbyRows.filter(r => r.id !== id);
   if (_registroAbierto && _registroAbierto.tipo === 'standby' && _registroAbierto.id === id) _registroAbierto = null;
@@ -2072,8 +2065,16 @@ function _timelineStandbyHTML(r) {
     return `
       <div class="timeline-card standby">
         <div class="field" style="margin-bottom:8px">
-          <label>Actividad afectada</label>
-          <input type="text" placeholder="Ej: Perforación de pernos, instalación de malla..." value="${_escHtml(r.actividad||'')}" onchange="updateStandby(${r.id},'actividad',this.value)">
+          <label>Causa</label>
+          <select onchange="updateStandby(${r.id},'causa',this.value)">
+            <option value="">— Seleccionar causa —</option>
+            ${causasOpts}
+            <option value="OTRO" ${r.causa==='OTRO'?'selected':''}>OTRO (especificar)</option>
+          </select>
+        </div>
+        <div class="field" id="sb-otro-${r.id}" style="margin-bottom:8px;${r.causa==='OTRO'?'':'display:none'}">
+          <label>Especificar otra causa</label>
+          <input type="text" placeholder="Describe la causa..." value="${_escHtml(r.causaOtro||'')}" onchange="updateStandby(${r.id},'causaOtro',this.value)">
         </div>
         <div id="sb-tiempo-normal-${r.id}" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;${esTiempoTotal?'display:none':''}">
           <div class="field"><label>Desde</label><input type="time" value="${r.desde||''}" onchange="updateStandby(${r.id},'desde',this.value)"></div>
@@ -2093,16 +2094,8 @@ function _timelineStandbyHTML(r) {
           </div>
         </div>
         <div class="field" style="margin-bottom:8px">
-          <label>Causa</label>
-          <select onchange="updateStandby(${r.id},'causa',this.value)">
-            <option value="">— Seleccionar causa —</option>
-            ${causasOpts}
-            <option value="OTRO" ${r.causa==='OTRO'?'selected':''}>OTRO (especificar)</option>
-          </select>
-        </div>
-        <div class="field" id="sb-otro-${r.id}" style="margin-bottom:8px;${r.causa==='OTRO'?'':'display:none'}">
-          <label>Especificar otra causa</label>
-          <input type="text" placeholder="Describe la causa..." value="${_escHtml(r.causaOtro||'')}" onchange="updateStandby(${r.id},'causaOtro',this.value)">
+          <label>Actividad afectada</label>
+          <input type="text" placeholder="Ej: Perforación de pernos, instalación de malla..." value="${_escHtml(r.actividad||'')}" onchange="updateStandby(${r.id},'actividad',this.value)">
         </div>
         <div class="field" style="margin-bottom:8px">
           <label>Responsable de la liberación</label>
@@ -2138,34 +2131,35 @@ function _timelineStandbyHTML(r) {
 function _renderBitacora() {
   const cont = document.getElementById('timeline-rows');
   if (cont) {
-    const items = [
-      ...bitacoraActiv.map(r => ({ tipo:'actividad', hora:r.hora||'', r })),
-      ...standbyRows.map(r => ({ tipo:'standby', hora:r.desde||'', r })),
-    ].sort((a,b) => (a.hora||'zz').localeCompare(b.hora||'zz'));
-    if (!items.length) {
+    if (!bitacoraActiv.length && !standbyRows.length) {
       cont.innerHTML = '<div class="empty-msg">Sin registros. Agrega una actividad o un Stand By arriba.</div>';
     } else {
-      cont.innerHTML = items.map(it => it.tipo === 'actividad' ? _timelineActividadHTML(it.r) : _timelineStandbyHTML(it.r)).join('');
+      // Las actividades van ordenadas cronológicamente; los Stand By no necesitan orden
+      // cronológico (pueden liberarse en cualquier momento), así que van siempre al final.
+      const actividades = bitacoraActiv.slice().sort((a,b) => (a.hora||'zz').localeCompare(b.hora||'zz'));
+      cont.innerHTML = actividades.map(_timelineActividadHTML).join('') + standbyRows.map(_timelineStandbyHTML).join('');
     }
   }
-  _actualizarStatsBitacora();
   _renderStandbyTotal();
-}
-function _actualizarStatsBitacora() {
-  const countEl = document.getElementById('bita-stat-count');
-  if (countEl) countEl.textContent = bitacoraActiv.length + standbyRows.length;
-  const horasEl = document.getElementById('bita-stat-horas');
-  if (horasEl) horasEl.textContent = typeof _tiempoEfectivo === 'function' ? _tiempoEfectivo() : '—';
 }
 
 // ── "Agregar Registro": toggle Actividad / Stand By ──
 let _tipoNuevoRegistro = 'actividad';
+let _nuevoStandby = { actividad:'', desde:'', hasta:'', causa:'', causaOtro:'', comentario:'', responsable:'', totalHoras:'', totalMinutos:'' };
+function _resetNuevoStandby() {
+  _nuevoStandby = { actividad:'', desde:'', hasta:'', causa:'', causaOtro:'', comentario:'', responsable:'', totalHoras:'', totalMinutos:'' };
+}
 function _setTipoNuevoRegistro(tipo) {
   _tipoNuevoRegistro = tipo;
   const btnAct = document.getElementById('tipo-btn-actividad');
   const btnSb  = document.getElementById('tipo-btn-standby');
   if (btnAct) btnAct.classList.toggle('active', tipo === 'actividad');
   if (btnSb)  btnSb.classList.toggle('active', tipo === 'standby');
+  _renderFormNuevoRegistro();
+}
+function _updNuevoStandby(field, val) {
+  _nuevoStandby[field] = val;
+  if (field === 'causa' && val !== 'OTRO') _nuevoStandby.causaOtro = '';
   _renderFormNuevoRegistro();
 }
 function _renderFormNuevoRegistro() {
@@ -2180,9 +2174,48 @@ function _renderFormNuevoRegistro() {
       <div class="field" style="margin-bottom:0"><label>Descripción de Actividad</label><textarea id="bita-nueva-desc" placeholder="Escribir actividad…"></textarea></div>
       <button class="btn-primary" style="width:100%;margin-top:12px" onclick="_agregarRegistroNuevo()"><i class="ti ti-plus"></i>Agregar a Bitácora</button>`;
   } else {
+    const r = _nuevoStandby;
+    const esTiempoTotal = r.causa === CAUSA_TIEMPO_TOTAL;
+    const causasOpts = CAUSAS_STANDBY.map(c => `<option ${r.causa===c?'selected':''}>${c}</option>`).join('');
     cont.innerHTML = `
-      <p class="note" style="margin-bottom:10px">Se agrega un registro de Stand By en blanco, listo para completar con actividad afectada, horario, causa y responsable.</p>
-      <button class="btn-primary" style="width:100%" onclick="_agregarRegistroNuevo()"><i class="ti ti-plus"></i>Agregar Stand By</button>`;
+      <div class="field" style="margin-bottom:8px">
+        <label>Causa</label>
+        <select onchange="_updNuevoStandby('causa',this.value)">
+          <option value="">— Seleccionar causa —</option>
+          ${causasOpts}
+          <option value="OTRO" ${r.causa==='OTRO'?'selected':''}>OTRO (especificar)</option>
+        </select>
+      </div>
+      ${r.causa==='OTRO' ? `
+      <div class="field" style="margin-bottom:8px">
+        <label>Especificar otra causa</label>
+        <input type="text" placeholder="Describe la causa..." value="${_escHtml(r.causaOtro)}" onchange="_updNuevoStandby('causaOtro',this.value)">
+      </div>` : ''}
+      ${r.causa ? (esTiempoTotal ? `
+      <div style="margin-bottom:8px">
+        <p class="note" style="margin-bottom:8px">Este tipo de Stand By se registra como <strong>tiempo total del día</strong>.</p>
+        <div class="grid2">
+          <div class="field" style="margin:0"><label>Horas</label><input type="number" min="0" step="1" placeholder="0" value="${r.totalHoras}" onchange="_updNuevoStandby('totalHoras',this.value)"></div>
+          <div class="field" style="margin:0"><label>Minutos</label><input type="number" min="0" max="59" step="1" placeholder="0" value="${r.totalMinutos}" onchange="_updNuevoStandby('totalMinutos',this.value)"></div>
+        </div>
+      </div>` : `
+      <div class="grid2" style="margin-bottom:8px">
+        <div class="field" style="margin:0"><label>Desde</label><input type="time" value="${r.desde}" onchange="_updNuevoStandby('desde',this.value)"></div>
+        <div class="field" style="margin:0"><label>Hasta</label><input type="time" value="${r.hasta}" onchange="_updNuevoStandby('hasta',this.value)"></div>
+      </div>`) : ''}
+      <div class="field" style="margin-bottom:8px">
+        <label>Actividad afectada</label>
+        <input type="text" placeholder="Ej: Perforación de pernos, instalación de malla..." value="${_escHtml(r.actividad)}" onchange="_updNuevoStandby('actividad',this.value)">
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Responsable de la liberación</label>
+        <input type="text" placeholder="Nombre (puede ser externo)" value="${_escHtml(r.responsable)}" onchange="_updNuevoStandby('responsable',this.value)">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Comentarios <span style="font-weight:400;color:var(--text3)">(opcional)</span></label>
+        <textarea placeholder="Detalles adicionales del Stand By..." style="min-height:52px" onchange="_updNuevoStandby('comentario',this.value)">${_escHtml(r.comentario)}</textarea>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:12px" onclick="_agregarRegistroNuevo()"><i class="ti ti-plus"></i>Agregar Stand By</button>`;
   }
 }
 function _agregarRegistroNuevo() {
@@ -2199,7 +2232,17 @@ function _agregarRegistroNuevo() {
     if (finEl)  finEl.value = '';
     if (descEl) { descEl.value = ''; descEl.focus(); }
   } else {
-    addStandbyRow();
+    const r = _nuevoStandby;
+    if (!r.causa) { showToast('⚠️ Selecciona la causa del Stand By'); return; }
+    const esTiempoTotal = r.causa === CAUSA_TIEMPO_TOTAL;
+    if (!esTiempoTotal && !(r.desde && r.hasta)) { showToast('⚠️ Ingresa el horario del Stand By'); return; }
+    if (esTiempoTotal && !((parseFloat(r.totalHoras)||0) || (parseFloat(r.totalMinutos)||0))) { showToast('⚠️ Ingresa el tiempo total del Stand By'); return; }
+    const id = standbyId++;
+    standbyRows.push({ id, actividad:r.actividad, desde:r.desde, hasta:r.hasta, causa:r.causa, causaOtro:r.causaOtro, comentario:r.comentario, responsable:r.responsable, totalHoras:r.totalHoras, totalMinutos:r.totalMinutos });
+    _resetNuevoStandby();
+    _renderFormNuevoRegistro();
+    _renderBitacora();
+    saveDraft();
     const el = document.getElementById('timeline-rows');
     if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
   }
@@ -2428,6 +2471,7 @@ function _softReset() {
   standbyRows = []; standbyId = 0;
   bitacoraActiv = []; bitacoraActivId = 0;
   _registroAbierto = null;
+  _resetNuevoStandby();
   reporteEnviado = false;
   reporteFinalizadoSinEnvio = false;
   Object.keys(_perfInyMode).forEach(k => delete _perfInyMode[k]);
@@ -4105,6 +4149,7 @@ function loadDraft() {
 
   standbyRows = data.standbyRows || [];
   standbyId = data.standbyId || (standbyRows.length ? Math.max(...standbyRows.map(r=>r.id)) + 1 : 0);
+  _resetNuevoStandby();
   renderStandbyRows();
 
   reporteEnviado = !!data.reporteEnviado;

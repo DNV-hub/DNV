@@ -1,5 +1,5 @@
 // ==================== BOTTOM NAV + SWIPE ====================
-const _BNAV_MAP = {datos:'bnav-datos',jornada:'bnav-jornada',metrados:'bnav-metrados',obs:'bnav-obs'};
+const _BNAV_MAP = {datos:'bnav-datos',jornada:'bnav-jornada',metrados:'bnav-metrados',obs:'bnav-obs',resumen:'bnav-resumen'};
 const _MAS_TABS = new Set([]);
 const _TAB_ORDER = ['datos','jornada','metrados','obs','resumen'];
 let _currentTab = 'datos';
