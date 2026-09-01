@@ -487,28 +487,40 @@ function _toggleBloque(num) {
   }
 }
 function _blqHoraOpts(sel) { return '<option value="">--</option>'+_MEDIAS_HORAS.map(h=>`<option${h===sel?' selected':''}>${h}</option>`).join(''); }
+// Fila con tarjeta + stepper, compartida entre Bloque 1 (preliminares) y Bloque 3 (complementarias).
+function _blqRowHTML(p, i, val, hor, prefix, accent) {
+  const hasVal = val !== '';
+  const tmpFn  = prefix === 'blq1' ? '_blq1Tmp' : '_blq3Tmp';
+  const setFn  = prefix === 'blq1' ? '_setBlq1' : '_setBlq3';
+  const horFn  = prefix === 'blq1' ? '_setBlq1Hor' : '_setBlq3Hor';
+  return '<div class="blq-row' + (hasVal ? ' has-val' : '') + '" style="--row-accent:' + accent + '">'
+    + '<div class="blq-row-top">'
+    + '<span class="blq-row-title">' + p.n + '</span>'
+    + '<span class="unit-pill">' + p.u + '</span>'
+    + '</div>'
+    + '<div class="blq-row-bottom">'
+    + '<span class="blq-row-label">Cantidad ejecutada</span>'
+    + '<div class="stepper">'
+    + '<button type="button" class="stepper-btn" onclick="_blqStep(\'' + prefix + '\',' + i + ',-1)" aria-label="Restar">−</button>'
+    + '<input type="number" min="0" step="0.01" inputmode="decimal" value="' + val + '" id="' + prefix + '-inp-' + i + '"'
+    + ' class="stepper-input" oninput="' + tmpFn + '(' + i + ',this.value)" onblur="' + setFn + '(' + i + ',this.value)">'
+    + '<button type="button" class="stepper-btn" onclick="_blqStep(\'' + prefix + '\',' + i + ',1)" aria-label="Sumar">+</button>'
+    + '</div>'
+    + '</div>'
+    + (hasVal ? '<div class="blq-row-horarios">'
+      + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Inicio</label><select onchange="' + horFn + '(' + i + ',\'inicio\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.inicio||'') + '</select></div>'
+      + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Fin</label><select onchange="' + horFn + '(' + i + ',\'fin\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.fin||'') + '</select></div>'
+      + '</div>' : '')
+    + '</div>';
+}
 function renderBloque1() {
   const cont = document.getElementById('blq1-rows');
   if (!cont) return;
   let html = '';
   PARTIDAS_PRELIMINARES.forEach((p, i) => {
     const val = blq1Valores[i] !== undefined && blq1Valores[i] !== '' ? blq1Valores[i] : '';
-    const hasVal = val !== '';
     const hor = blq1Horarios[i] || {};
-    html += '<div style="padding:8px 4px;border-bottom:1px solid var(--border)">'
-      + '<div style="display:flex;align-items:center;gap:8px">'
-      + '<span style="flex:1;font-size:13px">' + p.n + '</span>'
-      + '<input type="number" min="0" step="0.01" value="' + val + '" placeholder="0"'
-      + ' style="width:70px;text-align:right;padding:5px 8px;border:1px solid var(--border-md);border-radius:6px;background:var(--surface);font-size:14px'
-      + (hasVal ? ';font-weight:700;color:#3B82F6;border-color:#3B82F6' : '') + '"'
-      + ' oninput="_blq1Tmp(' + i + ',this.value)" onblur="_setBlq1(' + i + ',this.value)">'
-      + '<span style="font-size:10px;font-weight:600;color:#fff;background:#3B82F6;padding:2px 5px;border-radius:4px;min-width:28px;text-align:center">' + p.u + '</span>'
-      + '</div>'
-      + (hasVal ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;padding:0 2px">'
-        + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Inicio</label><select onchange="_setBlq1Hor(' + i + ',\'inicio\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.inicio||'') + '</select></div>'
-        + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Fin</label><select onchange="_setBlq1Hor(' + i + ',\'fin\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.fin||'') + '</select></div>'
-        + '</div>' : '')
-      + '</div>';
+    html += _blqRowHTML(p, i, val, hor, 'blq1', '#3B82F6');
   });
   cont.innerHTML = html;
 }
@@ -518,24 +530,18 @@ function renderBloque3() {
   let html = '';
   PARTIDAS_COMPLEMENTARIAS.forEach((p, i) => {
     const val = blq3Valores[i] !== undefined && blq3Valores[i] !== '' ? blq3Valores[i] : '';
-    const hasVal = val !== '';
     const hor = blq3Horarios[i] || {};
-    html += '<div style="padding:8px 4px;border-bottom:1px solid var(--border)">'
-      + '<div style="display:flex;align-items:center;gap:8px">'
-      + '<span style="flex:1;font-size:13px">' + p.n + '</span>'
-      + '<input type="number" min="0" step="0.01" value="' + val + '" placeholder="0"'
-      + ' style="width:70px;text-align:right;padding:5px 8px;border:1px solid var(--border-md);border-radius:6px;background:var(--surface);font-size:14px'
-      + (hasVal ? ';font-weight:700;color:#10B981;border-color:#10B981' : '') + '"'
-      + ' oninput="_blq3Tmp(' + i + ',this.value)" onblur="_setBlq3(' + i + ',this.value)">'
-      + '<span style="font-size:10px;font-weight:600;color:#fff;background:#10B981;padding:2px 5px;border-radius:4px;min-width:28px;text-align:center">' + p.u + '</span>'
-      + '</div>'
-      + (hasVal ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;padding:0 2px">'
-        + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Inicio</label><select onchange="_setBlq3Hor(' + i + ',\'inicio\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.inicio||'') + '</select></div>'
-        + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Fin</label><select onchange="_setBlq3Hor(' + i + ',\'fin\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.fin||'') + '</select></div>'
-        + '</div>' : '')
-      + '</div>';
+    html += _blqRowHTML(p, i, val, hor, 'blq3', 'var(--green)');
   });
   cont.innerHTML = html;
+}
+// Botones +/- del stepper: ajustan el input visible y reusan el mismo commit que el blur manual.
+function _blqStep(prefix, i, delta) {
+  const inp = document.getElementById(prefix + '-inp-' + i);
+  if (!inp) return;
+  const next = Math.max(0, Math.round(((parseFloat(inp.value) || 0) + delta) * 100) / 100);
+  inp.value = next;
+  if (prefix === 'blq1') _setBlq1(i, String(next)); else _setBlq3(i, String(next));
 }
 function _blq1Tmp(i, val) { blq1Valores[i] = val !== '' ? val : ''; saveDraft(); }
 function _blq3Tmp(i, val) { blq3Valores[i] = val !== '' ? val : ''; saveDraft(); }

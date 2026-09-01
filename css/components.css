@@ -102,6 +102,22 @@
 .ctrl-form-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
 .ctrl-form-row .field{flex:1;min-width:80px}
 
+/* BLOQUE 1/3 — tarjetas de partida con stepper */
+.blq-row{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border-md);border-radius:var(--r-md);padding:11px 12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.blq-row.has-val{border-left-color:var(--row-accent,var(--blue))}
+.blq-row-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.blq-row-title{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0}
+.unit-pill{flex-shrink:0;font-size:10px;font-weight:700;color:var(--neutral-text);background:var(--neutral-bg);padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.02em}
+.blq-row-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.blq-row-label{font-size:11.5px;color:var(--text2)}
+.stepper{display:flex;align-items:center;gap:2px;background:var(--surface2);border-radius:999px;padding:3px}
+.stepper-btn{width:26px;height:26px;border:none;background:var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;line-height:1;color:var(--text2);cursor:pointer;box-shadow:var(--shadow);flex-shrink:0;font-family:inherit}
+.stepper-btn:active{transform:scale(.92)}
+.stepper-input{width:52px;text-align:center;border:none;background:transparent;font-size:14.5px;font-weight:700;color:var(--text);font-family:inherit;-moz-appearance:textfield}
+.stepper-input::-webkit-outer-spin-button,.stepper-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.stepper-input:focus{outline:none}
+.blq-row-horarios{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+
 /* PROG */
 .prog-row{padding:10px 0;border-bottom:1px solid var(--border)}
 .prog-row:last-child{border-bottom:none}
