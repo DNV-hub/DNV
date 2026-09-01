@@ -1572,20 +1572,26 @@ function toggleRestriccion() {
 }
 function initSelects() {
   const secSel = document.getElementById('f-sector');
+  const prevSec = secSel.value;
   secSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + Object.keys(SECTORES).map(s=>`<option>${s}<\/option>`).join('');
+  secSel.value = prevSec;
 
   const capSel = document.getElementById('f-capataz');
+  const prevCap = capSel.value;
   capSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + CAPATACES.map(c=>`<option>${c}<\/option>`).join('');
+  capSel.value = prevCap;
 
   const supSel = document.getElementById('f-supervisor');
+  const prevSup = supSel.value;
   supSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + SUPERVISORES.map(s=>`<option>${s}<\/option>`).join('');
+  supSel.value = prevSup;
 }
-function onSectorChange() {
-  const _salaSec = document.getElementById("sala-electrica-section");
-  if (_salaSec) _salaSec.style.display = (document.getElementById("f-sector").value === "A: 4000 - SALA ELECTRICA") ? "" : "none";
-
+// Reconstruye solo las opciones de "Frente" para el sector actualmente seleccionado,
+// sin tocar partidaValores/metrados — a diferencia de onSectorChange(), no es un cambio real de sector.
+function _refrescarFrenteSelect() {
   const sector = document.getElementById('f-sector').value;
   const frenteSel = document.getElementById('f-frente');
+  const prevFrente = frenteSel.value;
   const opts = SECTORES[sector] || [];
   if (opts.length === 0) {
     frenteSel.innerHTML = '<option value="">— Sin frentes predefinidos —<\/option>';
@@ -1593,7 +1599,14 @@ function onSectorChange() {
   } else {
     frenteSel.disabled = false;
     frenteSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + opts.map(f=>`<option>${f}<\/option>`).join('');
+    frenteSel.value = prevFrente;
   }
+}
+function onSectorChange() {
+  const _salaSec = document.getElementById("sala-electrica-section");
+  if (_salaSec) _salaSec.style.display = (document.getElementById("f-sector").value === "A: 4000 - SALA ELECTRICA") ? "" : "none";
+
+  _refrescarFrenteSelect();
   onFrenteChange();
 }
 function onFrenteChange() {

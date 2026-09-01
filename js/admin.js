@@ -36,6 +36,8 @@ async function agregarSupervisor() {
     if (error) throw error;
     document.getElementById('admin-sup-nombre').value = '';
     cargarListasAdmin();
+    await cargarDatosSupabase();
+    initSelects();
     showToast('✅ Supervisor agregado');
   } catch (e) {
     alert('Error: ' + e.message);
@@ -50,6 +52,8 @@ async function agregarCapataz() {
     if (error) throw error;
     document.getElementById('admin-cap-nombre').value = '';
     cargarListasAdmin();
+    await cargarDatosSupabase();
+    initSelects();
     showToast('✅ Capataz agregado');
   } catch (e) {
     alert('Error: ' + e.message);
@@ -64,6 +68,8 @@ async function agregarSector() {
     if (error) throw error;
     document.getElementById('admin-sect-nombre').value = '';
     cargarListasAdmin();
+    await cargarDatosSupabase();
+    initSelects();
     showToast('✅ Sector agregado');
   } catch (e) {
     alert('Error: ' + e.message);
@@ -101,7 +107,8 @@ async function eliminarSupervisor(id) {
   try {
     await window.supabase.from('supervisores').update({ estado: false }).eq('id', id);
     cargarListasAdmin();
-    cargarDatosSupabase();
+    await cargarDatosSupabase();
+    initSelects();
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -112,7 +119,8 @@ async function eliminarCapataz(id) {
   try {
     await window.supabase.from('capataces').update({ estado: false }).eq('id', id);
     cargarListasAdmin();
-    cargarDatosSupabase();
+    await cargarDatosSupabase();
+    initSelects();
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -123,7 +131,8 @@ async function eliminarFrente(id) {
   try {
     await window.supabase.from('frentes').update({ estado: false }).eq('id', id);
     cargarListasAdmin();
-    cargarDatosSupabase();
+    await cargarDatosSupabase();
+    _refrescarFrenteSelect();
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -136,7 +145,8 @@ async function agregarFrenteSector(sectorId) {
     const { error } = await window.supabase.from('frentes').insert([{ nombre, sector_id: sectorId, estado: true }]);
     if (error) throw error;
     cargarListasAdmin();
-    cargarDatosSupabase();
+    await cargarDatosSupabase();
+    _refrescarFrenteSelect();
     showToast('✅ Frente agregado');
   } catch (e) {
     alert('Error: ' + e.message);
