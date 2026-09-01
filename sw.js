@@ -3,13 +3,13 @@
 // en localStorage y los exports (.xlsx/.csv/.json) se generan como Blob en el propio navegador,
 // ninguno de los dos pasa por una petición de red que este Service Worker pueda tocar.
 
-const CACHE_NAME = 'rdc-cache-v2';
+const CACHE_NAME = 'rdc-cache-v3';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png',
+  './assets/icons/apple-touch-icon.png',
   './css/variables.css',
   './css/reset.css',
   './css/layout.css',
