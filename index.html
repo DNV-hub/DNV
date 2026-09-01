@@ -203,22 +203,46 @@
     </div>
     <div id="hitos-body" style="margin-top:12px">
       <div id="hitos-rows"></div>
+      <div class="hito-row">
+        <span class="hito-label">🍱 Salida a refrigerio/almuerzo</span>
+        <input type="time" id="f-almuerzo-salida" value="00:00" onchange="saveDraft()">
+      </div>
+      <div class="hito-row">
+        <span class="hito-label">🍱 Retorno de refrigerio/almuerzo</span>
+        <input type="time" id="f-almuerzo-retorno" value="00:00" onchange="saveDraft()">
+      </div>
       <p class="note" style="margin-top:10px">Registra estos hitos una vez al inicio del turno.</p>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">🍱 Refrigerio / Almuerzo</div>
-        <div class="grid2">
-          <div class="field"><label>Salida</label><input type="time" id="f-almuerzo-salida" value="00:00" onchange="saveDraft()"></div>
-          <div class="field"><label>Retorno</label><input type="time" id="f-almuerzo-retorno" value="00:00" onchange="saveDraft()"></div>
+    </div>
+  </div>
+  <!-- Bitácora de Campo -->
+  <div class="card" style="padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <div>
+        <div style="font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Resumen del turno</div>
+        <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:2px">Bitácora de Campo</div>
+      </div>
+      <div style="display:flex;gap:16px;flex-shrink:0">
+        <div style="text-align:right">
+          <div id="bita-stat-horas" style="font-size:17px;font-weight:800;color:var(--text)">—</div>
+          <div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;font-weight:600;white-space:nowrap">Total Horas</div>
+        </div>
+        <div style="text-align:right">
+          <div id="bita-stat-count" style="font-size:17px;font-weight:800;color:var(--text)">0</div>
+          <div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;font-weight:600">Actividades</div>
         </div>
       </div>
     </div>
   </div>
-  <!-- Bitácora de actividades -->
   <div class="card">
-    <div class="card-title"><i class="ti ti-writing"></i>Bitácora — <span id="frente-actual" style="text-transform:none;font-weight:400;color:var(--blue-text)">selecciona frente en Datos</span></div>
-    <p class="note" style="margin-bottom:8px">Registra cada actividad con su hora de inicio. Los metrados van en <strong>Metrados</strong>.</p>
+    <div class="card-title"><i class="ti ti-bolt"></i>Entrada Rápida</div>
+    <div class="field"><label>Hora de Inicio</label><input type="time" id="bita-nueva-hora"></div>
+    <div class="field" style="margin-bottom:0"><label>Descripción de Actividad</label><textarea id="bita-nueva-desc" placeholder="Escribir actividad…"></textarea></div>
+    <button class="btn-primary" style="width:100%;margin-top:12px" onclick="_addBitacoraRapida()"><i class="ti ti-plus"></i>Agregar a Bitácora</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-list-check"></i>Actividades Registradas — <span id="frente-actual" style="text-transform:none;font-weight:400;color:var(--blue-text)">selecciona frente en Datos</span></div>
+    <p class="note" style="margin-bottom:8px">Los metrados van en <strong>Metrados</strong>.</p>
     <div id="bitacora-rows"></div>
-    <button class="add-btn" onclick="_addBitacora()" style="margin-top:8px"><i class="ti ti-plus"></i>Agregar actividad</button>
   </div>
   </div>
 

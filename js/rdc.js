@@ -2059,7 +2059,6 @@ function _actualizarBadgeEquipos() {
   badge.textContent = n ? n + ' equipo' + (n === 1 ? '' : 's') : '';
 }
 const _MEDIAS_HORAS = Array.from({length:36}, (_,i) => { const h=Math.floor(i/2)+5, m=i%2===0?'00':'30'; return `${String(h).padStart(2,'0')}:${m}`; });
-function _bitacoraHoraOpts(sel='') { return '<option value="">--:--</option>'+_MEDIAS_HORAS.map(h=>`<option${h===sel?' selected':''}>${h}</option>`).join(''); }
 function _addBitacora(hora='', actividad='') {
   const id = bitacoraActivId++;
   bitacoraActiv.push({ id, hora, actividad });
@@ -2071,29 +2070,43 @@ function _delBitacora(id) {
   _renderBitacora();
   saveDraft();
 }
-function _updBitacora(id, campo, valor) {
-  const r = bitacoraActiv.find(x => x.id === id);
-  if (r) { r[campo] = valor; saveDraft(); }
+function _escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// Bitácora ordenada por hora (más antigua primero), como un registro cronológico del turno.
+function _bitacoraOrdenada() {
+  return [...bitacoraActiv].sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
 }
 function _renderBitacora() {
   const cont = document.getElementById('bitacora-rows');
-  if (!cont) return;
-  if (!bitacoraActiv.length) {
-    cont.innerHTML = '<div class="empty-msg">Sin actividades. Presiona el botón para agregar.</div>';
-    return;
+  if (cont) {
+    if (!bitacoraActiv.length) {
+      cont.innerHTML = '<div class="empty-msg">Sin actividades registradas.</div>';
+    } else {
+      cont.innerHTML = _bitacoraOrdenada().map(r => `
+        <div class="bita-log-row">
+          <div class="bita-log-time">${_escHtml(r.hora || '--:--')}</div>
+          <div class="bita-log-desc">${_escHtml(r.actividad || 'Sin descripción')}</div>
+          <button class="del-btn" onclick="_delBitacora(${r.id})" aria-label="Eliminar">×</button>
+        </div>`).join('');
+    }
   }
-  cont.innerHTML = bitacoraActiv.map((r,idx) => `
-    <div class="bita-card">
-      <div class="bita-card-time">
-        <label>Hora</label>
-        <select class="time-field" onchange="_updBitacora(${r.id},'hora',this.value)">${_bitacoraHoraOpts(r.hora||'')}</select>
-      </div>
-      <div class="bita-card-actividad">
-        <label>Actividad ${idx+1}</label>
-        <input type="text" placeholder="Actividad realizada…" value="${(r.actividad||'').replace(/"/g,'&quot;')}" onchange="_updBitacora(${r.id},'actividad',this.value)">
-      </div>
-      <button class="del-btn" onclick="_delBitacora(${r.id})" aria-label="Eliminar">×</button>
-    </div>`).join('');
+  _actualizarStatsBitacora();
+}
+function _actualizarStatsBitacora() {
+  const countEl = document.getElementById('bita-stat-count');
+  if (countEl) countEl.textContent = bitacoraActiv.length;
+  const horasEl = document.getElementById('bita-stat-horas');
+  if (horasEl) horasEl.textContent = typeof _tiempoEfectivo === 'function' ? _tiempoEfectivo() : '—';
+}
+// "Entrada Rápida": agrega la actividad y limpia el formulario para la siguiente.
+function _addBitacoraRapida() {
+  const horaEl = document.getElementById('bita-nueva-hora');
+  const descEl = document.getElementById('bita-nueva-desc');
+  const hora = horaEl ? horaEl.value : '';
+  const desc = descEl ? descEl.value.trim() : '';
+  if (!hora) { showToast('⚠️ Ingresa la hora de inicio'); return; }
+  if (!desc) { showToast('⚠️ Describe la actividad'); return; }
+  _addBitacora(hora, desc);
+  if (descEl) { descEl.value = ''; descEl.focus(); }
 }
 function _removeEquipo(id) {
   equiposLista = equiposLista.filter(e => e.id !== id);
