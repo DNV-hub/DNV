@@ -1,5 +1,6 @@
 // ==================== INICIALIZACIÓN DE LA APP ====================
 // ==================== INIT ====================
+renderPersonalPresente();
 renderHitos();
 renderRows();
 _renderEquiposLista();

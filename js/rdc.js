@@ -508,8 +508,8 @@ function _blqRowHTML(p, i, val, hor, prefix, accent) {
     + '</div>'
     + '</div>'
     + (hasVal ? '<div class="blq-row-horarios">'
-      + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Inicio</label><select onchange="' + horFn + '(' + i + ',\'inicio\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.inicio||'') + '</select></div>'
-      + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Fin</label><select onchange="' + horFn + '(' + i + ',\'fin\',this.value)" style="font-size:12px;padding:5px 6px;width:100%;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1)">' + _blqHoraOpts(hor.fin||'') + '</select></div>'
+      + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Inicio</label><select class="time-field" onchange="' + horFn + '(' + i + ',\'inicio\',this.value)" style="font-size:13px">' + _blqHoraOpts(hor.inicio||'') + '</select></div>'
+      + '<div class="field" style="margin:0"><label style="font-size:10px;color:var(--text3)">Fin</label><select class="time-field" onchange="' + horFn + '(' + i + ',\'fin\',this.value)" style="font-size:13px">' + _blqHoraOpts(hor.fin||'') + '</select></div>'
       + '</div>' : '')
     + '</div>';
 }
@@ -520,7 +520,7 @@ function renderBloque1() {
   PARTIDAS_PRELIMINARES.forEach((p, i) => {
     const val = blq1Valores[i] !== undefined && blq1Valores[i] !== '' ? blq1Valores[i] : '';
     const hor = blq1Horarios[i] || {};
-    html += _blqRowHTML(p, i, val, hor, 'blq1', '#3B82F6');
+    html += _blqRowHTML(p, i, val, hor, 'blq1', 'var(--blue-text)');
   });
   cont.innerHTML = html;
 }
@@ -635,8 +635,8 @@ function _htmlBloque2Form(tipo, frente) {
   }
   // Hora de ejecución (hora exacta con input type=time)
   f += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-    + '<div class="field"><label style="font-size:11px">Hora inicio</label><input type="time" id="c2-' + tipo + '-hinicio" style="font-size:13px;padding:6px 8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1);width:100%"></div>'
-    + '<div class="field"><label style="font-size:11px">Hora fin</label><input type="time" id="c2-' + tipo + '-hfin" style="font-size:13px;padding:6px 8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text1);width:100%"></div>'
+    + '<div class="field"><label style="font-size:11px">Hora inicio</label><input type="time" id="c2-' + tipo + '-hinicio"></div>'
+    + '<div class="field"><label style="font-size:11px">Hora fin</label><input type="time" id="c2-' + tipo + '-hfin"></div>'
     + '</div>';
   const addBtn = '<button onclick="_addCritico(\'' + tipo + '\')" style="width:100%;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px"><i class="ti ti-plus"></i> Agregar</button>';
   return '<div style="margin-bottom:8px;border:1px solid var(--border-md);border-radius:var(--r-md);overflow:hidden">'
@@ -1876,6 +1876,47 @@ function _initSketchLightboxZoom() {
 }
 _initSketchLightboxZoom();
 // ==================== FIN ÚLTIMOS SKETCHES DEL FRENTE ====================
+// ==================== PERSONAL PRESENTE — fila + stepper (solo enteros) ====================
+const PERSONAL_PRESENTE_CAMPOS = [
+  { id: 'f-capataces', label: 'Capataz', def: 1 },
+  { id: 'f-operarios', label: 'Operarios', def: 0 },
+  { id: 'f-oficiales', label: 'Oficiales', def: 0 },
+  { id: 'f-peones', label: 'Peones', def: 0 },
+  { id: 'f-vigias', label: 'Vigías', def: 0 },
+];
+const PERSONAL_SALA_ELECTRICA_CAMPOS = [
+  { id: 'f-ing-residente', label: 'Ingeniero residente', def: 0 },
+  { id: 'f-sup-campo', label: 'Supervisor de campo', def: 0 },
+  { id: 'f-ing-seguridad', label: 'Ingenieros de seguridad', def: 0 },
+  { id: 'f-ing-calidad', label: 'Ingeniero de calidad', def: 0 },
+  { id: 'f-topografo', label: 'Topógrafo', def: 0 },
+];
+function _personRowHTML(campo) {
+  return '<div class="person-row">'
+    + '<span class="person-row-label">' + campo.label + '</span>'
+    + '<div class="stepper">'
+    + '<button type="button" class="stepper-btn" onclick="_personStep(\'' + campo.id + '\',-1)" aria-label="Restar">−</button>'
+    + '<input type="number" min="0" step="1" inputmode="numeric" value="' + campo.def + '" id="' + campo.id + '" class="stepper-input"'
+    + ' oninput="saveDraft()" onblur="this.value=Math.max(0,Math.round(parseFloat(this.value)||0));saveDraft()">'
+    + '<button type="button" class="stepper-btn" onclick="_personStep(\'' + campo.id + '\',1)" aria-label="Sumar">+</button>'
+    + '</div>'
+    + '</div>';
+}
+function renderPersonalPresente() {
+  const cont1 = document.getElementById('personal-presente-rows');
+  if (cont1) cont1.innerHTML = PERSONAL_PRESENTE_CAMPOS.map(_personRowHTML).join('');
+  const cont2 = document.getElementById('personal-sala-electrica-rows');
+  if (cont2) cont2.innerHTML = PERSONAL_SALA_ELECTRICA_CAMPOS.map(_personRowHTML).join('');
+}
+// Personal cuenta personas: solo enteros, nunca negativo.
+function _personStep(id, delta) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  const next = Math.max(0, Math.round((parseInt(inp.value, 10) || 0) + delta));
+  inp.value = next;
+  saveDraft();
+}
+
 function renderHitos(preserve) {
   const prevVals = {};
   if (preserve !== false) {
@@ -2016,7 +2057,7 @@ function _renderBitacora() {
   cont.innerHTML = bitacoraActiv.map(r => `
     <div style="padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="display:grid;grid-template-columns:100px 1fr 28px;gap:6px;align-items:end;margin-bottom:0">
-        <div class="field" style="margin-bottom:0"><label style="font-size:11px">Hora</label><select onchange="_updBitacora(${r.id},'hora',this.value)" style="font-size:13px;padding:6px 4px">${_bitacoraHoraOpts(r.hora||'')}</select></div>
+        <div class="field" style="margin-bottom:0"><label style="font-size:11px">Hora</label><select class="time-field" onchange="_updBitacora(${r.id},'hora',this.value)" style="font-size:13px">${_bitacoraHoraOpts(r.hora||'')}</select></div>
         <input type="text" placeholder="Actividad realizada…" value="${(r.actividad||'').replace(/"/g,'&quot;')}" onchange="_updBitacora(${r.id},'actividad',this.value)" style="width:100%;font-size:13px;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 9px;background:var(--surface);align-self:end">
         <button class="del-btn" onclick="_delBitacora(${r.id})" style="align-self:end;margin-bottom:0" aria-label="Eliminar">×</button>
       </div>
@@ -2352,7 +2393,7 @@ function buildResumen() {
   // Bloque 1
   const blq1Filas = PARTIDAS_PRELIMINARES.map((p,i)=>({n:p.n,u:p.u,v:blq1Valores[i]})).filter(x=>x.v!==undefined&&x.v!==''&&Number(x.v)>0);
   if (blq1Filas.length) {
-    bodyHtml += _blqHdr('1. Preliminares','#3B82F6');
+    bodyHtml += _blqHdr('1. Preliminares','var(--blue-text)');
     blq1Filas.forEach(x => { bodyHtml += _blqRow(x.n, x.v, x.u); });
   }
   // Bloque 2 — totales
@@ -2361,7 +2402,7 @@ function buildResumen() {
   const mallaM2 = controlItems.filter(c=>c.elemento==='Malla').reduce((s,c)=>s+Number(c.cantidad||0),0);
   const cableML = controlItems.filter(c=>c.elemento==='Cable').reduce((s,c)=>s+Number(c.cantidad||0),0);
   if (perfML||inyML||mallaM2||cableML) {
-    bodyHtml += _blqHdr('2. Críticas','#F59E0B');
+    bodyHtml += _blqHdr('2. Críticas','var(--amber)');
     if (perfML)  bodyHtml += _blqRow('Perforaciones', Math.round(perfML*100)/100, 'ML');
     if (inyML)   bodyHtml += _blqRow('Inyecciones', Math.round(inyML*100)/100, 'ML');
     if (mallaM2) bodyHtml += _blqRow('Mallas instaladas', Math.round(mallaM2*100)/100, 'M2');
@@ -2370,7 +2411,7 @@ function buildResumen() {
   // Bloque 3
   const blq3Filas = PARTIDAS_COMPLEMENTARIAS.map((p,i)=>({n:p.n,u:p.u,v:blq3Valores[i]})).filter(x=>x.v!==undefined&&x.v!==''&&Number(x.v)>0);
   if (blq3Filas.length) {
-    bodyHtml += _blqHdr('3. Complementarias','#10B981');
+    bodyHtml += _blqHdr('3. Complementarias','var(--green)');
     blq3Filas.forEach(x => { bodyHtml += _blqRow(x.n, x.v, x.u); });
   }
   // Partidas libres
@@ -2402,25 +2443,25 @@ function buildResumen() {
     // Perforaciones
     const _cPerf = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Perforación');
     if (_cPerf.length) {
-      codHtml += _ctrlHdr('Perforaciones','#F59E0B');
+      codHtml += _ctrlHdr('Perforaciones','var(--amber)');
       _cPerf.forEach(c => codHtml += _ctrlRow(c.codigo, [c.tipo,c.diametro].filter(Boolean).join(' / '), c.ubicacion, c.cantidad+' ML'));
     }
     // Inyecciones
     const _cIny = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Inyección');
     if (_cIny.length) {
-      codHtml += _ctrlHdr('Inyecciones','#6366F1');
+      codHtml += _ctrlHdr('Inyecciones','var(--blue-text)');
       _cIny.forEach(c => codHtml += _ctrlRow(c.codigo, [c.tipo,c.diametro].filter(Boolean).join(' / '), c.ubicacion, c.cantidad+' ML'));
     }
     // Mallas
     const _cMal = controlItems.filter(c => c.elemento === 'Malla');
     if (_cMal.length) {
-      codHtml += _ctrlHdr('Mallas','#10B981');
+      codHtml += _ctrlHdr('Mallas','var(--green)');
       _cMal.forEach(c => codHtml += _ctrlRow(c.codigo, c.tipo, '—', c.cantidad+' M²'));
     }
     // Cables
     const _cCab = controlItems.filter(c => c.elemento === 'Cable');
     if (_cCab.length) {
-      codHtml += _ctrlHdr('Cables','#EF4444');
+      codHtml += _ctrlHdr('Cables','var(--red)');
       _cCab.forEach(c => codHtml += _ctrlRow(c.codigo, c.tipo, '—', c.cantidad+' ML'));
     }
     codHtml += '</table></div>';

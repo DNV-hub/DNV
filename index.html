@@ -138,27 +138,13 @@
   </div>
   <div class="card">
     <div class="card-title"><i class="ti ti-users"></i>Personal presente</div>
-    <div class="grid3" style="margin-bottom:10px">
-      <div class="field"><label>Capataz</label><input type="number" id="f-capataces" min="0" value="1"></div>
-      <div class="field"><label>Operarios</label><input type="number" id="f-operarios" min="0" value="0"></div>
-      <div class="field"><label>Oficiales</label><input type="number" id="f-oficiales" min="0" value="0"></div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Peones</label><input type="number" id="f-peones" min="0" value="0"></div>
-      <div class="field"><label>Vigías</label><input type="number" id="f-vigias" min="0" value="0"></div>
-    </div>
+    <div id="personal-presente-rows"></div>
   </div>
   <div id="sala-electrica-section" style="display:none">
     <div class="card">
       <div class="card-title"><i class="ti ti-building"></i>Personal Sala Eléctrica</div>
       <p class="note" style="margin-bottom:10px">Personal presente específico del sector Sala Eléctrica.</p>
-      <div class="grid2">
-        <div class="field"><label>Ingeniero residente</label><input type="number" id="f-ing-residente" min="0" value="0" onchange="saveDraft()"></div>
-        <div class="field"><label>Supervisor de campo</label><input type="number" id="f-sup-campo" min="0" value="0" onchange="saveDraft()"></div>
-        <div class="field"><label>Ingenieros de seguridad</label><input type="number" id="f-ing-seguridad" min="0" value="0" onchange="saveDraft()"></div>
-        <div class="field"><label>Ingeniero de calidad</label><input type="number" id="f-ing-calidad" min="0" value="0" onchange="saveDraft()"></div>
-        <div class="field"><label>Topógrafo</label><input type="number" id="f-topografo" min="0" value="0" onchange="saveDraft()"></div>
-      </div>
+      <div id="personal-sala-electrica-rows"></div>
     </div>
   </div>
   <!-- Equipos (simplificado) -->
@@ -200,13 +186,13 @@
     </div>
   </div>
   <!-- Hitos de inicio — acordeón -->
-  <div class="card" style="border-left:4px solid #7C3AED">
+  <div class="card" style="border-left:4px solid var(--text2)">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togHitosAcordeon()">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:14px;font-weight:700;color:#7C3AED">🚩 Hitos de inicio de jornada</span>
+        <span style="font-size:14px;font-weight:700;color:var(--text2)">🚩 Hitos de inicio de jornada</span>
         <span id="badge-hitos" style="font-size:11px;color:var(--text3);font-weight:400"></span>
       </div>
-      <span id="chev-hitos" style="color:#7C3AED;font-size:18px;transition:transform .2s">▼</span>
+      <span id="chev-hitos" style="color:var(--text2);font-size:18px;transition:transform .2s">▼</span>
     </div>
     <div id="hitos-body" style="margin-top:12px">
       <div id="hitos-rows"></div>
@@ -256,26 +242,26 @@
     </div>
   </div>
   <!-- ── BLOQUE 1 ── -->
-  <div class="card" id="blq1-card" style="border-left:4px solid #3B82F6">
+  <div class="card" id="blq1-card" style="border-left:4px solid var(--blue-text)">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleBloque(1)">
-      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:#3B82F6"><i class="ti ti-list-check"></i>1. Actividades preliminares</div>
-      <i class="ti ti-chevron-down" id="chev-blq1" style="flex-shrink:0;color:#3B82F6"></i>
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:var(--blue-text)"><i class="ti ti-list-check"></i>1. Actividades preliminares</div>
+      <i class="ti ti-chevron-down" id="chev-blq1" style="flex-shrink:0;color:var(--blue-text)"></i>
     </div>
     <div id="blq1-body" style="display:none;margin-top:10px"><div id="blq1-rows"></div></div>
   </div>
   <!-- ── BLOQUE 2 ── -->
-  <div class="card" id="blq2-card" style="border-left:4px solid #F59E0B">
+  <div class="card" id="blq2-card" style="border-left:4px solid var(--amber)">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleBloque(2)">
-      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:#F59E0B"><i class="ti ti-bolt"></i>2. Actividades críticas</div>
-      <i class="ti ti-chevron-down" id="chev-blq2" style="flex-shrink:0;color:#F59E0B"></i>
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:var(--amber)"><i class="ti ti-bolt"></i>2. Actividades críticas</div>
+      <i class="ti ti-chevron-down" id="chev-blq2" style="flex-shrink:0;color:var(--amber)"></i>
     </div>
     <div id="blq2-body" style="display:none;margin-top:10px"><div id="blq2-rows"></div></div>
   </div>
   <!-- ── BLOQUE 3 ── -->
-  <div class="card" id="blq3-card" style="border-left:4px solid #10B981">
+  <div class="card" id="blq3-card" style="border-left:4px solid var(--green)">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleBloque(3)">
-      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:#10B981"><i class="ti ti-tools"></i>3. Actividades complementarias</div>
-      <i class="ti ti-chevron-down" id="chev-blq3" style="flex-shrink:0;color:#10B981"></i>
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:var(--green)"><i class="ti ti-tools"></i>3. Actividades complementarias</div>
+      <i class="ti ti-chevron-down" id="chev-blq3" style="flex-shrink:0;color:var(--green)"></i>
     </div>
     <div id="blq3-body" style="display:none;margin-top:10px"><div id="blq3-rows"></div></div>
   </div>
