@@ -1,0 +1,615 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Reporte Diario de Campo</title>
+
+<!-- PWA: manifest + iconos + metadatos de instalación (no afecta el uso normal desde navegador) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563EB">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="RDC">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tabler-icons/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0"></script>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/reset.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<!-- ═══════════════ PANTALLA DE INICIO ═══════════════ -->
+<div class="app" id="pantalla-inicio">
+  <header class="app-header">
+    <div class="app-logo">
+      <i class="ti ti-clipboard-list"></i>
+      <h1>Reporte Diario de Campo</h1>
+    </div>
+    <p>Sostenimiento y mantenimiento de talud ⛰️</p>
+  </header>
+  <div class="card">
+    <button class="nav-btn primary" style="padding:22px;font-size:16px" onclick="mostrarPantallaRaiz('rdc')">
+      <i class="ti ti-clipboard-list" style="font-size:22px"></i> Reporte Diario de Campo
+    </button>
+    <button class="nav-btn" style="padding:22px;font-size:16px;margin-top:10px" onclick="mostrarPantallaRaiz('fotos')">
+      <i class="ti ti-camera" style="font-size:22px"></i> Registro Fotográfico
+    </button>
+  </div>
+  <div class="card" id="sketches-inicio-card" style="display:none">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div class="card-title" style="margin:0;flex:1"><i class="ti ti-photo"></i>Últimos Sketches</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
+        <span id="sketch-frente-lbl" style="font-size:12px;color:var(--text2);font-weight:500"></span>
+        <button onclick="_togSketchFrenteEdit()" style="font-size:11px;color:var(--blue);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;text-decoration:underline">cambiar</button>
+      </div>
+    </div>
+    <div id="sketch-frente-edit" style="display:none;margin-bottom:10px">
+      <select id="sketch-frente-sel" onchange="_onSketchFrenteChange()" style="width:100%;font-size:13px;padding:6px">
+        <option value="">— Seleccionar frente —</option>
+      </select>
+    </div>
+    <div id="sketches-anteriores-body"></div>
+    <div id="sketches-ver-mas-wrap" style="display:none;text-align:center;margin-top:12px">
+      <button id="sketches-ver-mas-btn" class="btn-secondary" onclick="_cargarMasSketchesAnteriores()"><i class="ti ti-clock-down"></i> Ver más antiguos</button>
+    </div>
+  </div>
+  <div class="alert alert-blue">
+    <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+    <span><strong>Reporte Diario de Campo:</strong> puedes llenarlo desde laptop o celular, como prefieras.<br><strong>Registro Fotográfico:</strong> se recomienda hacerlo desde el celular, para poder tomar/elegir fotos fácilmente.</span>
+  </div>
+
+  <!-- Botón de admin flotante (tuerca) -->
+  <button onclick="abrirPanelAdmin()" style="position:fixed;bottom:80px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--amber);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:100;transition:all .2s" title="Panel de administración">
+    <i class="ti ti-settings"></i>
+  </button>
+</div>
+
+<!-- ═══════════════ PANTALLA RDC (app original, sin cambios) ═══════════════ -->
+<div class="app" id="pantalla-rdc" style="display:none">
+
+<!-- HEADER -->
+<header class="app-header" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 12px 8px">
+  <div class="app-logo">
+    <i class="ti ti-clipboard-list"></i>
+    <h1>Reporte Diario de Campo</h1>
+  </div>
+  <p style="margin:0 0 2px;font-size:11px;opacity:.75">Sostenimiento y mantenimiento de talud ⛰️</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px">
+    <button onclick="mostrarPantallaRaiz('inicio')" style="width:38px;height:38px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-size:20px;font-weight:700;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Volver">←</button>
+    <button onclick="showTab('resumen')" style="border:none;background:var(--blue);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);color:#fff;padding:4px 8px;min-width:46px;min-height:38px;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Resumen" title="Ver Resumen"><i class="ti ti-send" style="font-size:16px;line-height:1"></i><span style="font-size:8.5px;font-weight:700;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;line-height:1;font-family:'Nunito','Poppins','Segoe UI Rounded',system-ui,sans-serif">Resumen</span></button>
+  </div>
+</header>
+
+<!-- TABS -->
+<!-- ═══════════════ BOTTOM NAV ═══════════════ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bnav-item active" id="bnav-datos" onclick="showTab('datos')">
+    <i class="ti ti-id-badge"></i><span>Datos</span>
+  </button>
+  <button class="bnav-item" id="bnav-jornada" onclick="showTab('jornada')">
+    <i class="ti ti-checklist"></i><span>Jornada</span>
+  </button>
+  <button class="bnav-item" id="bnav-metrados" onclick="showTab('metrados')">
+    <i class="ti ti-ruler-measure"></i><span>Metrados</span>
+  </button>
+  <button class="bnav-item" id="bnav-standby" onclick="showTab('standby')">
+    <i class="ti ti-clock-pause"></i><span>Stand By</span>
+  </button>
+  <button class="bnav-item" id="bnav-obs" onclick="showTab('obs')">
+    <i class="ti ti-note"></i><span>Obs/Prog</span>
+  </button>
+</nav>
+
+
+<!-- ═══════════════ TAB DATOS ═══════════════ -->
+<div id="tab-datos" class="screen visible">
+  <!-- Supervisor banner -->
+  <div style="background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 100%);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+    <div style="width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="ti ti-user-shield" style="color:#fff;font-size:21px"></i>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px">Reporte de Supervisor</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sup-nombre-lbl">—</div>
+    </div>
+    <button onclick="_mostrarModalSup()" style="font-size:11px;padding:6px 11px;border:1.5px solid rgba(255,255,255,.35);border-radius:8px;background:rgba(255,255,255,.12);cursor:pointer;font-family:inherit;color:#fff;font-weight:600;white-space:nowrap;flex-shrink:0">Cambiar</button>
+  </div>
+  <input type="hidden" id="f-supervisor">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-file-description"></i>Identificación</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field"><label>Fecha</label><input type="date" id="f-fecha"></div>
+      <div class="field"><label>Sector</label><select id="f-sector" onchange="onSectorChange()"></select></div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field"><label>Frente</label><select id="f-frente" onchange="onFrenteChange()"></select></div>
+      <div class="field"><label>Capataz</label><select id="f-capataz"></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-users"></i>Personal presente</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div class="field"><label>Capataz</label><input type="number" id="f-capataces" min="0" value="1"></div>
+      <div class="field"><label>Operarios</label><input type="number" id="f-operarios" min="0" value="0"></div>
+      <div class="field"><label>Oficiales</label><input type="number" id="f-oficiales" min="0" value="0"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Peones</label><input type="number" id="f-peones" min="0" value="0"></div>
+      <div class="field"><label>Vigías</label><input type="number" id="f-vigias" min="0" value="0"></div>
+    </div>
+  </div>
+  <div id="sala-electrica-section" style="display:none">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-building"></i>Personal Sala Eléctrica</div>
+      <p class="note" style="margin-bottom:10px">Personal presente específico del sector Sala Eléctrica.</p>
+      <div class="grid2">
+        <div class="field"><label>Ingeniero residente</label><input type="number" id="f-ing-residente" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Supervisor de campo</label><input type="number" id="f-sup-campo" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Ingenieros de seguridad</label><input type="number" id="f-ing-seguridad" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Ingeniero de calidad</label><input type="number" id="f-ing-calidad" min="0" value="0" onchange="saveDraft()"></div>
+        <div class="field"><label>Topógrafo</label><input type="number" id="f-topografo" min="0" value="0" onchange="saveDraft()"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Equipos (simplificado) -->
+  <div class="card">
+    <div class="card-title"><i class="ti ti-tool"></i>Equipos en frente</div>
+    <p class="note" style="margin-bottom:10px">Registra los equipos presentes en la jornada.</p>
+    <div id="equipos-lista-rows"></div>
+    <div style="display:grid;grid-template-columns:1fr 80px 36px;gap:8px;align-items:end;margin-top:10px">
+      <div class="field"><label style="font-size:11px">Equipo</label>
+        <select id="eq-nombre" onchange="_onEquipoSelChange()">
+          <option value="">— Seleccionar equipo —</option>
+        </select>
+        <input type="text" id="eq-nombre-otro" placeholder="Describe el equipo…" autocomplete="off" style="display:none;margin-top:6px" onkeydown="if(event.key==='Enter')_addEquipo()">
+      </div>
+      <div class="field"><label style="font-size:11px">Cantidad</label><input type="number" min="0" step="1" id="eq-cantidad" placeholder="0" onkeydown="if(event.key==='Enter')_addEquipo()"></div>
+      <button class="ctrl-add-btn" onclick="_addEquipo()" style="height:38px;align-self:end">+</button>
+    </div>
+  </div>
+  </div>
+
+<!-- ═══════════════ TAB JORNADA ═══════════════ -->
+<div id="tab-jornada" class="screen">
+  <!-- Restricción de acceso -->
+  <div class="card">
+    <label class="toggle-row" style="margin-bottom:0">
+      <input type="checkbox" id="f-truckshop" onchange="toggleRestriccion()">
+      <span>⚠️ ¿Tuviste restricciones para llegar a tu frente de trabajo?</span>
+    </label>
+    <div id="restriccion-detalle" style="display:none;margin-top:12px">
+      <div class="alert alert-amber" style="margin-bottom:10px">⚠️ Completa los datos de la restricción.</div>
+      <div class="field" style="margin-bottom:10px">
+        <label>¿Cuál fue la restricción?</label>
+        <textarea id="f-restriccion-desc" placeholder="Describe la restricción..."></textarea>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Hora inicio</label><input type="time" id="f-restriccion-inicio"></div>
+        <div class="field"><label>Hora fin</label><input type="time" id="f-restriccion-fin"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Hitos de inicio — acordeón -->
+  <div class="card" style="border-left:4px solid #7C3AED">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togHitosAcordeon()">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px;font-weight:700;color:#7C3AED">🚩 Hitos de inicio de jornada</span>
+        <span id="badge-hitos" style="font-size:11px;color:var(--text3);font-weight:400"></span>
+      </div>
+      <span id="chev-hitos" style="color:#7C3AED;font-size:18px;transition:transform .2s">▼</span>
+    </div>
+    <div id="hitos-body" style="margin-top:12px">
+      <div id="hitos-rows"></div>
+      <p class="note" style="margin-top:10px">Registra estos hitos una vez al inicio del turno.</p>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">🍱 Refrigerio / Almuerzo</div>
+        <div class="grid2">
+          <div class="field"><label>Salida</label><input type="time" id="f-almuerzo-salida" value="00:00" onchange="saveDraft()"></div>
+          <div class="field"><label>Retorno</label><input type="time" id="f-almuerzo-retorno" value="00:00" onchange="saveDraft()"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Bitácora de actividades -->
+  <div class="card">
+    <div class="card-title"><i class="ti ti-writing"></i>Bitácora — <span id="frente-actual" style="text-transform:none;font-weight:400;color:var(--blue-text)">selecciona frente en Datos</span></div>
+    <p class="note" style="margin-bottom:8px">Registra cada actividad con hora inicio y fin. Los metrados van en <strong>Metrados</strong>.</p>
+    <div id="bitacora-rows"></div>
+    <button class="add-btn" onclick="_addBitacora()" style="margin-top:8px"><i class="ti ti-plus"></i>Agregar actividad</button>
+  </div>
+  </div>
+
+<!-- ═══════════════ TAB ACTIVIDADES ═══════════════ -->
+
+<!-- ═══════════════ TAB EQUIPOS ═══════════════ -->
+
+<!-- ═══════════════ TAB STAND BY ═══════════════ -->
+<div id="tab-standby" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-clock-pause"></i>Stand By de la jornada</div>
+    <div class="alert alert-blue">
+      <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+      <span>Registra los <strong>tiempos de paralización (Stand By)</strong> de la jornada: actividad afectada, horario y causa. El total se calcula automáticamente descontando el horario de almuerzo (pestaña Datos) si se cruza con el rango registrado.</span>
+    </div>
+    <div id="standby-rows"></div>
+    <div id="standby-total" style="display:none;margin-top:10px;padding:11px 13px;background:var(--red-bg);border:1px solid #FCA5A5;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--red-text)"></div>
+    <button class="add-btn" onclick="addStandbyRow()"><i class="ti ti-plus"></i>Agregar Stand By</button>
+  </div>
+  </div>
+
+<!-- ═══════════════ TAB METRADOS ═══════════════ -->
+<div id="tab-metrados" class="screen">
+  <div class="card" style="padding:10px 14px">
+    <div class="alert alert-blue" style="margin:0">
+      <i class="ti ti-file-certificate" style="flex-shrink:0"></i>
+      <span>Los <strong>códigos que registres</strong> deben coincidir exactamente con los del <strong>plano de sostenimiento</strong>.</span>
+    </div>
+  </div>
+  <!-- ── BLOQUE 1 ── -->
+  <div class="card" id="blq1-card" style="border-left:4px solid #3B82F6">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleBloque(1)">
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:#3B82F6"><i class="ti ti-list-check"></i>1. Actividades preliminares</div>
+      <i class="ti ti-chevron-down" id="chev-blq1" style="flex-shrink:0;color:#3B82F6"></i>
+    </div>
+    <div id="blq1-body" style="display:none;margin-top:10px"><div id="blq1-rows"></div></div>
+  </div>
+  <!-- ── BLOQUE 2 ── -->
+  <div class="card" id="blq2-card" style="border-left:4px solid #F59E0B">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleBloque(2)">
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:#F59E0B"><i class="ti ti-bolt"></i>2. Actividades críticas</div>
+      <i class="ti ti-chevron-down" id="chev-blq2" style="flex-shrink:0;color:#F59E0B"></i>
+    </div>
+    <div id="blq2-body" style="display:none;margin-top:10px"><div id="blq2-rows"></div></div>
+  </div>
+  <!-- ── BLOQUE 3 ── -->
+  <div class="card" id="blq3-card" style="border-left:4px solid #10B981">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_toggleBloque(3)">
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px;color:#10B981"><i class="ti ti-tools"></i>3. Actividades complementarias</div>
+      <i class="ti ti-chevron-down" id="chev-blq3" style="flex-shrink:0;color:#10B981"></i>
+    </div>
+    <div id="blq3-body" style="display:none;margin-top:10px"><div id="blq3-rows"></div></div>
+  </div>
+  <!-- ── Partidas libres ── -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togglePartLibres()">
+      <div class="card-title" style="margin:0;display:flex;align-items:center;gap:6px"><i class="ti ti-circle-plus"></i>Partidas libres</div>
+      <i class="ti ti-chevron-down" id="chev-partlibre" style="flex-shrink:0;color:var(--text3)"></i>
+    </div>
+    <div id="partlibre-body" style="display:none;margin-top:10px">
+    <p class="note" style="margin-bottom:10px">Para actividades que no están en los bloques.</p>
+    <div id="metrados-manuales-rows"></div>
+    <div style="display:grid;grid-template-columns:1fr 120px 100px 42px;gap:8px;align-items:end;margin-top:8px">
+      <div class="field"><label>Nombre</label><input type="text" id="manual-nombre" placeholder="Nombre de la partida"></div>
+      <div class="field"><label>U.M.</label>
+        <select id="manual-um">
+          <option value="">—</option>
+          <option>ML</option><option>M2</option><option>M3</option><option>UND</option><option>HH</option><option>GLB</option><option>VIAJE</option>
+        </select>
+      </div>
+      <div class="field"><label>Metrado</label><input type="number" min="0" step="0.01" id="manual-met" placeholder="0.00" onkeydown="if(event.key==='Enter')addMetradoManual()"></div>
+      <button class="ctrl-add-btn" onclick="addMetradoManual()" style="height:38px;align-self:end"><i class="ti ti-plus"></i></button>
+    </div>
+    </div><!-- /partlibre-body -->
+  </div>
+</div>
+
+<!-- ═══════════════ TAB OBS ═══════════════ -->
+<div id="tab-obs" class="screen">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-calendar-plus"></i>Programación — día siguiente</div>
+    <p class="note" style="margin-bottom:12px">Selecciona las partidas que planeas ejecutar mañana.</p>
+    <div id="prog-rows"></div>
+    <button class="add-btn" onclick="addProgRow()"><i class="ti ti-plus"></i>Agregar partida</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-circle-plus"></i>Actividades no programadas</div>
+    <div id="prog-adic-rows"></div>
+    <button class="add-btn" onclick="addProgAdicRow()"><i class="ti ti-plus"></i>Agregar actividad</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-message-circle"></i>Observaciones</div>
+    <div class="field"><textarea id="f-comentarios" placeholder="Observaciones de campo, calidad, condiciones del frente..."></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-tools"></i>Requerimientos</div>
+    <div class="field"><textarea id="f-requerimientos" placeholder="Materiales, equipos, herramientas, personal o servicios que se necesitan..."></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-shield-exclamation"></i>Restricciones</div>
+    <div class="field"><textarea id="f-restricciones" placeholder="Restricciones operativas, de acceso, clima, permisos..."></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-pencil-exclamation"></i>Modificaciones / Redline</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>¿Hubo modificaciones respecto al plano original?</label>
+      <div class="chips">
+        <span class="chip" id="chip-redline-si" onclick="toggleRedline('si')">✅ Sí, hubo modificaciones</span>
+        
+      </div>
+    </div>
+    <div id="redline-detalle" style="display:none">
+      <div class="field" style="margin-bottom:10px">
+        <label>Supervisor Hegatrux que realizó el Redline</label>
+        <select id="f-redline-supervisor">
+          <option value="">— Seleccionar supervisor —</option>
+          <option>LUIS LOZANO</option>
+          <option>CAMILO CENTENO</option>
+          <option>JUAN RODRIGUEZ</option>
+          <option>JOSE SULLO</option>
+          <option>CRISTHIAN COLCA</option>
+          <option>DEREK ARIAS</option>
+        </select>
+      </div>
+      <div class="field"><label>Descripción del Redline</label><textarea id="f-redline" placeholder="Describir los cambios: ubicación, dimensiones, materiales..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ TAB RESUMEN ═══════════════ -->
+<div id="tab-resumen" class="screen">
+  <div style="text-align:center;padding:8px 0 4px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">— RESUMEN DEL DÍA —</div>
+  <div class="metric-grid" id="metrics-area"></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-ruler"></i>Metrados ejecutados</div>
+    <table class="summary-table"><thead><tr><th>Partida</th><th>Metrado</th><th>U.M.</th></tr></thead>
+    <tbody id="metrado-body"></tbody></table>
+  </div>
+  <div class="card" id="ctrl-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-tool"></i>Control de Sostenimiento</div>
+    <div id="ctrl-resumen-body"></div>
+  </div>
+  <div class="card" id="equipos-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-truck"></i>Equipos y maquinaria</div>
+    <div id="equipos-resumen-body" style="font-size:13px;line-height:1.7"></div>
+  </div>
+  <div class="card" id="standby-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-clock-pause"></i>Stand By de la jornada</div>
+    <table class="summary-table"><thead><tr><th>Item</th><th>Actividad afectada</th><th>Desde</th><th>Hasta</th><th>Total</th><th>Causa</th></tr></thead>
+    <tbody id="standby-resumen-body"></tbody></table>
+  </div>
+  <div class="card" id="obs-resumen-section" style="display:none">
+    <div class="card-title"><i class="ti ti-notes"></i>Comentarios y restricciones</div>
+    <div id="obs-resumen-body" style="font-size:13px;line-height:1.7"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-brand-whatsapp"></i>Reporte WhatsApp</div>
+    <div class="field"><textarea id="texto-wsp" readonly style="min-height:240px;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--surface2)"></textarea></div>
+    <div class="bottom-actions" style="margin-top:10px">
+      <button class="btn-primary" onclick="copiarTextoWsp()" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;font-size:14px;font-weight:600;border:none;border-radius:var(--r-md);cursor:pointer"><i class="ti ti-copy"></i>Copiar</button>
+      <button class="secondary-btn" onclick="compartirTextoWsp()"><i class="ti ti-share"></i>Compartir</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="card-title"><i class="ti ti-send"></i>Enviar reporte a la oficina</div>
+    <p class="note" style="margin-bottom:10px">Cuando termines de llenar todo el reporte, presiona <strong>Terminado y Enviar</strong>. Recién cuando se confirme el envío podrás iniciar un reporte nuevo. Si estás en una zona sin señal, descarga tu copia y usa <strong>"No tengo señal"</strong>: el reporte quedará en una cola y la app intentará enviarlo automáticamente en cuanto detecte conexión.</p>
+    <div id="envio-status" style="display:none"></div>
+    <div id="pendientes-indicador" style="display:none;margin-bottom:10px"></div>
+    <button class="nav-btn primary" id="btn-enviar" onclick="terminarYEnviar()"><i class="ti ti-send"></i>Terminado y Enviar</button>
+    <button class="export-btn" id="btn-descargar-copia" onclick="descargarMiCopia()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-download"></i>Descargar mi copia (Excel) 📊</button>
+    <button class="secondary-btn" id="btn-sin-senal" onclick="marcarSinSenal()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-wifi-off"></i>No tengo señal — ya descargué mi copia</button>
+    <button class="secondary-btn" id="btn-nuevo" onclick="nuevoReporte()" style="width:100%;justify-content:center;margin-top:8px"><i class="ti ti-refresh"></i>Nuevo</button>
+    <div class="alert alert-amber" style="margin-top:10px">
+      <i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
+      <span><strong>"Nuevo" se habilita recién cuando el envío sea exitoso</strong>, o cuando confirmes que no tienes señal y ya descargaste tu copia. Una vez iniciado el nuevo reporte, el borrador anterior se borra.</span>
+    </div>
+  </div>
+
+</div>
+
+
+</div><!-- .app --><!-- fin #pantalla-rdc -->
+
+<!-- PANEL ADMIN (Modal) -->
+<div id="admin-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;flex-direction:column;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:var(--r-md);padding:24px;max-width:400px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
+    <h2 style="margin:0 0 16px;text-align:center">🔧 Panel de Administración</h2>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="admin-password" placeholder="Ingresa la contraseña" style="font-size:16px;padding:10px 12px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface);color:var(--text);width:100%;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button onclick="cerrarPanelAdmin()" class="btn-secondary" style="flex:1">Cancelar</button>
+      <button onclick="autenticarAdmin()" class="btn-primary" style="flex:1">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN (Contenido) -->
+<div id="admin-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10001;overflow-y:auto;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--r-md);padding:20px;max-width:600px;margin:0 auto;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="margin:0">⚙️ Administración</h2>
+      <button onclick="cerrarPanelAdmin()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)">✕</button>
+    </div>
+
+    <!-- TAB: Supervisores -->
+    <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">
+      <h3 style="margin-bottom:10px">👤 Supervisores</h3>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px">
+        <input type="text" id="admin-sup-nombre" placeholder="Nombre del supervisor" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface2)">
+        <button onclick="agregarSupervisor()" class="btn-primary" style="padding:8px 14px">+ Agregar</button>
+      </div>
+      <div id="admin-sup-lista" style="font-size:12px"></div>
+    </div>
+
+    <!-- TAB: Capataces -->
+    <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">
+      <h3 style="margin-bottom:10px">🔨 Capataces</h3>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px">
+        <input type="text" id="admin-cap-nombre" placeholder="Nombre del capataz" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface2)">
+        <button onclick="agregarCapataz()" class="btn-primary" style="padding:8px 14px">+ Agregar</button>
+      </div>
+      <div id="admin-cap-lista" style="font-size:12px"></div>
+    </div>
+
+    <!-- TAB: Sectores y Frentes -->
+    <div>
+      <h3 style="margin-bottom:10px">📍 Sectores y Frentes</h3>
+      <div style="margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:var(--r-sm)">
+        <label style="display:block;margin-bottom:8px;font-size:12px;font-weight:600">Nuevo Sector</label>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+          <input type="text" id="admin-sect-nombre" placeholder="Nombre del sector" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface)">
+          <button onclick="agregarSector()" class="btn-primary" style="padding:8px 14px;white-space:nowrap">+ Sector</button>
+        </div>
+      </div>
+      <div id="admin-sect-lista" style="font-size:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox para ver en grande un sketch anterior — FUERA de pantalla-rdc para que funcione desde pantalla-inicio -->
+<div id="sketch-lightbox" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.92);z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:24px;overflow:hidden" onclick="if(event.target===this) _cerrarSketchLightbox()">
+  <img id="sketch-lightbox-img" style="max-width:100%;max-height:70vh;border-radius:var(--r-md);box-shadow:0 8px 32px rgba(0,0,0,.5);touch-action:none;transition:transform .1s;cursor:zoom-in">
+  <div id="sketch-lightbox-nombre" style="color:#fff;margin-top:12px;font-size:13px;text-align:center"></div>
+  <p style="color:rgba(255,255,255,.55);font-size:11px;margin-top:4px">Pellizca o rueda = zoom · Arrastra para moverse · Doble toque = restablecer</p>
+  <button onclick="event.stopPropagation();_descargarSketchActual()" style="margin-top:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);padding:10px 18px;font-family:'Inter',inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="ti ti-download"></i>Descargar</button>
+  <button onclick="event.stopPropagation();_cerrarSketchLightbox()" aria-label="Cerrar" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)">✕</button>
+</div>
+
+<!-- ═══════════════ PANTALLA REGISTRO FOTOGRÁFICO ═══════════════ -->
+<div class="app" id="pantalla-fotos" style="display:none">
+  <header class="app-header" style="position:relative;padding-left:44px;padding-right:44px">
+    <button onclick="mostrarPantallaRaiz('inicio')" style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:36px;height:36px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:var(--text2);font-size:22px;font-weight:300" aria-label="Volver">←</button>
+    <div class="app-logo">
+      <i class="ti ti-camera"></i>
+      <h1>Registro Fotográfico</h1>
+    </div>
+    <p>Evidencia fotográfica de campo</p>
+  </header>
+
+  <!-- Supervisor banner fotos -->
+  <div style="background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 100%);border-radius:var(--r-lg);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px">Supervisor</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="foto-sup-nombre">—</div>
+    </div>
+    <div style="text-align:right;min-width:0">
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px">Frente</div>
+      <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px" id="foto-frente-lbl">—</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:10px 14px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;color:var(--text3)">Fecha:</span>
+      <input type="date" id="foto-fecha" style="border:none;background:none;font-family:inherit;font-size:14px;font-weight:600;color:var(--text1);padding:0;cursor:pointer" onchange="saveDraft()">
+    </div>
+  </div>
+
+  <!-- ACORDEÓN FOTOS DIARIAS -->
+  <div class="card" id="foto-blq-diarias" style="border-left:4px solid #2563EB;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togFotoBloque('diarias')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px;font-weight:700;color:#2563EB">📷 Fotos diarias</span>
+        <span id="foto-badge-diarias" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+      </div>
+      <span id="foto-chev-diarias" style="color:#2563EB;font-size:18px;transition:transform .2s">▼</span>
+    </div>
+    <div id="foto-body-diarias" style="margin-top:12px">
+      <div class="alert alert-red" style="margin-bottom:10px">
+        <span>⚠️ <strong>Obligatorio:</strong> una foto debe ser del <strong>inicio de la charla de seguridad</strong>.</span>
+      </div>
+      <input type="file" id="foto-input-diarias" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('diarias',event)">
+      <button class="add-btn" onclick="document.getElementById('foto-input-diarias').click()">+ Seleccionar fotos</button>
+      <div id="foto-thumbs-diarias" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ACORDEÓN REDLINE -->
+  <div class="card" id="foto-blq-redline" style="border-left:4px solid #DC2626;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togFotoBloque('redline')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px;font-weight:700;color:#DC2626">✏️ Redline</span>
+        <span id="foto-badge-redline" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+      </div>
+      <span id="foto-chev-redline" style="color:#DC2626;font-size:18px;transition:transform .2s">▶</span>
+    </div>
+    <div id="foto-body-redline" style="display:none;margin-top:12px">
+      <p class="note" style="margin-bottom:10px">Opcional. Fotos de planos con modificaciones marcadas en rojo.</p>
+      <input type="file" id="foto-input-redline" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('redline',event)">
+      <button class="add-btn" onclick="document.getElementById('foto-input-redline').click()">+ Seleccionar fotos</button>
+      <div id="foto-thumbs-redline" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ACORDEÓN SKETCH -->
+  <div class="card" id="foto-blq-sketch" style="border-left:4px solid #059669">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:8px" onclick="_togFotoBloque('sketch')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px;font-weight:700;color:#059669">📐 Sketch de avance</span>
+        <span id="foto-badge-sketch" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+      </div>
+      <span id="foto-chev-sketch" style="color:#059669;font-size:18px;transition:transform .2s">▶</span>
+    </div>
+    <div id="foto-body-sketch" style="display:none;margin-top:12px">
+      <p class="note" style="margin-bottom:12px">Opcional. Toca el tipo para agregar fotos del sketch.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div>
+          <input type="file" id="foto-input-sketch_perf" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch_perf',event)">
+          <button id="btn-sketch_perf" onclick="document.getElementById('foto-input-sketch_perf').click()" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 6px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);min-height:82px">
+            <span style="font-size:22px">⛏</span><span>Perforación</span>
+            <span id="badge-sketch_perf" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+          </button>
+          <div id="foto-thumbs-sketch_perf" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+        </div>
+        <div>
+          <input type="file" id="foto-input-sketch_iny" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch_iny',event)">
+          <button id="btn-sketch_iny" onclick="document.getElementById('foto-input-sketch_iny').click()" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 6px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);min-height:82px">
+            <span style="font-size:22px">💧</span><span>Inyección</span>
+            <span id="badge-sketch_iny" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+          </button>
+          <div id="foto-thumbs-sketch_iny" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+        </div>
+        <div>
+          <input type="file" id="foto-input-sketch_malla" accept="image/*" multiple style="display:none" onchange="onFotosSeleccionadas('sketch_malla',event)">
+          <button id="btn-sketch_malla" onclick="document.getElementById('foto-input-sketch_malla').click()" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 6px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);min-height:82px">
+            <span style="font-size:22px">🕸</span><span>Malla</span>
+            <span id="badge-sketch_malla" style="display:none;font-size:11px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:2px 8px;border-radius:99px">0</span>
+          </button>
+          <div id="foto-thumbs-sketch_malla" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="foto-status" style="display:none;margin-top:12px"></div>
+
+  <div class="bottom-actions" style="margin-top:16px">
+    <button class="nav-btn primary" id="btn-enviar-fotos" onclick="enviarFotos()">Enviar fotos</button>
+  </div>
+</div><!-- fin #pantalla-fotos -->
+
+<!-- ═══════════════ MODAL SUPERVISOR ═══════════════ -->
+<div id="modal-sup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#ffffff;border-radius:16px;padding:24px 20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);color:#111">
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;color:#111">¿Quién eres?</div>
+    <p style="font-size:13px;color:#666;margin-bottom:16px">Selecciona tu nombre. Solo se te pedirá una vez por dispositivo.</p>
+    <div id="modal-sup-opts" style="display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto"></div>
+    <button onclick="_cerrarModalSup()" style="margin-top:14px;width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#f5f5f5;font-family:inherit;font-size:13px;cursor:pointer;color:#555">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/rdc.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/navegacion.js"></script>
+<script src="js/fotos.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
