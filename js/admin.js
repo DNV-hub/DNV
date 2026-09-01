@@ -35,11 +35,13 @@ async function _upsertActivo(tabla, nombre) {
   const { data: existentes, error: errSel } = await window.supabase.from(tabla).select('id, estado').eq('nombre', nombre);
   if (errSel) return { error: errSel };
   const existente = (existentes || [])[0];
+  const { data: todos } = await window.supabase.from(tabla).select('orden');
+  const nuevoOrden = (todos || []).reduce((m, r) => Math.max(m, r.orden || 0), 0) + 1;
   if (existente) {
     if (existente.estado) return { error: { message: `Ya existe "${nombre}" en la lista.` } };
-    return await window.supabase.from(tabla).update({ estado: true }).eq('id', existente.id);
+    return await window.supabase.from(tabla).update({ estado: true, orden: nuevoOrden }).eq('id', existente.id);
   }
-  return await window.supabase.from(tabla).insert([{ nombre, estado: true }]);
+  return await window.supabase.from(tabla).insert([{ nombre, estado: true, orden: nuevoOrden }]);
 }
 
 async function agregarSupervisor() {
@@ -90,23 +92,32 @@ async function agregarSector() {
   }
 }
 
+// Fila arrastrable genérica para las listas del panel admin. sectorId solo aplica a frentes,
+// para no mezclar el reordenamiento de un sector con el de otro.
+function _filaArrastrable(tabla, id, nombre, botonesExtra, sectorId, estiloExtra) {
+  const drag = `data-tabla="${tabla}" data-id="${id}" draggable="true" ondragstart="event.stopPropagation();_dragStart(event,'${tabla}',${id},${sectorId ?? 'null'})" ondragover="event.stopPropagation();event.preventDefault()" ondrop="event.stopPropagation();_dropRow(event,'${tabla}',${id},${sectorId ?? 'null'})"`;
+  return `<div ${drag} style="padding:6px 8px;background:var(--surface2);border-radius:4px;margin-bottom:4px;display:flex;align-items:center;gap:8px;cursor:grab;${estiloExtra||''}"><span style="color:var(--text3)">☰</span><span style="flex:1">${nombre}</span>${botonesExtra}</div>`;
+}
+
 async function cargarListasAdmin() {
   try {
-    const { data: sups } = await window.supabase.from('supervisores').select('id, nombre').eq('estado', true);
+    const { data: sups } = await window.supabase.from('supervisores').select('id, nombre').eq('estado', true).order('orden');
     document.getElementById('admin-sup-lista').innerHTML = (sups||[]).map(s =>
-      `<div style="padding:6px;background:var(--surface2);border-radius:4px;margin-bottom:4px;display:flex;justify-content:space-between"><span>${s.nombre}</span><button onclick="eliminarSupervisor(${s.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button></div>`
+      _filaArrastrable('supervisores', s.id, s.nombre, `<button onclick="eliminarSupervisor(${s.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button>`)
     ).join('');
-    const { data: caps } = await window.supabase.from('capataces').select('id, nombre').eq('estado', true);
+    const { data: caps } = await window.supabase.from('capataces').select('id, nombre').eq('estado', true).order('orden');
     document.getElementById('admin-cap-lista').innerHTML = (caps||[]).map(c =>
-      `<div style="padding:6px;background:var(--surface2);border-radius:4px;margin-bottom:4px;display:flex;justify-content:space-between"><span>${c.nombre}</span><button onclick="eliminarCapataz(${c.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button></div>`
+      _filaArrastrable('capataces', c.id, c.nombre, `<button onclick="eliminarCapataz(${c.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button>`)
     ).join('');
-    const { data: sects } = await window.supabase.from('sectores').select('id, nombre').eq('estado', true);
+    const { data: sects } = await window.supabase.from('sectores').select('id, nombre').eq('estado', true).order('orden');
     let sectHtml = '';
     for (const sect of (sects||[])) {
-      const { data: frentes } = await window.supabase.from('frentes').select('id, nombre').eq('sector_id', sect.id).eq('estado', true);
-      sectHtml += `<div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:4px"><div style="font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between"><span>${sect.nombre}</span><span style="display:flex;gap:10px;align-items:center"><button onclick="agregarFrenteSector(${sect.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px">+ Frente</button><button onclick="eliminarSector(${sect.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button></span></div>`;
+      const { data: frentes } = await window.supabase.from('frentes').select('id, nombre').eq('sector_id', sect.id).eq('estado', true).order('orden');
+      const botonesSector = `<button onclick="agregarFrenteSector(${sect.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px">+ Frente</button><button onclick="eliminarSector(${sect.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button>`;
+      sectHtml += `<div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:4px">`;
+      sectHtml += _filaArrastrable('sectores', sect.id, sect.nombre, botonesSector, null, 'background:var(--surface);font-weight:600;margin-bottom:8px;');
       (frentes||[]).forEach(f => {
-        sectHtml += `<div style="font-size:11px;padding:4px 8px;margin:4px 0;background:var(--surface);border-radius:2px;display:flex;justify-content:space-between"><span>${f.nombre}</span><button onclick="eliminarFrente(${f.id})" style="background:none;border:none;color:#dc2626;cursor:pointer">✕</button></div>`;
+        sectHtml += _filaArrastrable('frentes', f.id, f.nombre, `<button onclick="eliminarFrente(${f.id})" style="background:none;border:none;color:#dc2626;cursor:pointer">✕</button>`, sect.id, 'background:var(--surface);font-size:11px;padding:4px 8px;');
       });
       sectHtml += '</div>';
     }
@@ -114,6 +125,37 @@ async function cargarListasAdmin() {
   } catch (e) {
     console.error('Error cargando listas:', e);
   }
+}
+
+// ==================== ARRASTRAR PARA REORDENAR ====================
+let _dragInfo = null;
+
+function _dragStart(ev, tabla, id, sectorId) {
+  _dragInfo = { tabla, id, sectorId };
+  ev.dataTransfer.effectAllowed = 'move';
+}
+
+async function _dropRow(ev, tabla, targetId, sectorId) {
+  ev.preventDefault();
+  if (!_dragInfo || _dragInfo.tabla !== tabla || _dragInfo.id === targetId) return;
+  if (tabla === 'frentes' && _dragInfo.sectorId !== sectorId) return;
+  const draggedEl = document.querySelector(`[data-tabla="${tabla}"][data-id="${_dragInfo.id}"]`);
+  const targetEl = ev.currentTarget;
+  if (!draggedEl || !targetEl || draggedEl === targetEl) return;
+  const container = targetEl.parentElement;
+  const rect = targetEl.getBoundingClientRect();
+  const antes = (ev.clientY - rect.top) < rect.height / 2;
+  container.insertBefore(draggedEl, antes ? targetEl : targetEl.nextSibling);
+  await _persistirOrden(tabla, container);
+  _dragInfo = null;
+}
+
+async function _persistirOrden(tabla, container) {
+  const filas = Array.from(container.querySelectorAll(`[data-tabla="${tabla}"]`));
+  await Promise.all(filas.map((el, i) => window.supabase.from(tabla).update({ orden: i }).eq('id', Number(el.dataset.id))));
+  await cargarDatosSupabase();
+  if (tabla === 'frentes') _refrescarFrenteSelect(); else initSelects();
+  cargarListasAdmin();
 }
 
 async function eliminarSupervisor(id) {
@@ -171,12 +213,14 @@ async function agregarFrenteSector(sectorId) {
     const { data: existentes, error: errSel } = await window.supabase.from('frentes').select('id, estado').eq('sector_id', sectorId).eq('nombre', nombre);
     if (errSel) throw errSel;
     const existente = (existentes || [])[0];
+    const { data: todos } = await window.supabase.from('frentes').select('orden').eq('sector_id', sectorId);
+    const nuevoOrden = (todos || []).reduce((m, r) => Math.max(m, r.orden || 0), 0) + 1;
     let error;
     if (existente) {
       if (existente.estado) { alert(`Ya existe "${nombre}" en este sector.`); return; }
-      ({ error } = await window.supabase.from('frentes').update({ estado: true }).eq('id', existente.id));
+      ({ error } = await window.supabase.from('frentes').update({ estado: true, orden: nuevoOrden }).eq('id', existente.id));
     } else {
-      ({ error } = await window.supabase.from('frentes').insert([{ nombre, sector_id: sectorId, estado: true }]));
+      ({ error } = await window.supabase.from('frentes').insert([{ nombre, sector_id: sectorId, estado: true, orden: nuevoOrden }]));
     }
     if (error) throw error;
     cargarListasAdmin();

@@ -46,16 +46,16 @@ async function cargarDatosSupabase() {
     await esperarSupabase();
 
     console.log('📡 Cargando datos desde Supabase...');
-    const { data: supData } = await window.supabase.from('supervisores').select('nombre').eq('estado', true);
+    const { data: supData } = await window.supabase.from('supervisores').select('nombre').eq('estado', true).order('orden');
     SUPERVISORES = (supData || []).map(s => s.nombre);
     console.log('✅ Supervisores:', SUPERVISORES);
 
-    const { data: capData } = await window.supabase.from('capataces').select('nombre').eq('estado', true);
+    const { data: capData } = await window.supabase.from('capataces').select('nombre').eq('estado', true).order('orden');
     CAPATACES = (capData || []).map(c => c.nombre);
     console.log('✅ Capataces:', CAPATACES);
 
-    const { data: sectData } = await window.supabase.from('sectores').select('id, nombre').eq('estado', true);
-    const { data: frenData } = await window.supabase.from('frentes').select('nombre, sector_id').eq('estado', true);
+    const { data: sectData } = await window.supabase.from('sectores').select('id, nombre').eq('estado', true).order('orden');
+    const { data: frenData } = await window.supabase.from('frentes').select('nombre, sector_id').eq('estado', true).order('orden');
     console.log('📊 Sectores:', sectData);
     console.log('📊 Frentes:', frenData);
 
