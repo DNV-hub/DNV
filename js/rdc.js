@@ -2054,13 +2054,17 @@ function _renderBitacora() {
     cont.innerHTML = '<div class="empty-msg">Sin actividades. Presiona el botón para agregar.</div>';
     return;
   }
-  cont.innerHTML = bitacoraActiv.map(r => `
-    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <div style="display:grid;grid-template-columns:100px 1fr 28px;gap:6px;align-items:end;margin-bottom:0">
-        <div class="field" style="margin-bottom:0"><label style="font-size:11px">Hora</label><select class="time-field" onchange="_updBitacora(${r.id},'hora',this.value)" style="font-size:13px">${_bitacoraHoraOpts(r.hora||'')}</select></div>
-        <input type="text" placeholder="Actividad realizada…" value="${(r.actividad||'').replace(/"/g,'&quot;')}" onchange="_updBitacora(${r.id},'actividad',this.value)" style="width:100%;font-size:13px;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 9px;background:var(--surface);align-self:end">
-        <button class="del-btn" onclick="_delBitacora(${r.id})" style="align-self:end;margin-bottom:0" aria-label="Eliminar">×</button>
+  cont.innerHTML = bitacoraActiv.map((r,idx) => `
+    <div class="bita-card">
+      <div class="bita-card-time">
+        <label>Hora</label>
+        <select class="time-field" onchange="_updBitacora(${r.id},'hora',this.value)">${_bitacoraHoraOpts(r.hora||'')}</select>
       </div>
+      <div class="bita-card-actividad">
+        <label>Actividad ${idx+1}</label>
+        <input type="text" placeholder="Actividad realizada…" value="${(r.actividad||'').replace(/"/g,'&quot;')}" onchange="_updBitacora(${r.id},'actividad',this.value)">
+      </div>
+      <button class="del-btn" onclick="_delBitacora(${r.id})" aria-label="Eliminar">×</button>
     </div>`).join('');
 }
 function _removeEquipo(id) {

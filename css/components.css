@@ -118,6 +118,16 @@
 .stepper-input:focus{outline:none}
 .blq-row-horarios{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 
+/* BITÁCORA — tarjeta con recuadro de hora + actividad */
+.bita-card{display:flex;align-items:flex-end;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 10px 10px 12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.bita-card-time{flex-shrink:0;width:104px}
+.bita-card-actividad{flex:1;min-width:0}
+.bita-card-time label,.bita-card-actividad label{display:block;font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin-bottom:4px}
+.bita-card-time select.time-field{font-size:13px;padding:7px 8px}
+.bita-card-actividad input{width:100%;font-size:13.5px;font-family:inherit;color:var(--text);border:1.5px solid var(--border-md);border-radius:var(--r-sm);padding:7px 9px;background:var(--surface);box-sizing:border-box}
+.bita-card-actividad input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,41,59,.1)}
+.bita-card .del-btn{flex-shrink:0;margin-bottom:2px}
+
 /* PERSONAL — una fila por rol, mismo stepper que Metrados */
 .person-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border)}
 .person-row:last-child{border-bottom:none}
