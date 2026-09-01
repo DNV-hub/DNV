@@ -1,14 +1,17 @@
 :root {
-  --bg:#F0F2F5; --surface:#FFFFFF; --surface2:#F7F8FA;
-  --border:#E2E5EA; --border-md:#CBD0D8;
-  --text:#111827; --text2:#4B5563; --text3:#9CA3AF;
-  --blue:#2563EB; --blue-bg:#EFF6FF; --blue-text:#1D4ED8;
-  --green:#16A34A; --green-bg:#F0FDF4; --green-text:#15803D;
+  /* Tema "Steel & Slate": acento azul pizarra profundo sobre fondos gris muy claro.
+     --blue conserva su nombre historico (se usa en cientos de reglas como color de marca/acento
+     principal) pero ahora vale el slate #1E293B en vez del azul brillante anterior. */
+  --bg:#FBF8FA; --surface:#FFFFFF; --surface2:#F4F1F2;
+  --border:#E8E3E6; --border-md:#D7D1D4;
+  --text:#1E293B; --text2:#64748B; --text3:#94A3B8;
+  --blue:#1E293B; --blue-bg:#E9ECF1; --blue-text:#334155;
+  --green:#10B981; --green-bg:#ECFDF5; --green-text:#047857;
   --amber:#D97706; --amber-bg:#FFFBEB; --amber-text:#92400E;
   --red:#DC2626; --red-bg:#FEF2F2; --red-text:#991B1B;
-  --r-sm:6px; --r-md:10px; --r-lg:16px;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:0 4px 12px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);
+  --r-sm:6px; --r-md:8px; --r-lg:8px;
+  --shadow:0 1px 2px rgba(30,41,59,.04),0 1px 3px rgba(30,41,59,.06);
+  --shadow-md:0 4px 14px rgba(30,41,59,.08),0 2px 4px rgba(30,41,59,.04);
   /* legacy aliases */
   --color-bg:var(--bg); --color-bg-card:var(--surface); --color-bg-secondary:var(--surface2);
   --color-border:var(--border); --color-border-strong:var(--border-md);
@@ -17,5 +20,5 @@
   --color-success-bg:var(--green-bg); --color-success-text:var(--green-text);
   --color-warning-bg:var(--amber-bg); --color-warning-text:var(--amber-text);
   --color-danger:var(--red); --accent:var(--blue);
-  --radius-md:var(--r-md); --radius-lg:var(--r-lg); --font-sans:'Inter',sans-serif;
+  --radius-md:var(--r-md); --radius-lg:var(--r-lg); --font-sans:'Plus Jakarta Sans',sans-serif;
 }

@@ -7,7 +7,7 @@
 
 <!-- PWA: manifest + iconos + metadatos de instalación (no afecta el uso normal desde navegador) -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563EB">
+<meta name="theme-color" content="#1E293B">
 <link rel="icon" href="assets/icons/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -17,7 +17,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tabler-icons/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0"></script>
@@ -85,8 +85,8 @@
   </div>
   <p style="margin:0 0 2px;font-size:11px;opacity:.75">Sostenimiento y mantenimiento de talud ⛰️</p>
   <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px">
-    <button onclick="mostrarPantallaRaiz('inicio')" style="width:38px;height:38px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-size:20px;font-weight:700;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Volver">←</button>
-    <button onclick="showTab('resumen')" style="border:none;background:var(--blue);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);color:#fff;padding:4px 8px;min-width:46px;min-height:38px;box-shadow:0 2px 8px rgba(37,99,235,.35)" aria-label="Resumen" title="Ver Resumen"><i class="ti ti-send" style="font-size:16px;line-height:1"></i><span style="font-size:8.5px;font-weight:700;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;line-height:1;font-family:'Nunito','Poppins','Segoe UI Rounded',system-ui,sans-serif">Resumen</span></button>
+    <button onclick="mostrarPantallaRaiz('inicio')" style="width:38px;height:38px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-size:20px;font-weight:700;box-shadow:0 2px 8px rgba(30,41,59,.35)" aria-label="Volver">←</button>
+    <button onclick="showTab('resumen')" style="border:none;background:var(--blue);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);color:#fff;padding:4px 8px;min-width:46px;min-height:38px;box-shadow:0 2px 8px rgba(30,41,59,.35)" aria-label="Resumen" title="Ver Resumen"><i class="ti ti-send" style="font-size:16px;line-height:1"></i><span style="font-size:8.5px;font-weight:700;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;line-height:1;font-family:'Nunito','Poppins','Segoe UI Rounded',system-ui,sans-serif">Resumen</span></button>
   </div>
 </header>
 
@@ -114,7 +114,7 @@
 <!-- ═══════════════ TAB DATOS ═══════════════ -->
 <div id="tab-datos" class="screen visible">
   <!-- Supervisor banner -->
-  <div style="background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 100%);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+  <div style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
     <div style="width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <i class="ti ti-user-shield" style="color:#fff;font-size:21px"></i>
     </div>
@@ -534,7 +534,7 @@
   <img id="sketch-lightbox-img" style="max-width:100%;max-height:70vh;border-radius:var(--r-md);box-shadow:0 8px 32px rgba(0,0,0,.5);touch-action:none;transition:transform .1s;cursor:zoom-in">
   <div id="sketch-lightbox-nombre" style="color:#fff;margin-top:12px;font-size:13px;text-align:center"></div>
   <p style="color:rgba(255,255,255,.55);font-size:11px;margin-top:4px">Pellizca o rueda = zoom · Arrastra para moverse · Doble toque = restablecer</p>
-  <button onclick="event.stopPropagation();_descargarSketchActual()" style="margin-top:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);padding:10px 18px;font-family:'Inter',inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="ti ti-download"></i>Descargar</button>
+  <button onclick="event.stopPropagation();_descargarSketchActual()" style="margin-top:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);padding:10px 18px;font-family:'Plus Jakarta Sans',inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="ti ti-download"></i>Descargar</button>
   <button onclick="event.stopPropagation();_cerrarSketchLightbox()" aria-label="Cerrar" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)">✕</button>
 </div>
 
@@ -550,7 +550,7 @@
   </header>
 
   <!-- Supervisor banner fotos -->
-  <div style="background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 100%);border-radius:var(--r-lg);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+  <div style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:var(--r-lg);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
     <div style="flex:1;min-width:0">
       <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px">Supervisor</div>
       <div style="font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="foto-sup-nombre">—</div>
