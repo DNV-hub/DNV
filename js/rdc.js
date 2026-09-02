@@ -3937,12 +3937,25 @@ function exportarJSON() {
 }
 
 // ==================== SUPERVISOR PERSISTENTE ====================
+// "Modo Gran Maestro" — easter egg: seleccionar este nombre pide la contraseña de
+// admin (misma de siempre) y cambia el banner a un tema de fuego, solo para diversión.
+const GRAN_MAESTRO_NOMBRE = 'LUIS OPPE';
+function _aplicarTemaSupervisor(nombre) {
+  const banner = document.getElementById('supervisor-banner');
+  const tipoLbl = document.getElementById('sup-tipo-lbl');
+  const icon = document.getElementById('sup-icon');
+  const esGM = nombre === GRAN_MAESTRO_NOMBRE;
+  if (banner) banner.classList.toggle('gran-maestro', esGM);
+  if (tipoLbl) tipoLbl.textContent = esGM ? '🔥 Gran Maestro 🔥' : 'Reporte de Supervisor';
+  if (icon) icon.className = esGM ? 'ti ti-flame' : 'ti ti-user-shield';
+}
 function _initSupervisor() {
   const saved = localStorage.getItem(SUPERVISOR_KEY) || '';
   const el = document.getElementById('f-supervisor');
   const lbl = document.getElementById('sup-nombre-lbl');
   if (el) el.value = saved;
   if (lbl) lbl.textContent = saved || '—';
+  _aplicarTemaSupervisor(saved);
   if (!saved) setTimeout(() => _mostrarModalSup(), 600);
 }
 function _mostrarModalSup() {
@@ -3961,14 +3974,20 @@ function _cerrarModalSup() {
   if (modal) modal.style.display = 'none';
 }
 function _seleccionarSup(nombre) {
+  if (nombre === GRAN_MAESTRO_NOMBRE) {
+    const pass = prompt('🔥 Contraseña del Gran Maestro:');
+    if (pass === null) return; // canceló, no toca nada
+    if (pass !== ADMIN_PASSWORD) { alert('❌ Contraseña incorrecta'); return; }
+  }
   localStorage.setItem(SUPERVISOR_KEY, nombre);
   const el = document.getElementById('f-supervisor');
   const lbl = document.getElementById('sup-nombre-lbl');
   if (el) el.value = nombre;
   if (lbl) lbl.textContent = nombre;
+  _aplicarTemaSupervisor(nombre);
   _cerrarModalSup();
   saveDraft();
-  showToast('Supervisor guardado: ' + nombre);
+  showToast(nombre === GRAN_MAESTRO_NOMBRE ? '🔥 Modo Gran Maestro activado' : 'Supervisor guardado: ' + nombre);
 }
 
 
