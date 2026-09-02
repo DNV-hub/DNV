@@ -882,10 +882,10 @@ function _renderCriticaItems() {
     if (!items.length) { cont.innerHTML=''; return; }
     let html = '<div style="overflow-x:auto;margin-top:4px"><table style="width:100%;border-collapse:collapse;font-size:11px">'
       + '<tr style="background:var(--bg2)"><th style="padding:5px 6px;text-align:left;color:var(--text3)">Código</th>'
-      + (tipo==='perf'?'<th style="padding:5px 6px;color:var(--text3)">Tipo/Ø</th>':'')
-      + (tipo==='malla'?'<th style="padding:5px 6px;color:var(--text3)">Tipo malla</th>':'')
-      + '<th style="padding:5px 6px;color:var(--text3)">Cant.</th>'
-      + (tipo==='perf'||tipo==='iny'?'<th style="padding:5px 6px;color:var(--text3)">Ubic.</th>':'')
+      + (tipo==='perf'?'<th style="padding:5px 6px;text-align:left;color:var(--text3)">Tipo/Ø</th>':'')
+      + (tipo==='malla'?'<th style="padding:5px 6px;text-align:left;color:var(--text3)">Tipo malla</th>':'')
+      + '<th style="padding:5px 6px;text-align:right;color:var(--text3)">Cant.</th>'
+      + (tipo==='perf'||tipo==='iny'?'<th style="padding:5px 6px;text-align:left;color:var(--text3)">Ubic.</th>':'')
       + '<th style="padding:5px 2px;width:28px"></th></tr>';
     items.forEach(c => {
       html += '<tr style="border-bottom:1px solid var(--border-sm)">'
@@ -2134,9 +2134,11 @@ function _renderBitacora() {
     if (!bitacoraActiv.length && !standbyRows.length) {
       cont.innerHTML = '<div class="empty-msg">Sin registros. Agrega una actividad o un Stand By arriba.</div>';
     } else {
-      // Las actividades se muestran en el orden en que se van llenando (orden de
-      // ingreso); los Stand By no necesitan orden cronológico, así que van siempre al final.
-      cont.innerHTML = bitacoraActiv.map(_timelineActividadHTML).join('') + standbyRows.map(_timelineStandbyHTML).join('');
+      // Las actividades se ordenan automáticamente por su hora de inicio (las que aún
+      // no tienen hora válida van al final); los Stand By no necesitan orden
+      // cronológico, así que van siempre al final de todo.
+      const actividades = bitacoraActiv.slice().sort((a,b) => (a.hora||'zz').localeCompare(b.hora||'zz'));
+      cont.innerHTML = actividades.map(_timelineActividadHTML).join('') + standbyRows.map(_timelineStandbyHTML).join('');
     }
   }
   _renderStandbyTotal();
@@ -2641,8 +2643,8 @@ function buildResumen() {
     let codHtml = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'
       + '<tr style="background:var(--bg2)">'
       + '<th style="padding:5px 6px;font-size:11px;text-align:left;color:var(--text3)">Código<\/th>'
-      + '<th style="padding:5px 6px;font-size:11px;color:var(--text3)">Tipo/Ø<\/th>'
-      + '<th style="padding:5px 6px;font-size:11px;color:var(--text3)">Ubic.<\/th>'
+      + '<th style="padding:5px 6px;font-size:11px;text-align:left;color:var(--text3)">Tipo/Ø<\/th>'
+      + '<th style="padding:5px 6px;font-size:11px;text-align:left;color:var(--text3)">Ubic.<\/th>'
       + '<th style="padding:5px 6px;font-size:11px;color:var(--text3);text-align:right">Long/Área<\/th><\/tr>';
     // Perforaciones
     const _cPerf = controlItems.filter(c => c.elemento === 'Perno' && c.actividad === 'Perforación');
