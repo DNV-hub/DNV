@@ -70,7 +70,7 @@ function _toggleAdminAccordion(key) {
 }
 
 function _aplicarAdminAccordion() {
-  ['sup', 'cap', 'sect', 'pref'].forEach(k => {
+  ['sup', 'suprl', 'cap', 'sect', 'pref'].forEach(k => {
     const body = document.getElementById('admin-acc-body-' + k);
     const chev = document.getElementById('admin-acc-chev-' + k);
     if (!body) return;
@@ -107,6 +107,22 @@ async function agregarSupervisor() {
     await cargarDatosSupabase();
     initSelects();
     showToast('✅ Supervisor agregado');
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function agregarSupervisorRedline() {
+  const nombre = document.getElementById('admin-suprl-nombre').value.trim();
+  if (!nombre) { alert('Ingresa un nombre'); return; }
+  try {
+    const { error } = await _upsertActivo('redline_supervisores', nombre);
+    if (error) throw error;
+    document.getElementById('admin-suprl-nombre').value = '';
+    cargarListasAdmin();
+    await cargarDatosSupabase();
+    initSelects();
+    showToast('✅ Supervisor Redline agregado');
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -165,6 +181,10 @@ async function cargarListasAdmin() {
     const { data: sups } = await window.supabase.from('supervisores').select('id, nombre').eq('estado', true).order('orden');
     document.getElementById('admin-sup-lista').innerHTML = (sups||[]).map(s =>
       _filaArrastrable('supervisores', s.id, s.nombre, `<button onclick="eliminarSupervisor(${s.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button>`)
+    ).join('');
+    const { data: suprl } = await window.supabase.from('redline_supervisores').select('id, nombre').eq('estado', true).order('orden');
+    document.getElementById('admin-suprl-lista').innerHTML = (suprl||[]).map(s =>
+      _filaArrastrable('redline_supervisores', s.id, s.nombre, `<button onclick="eliminarSupervisorRedline(${s.id})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px">✕</button>`)
     ).join('');
     const { data: caps } = await window.supabase.from('capataces').select('id, nombre').eq('estado', true).order('orden');
     document.getElementById('admin-cap-lista').innerHTML = (caps||[]).map(c =>
@@ -256,6 +276,18 @@ async function eliminarSupervisor(id) {
   if (!confirm('¿Eliminar supervisor?')) return;
   try {
     await window.supabase.from('supervisores').update({ estado: false }).eq('id', id);
+    cargarListasAdmin();
+    await cargarDatosSupabase();
+    initSelects();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function eliminarSupervisorRedline(id) {
+  if (!confirm('¿Eliminar supervisor Redline?')) return;
+  try {
+    await window.supabase.from('redline_supervisores').update({ estado: false }).eq('id', id);
     cargarListasAdmin();
     await cargarDatosSupabase();
     initSelects();

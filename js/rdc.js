@@ -1524,6 +1524,13 @@ function initSelects() {
   const prevSup = supSel.value;
   supSel.innerHTML = '<option value="">— Seleccionar —<\/option>' + SUPERVISORES.map(s=>`<option>${s}<\/option>`).join('');
   supSel.value = prevSup;
+
+  const redlineSupSel = document.getElementById('f-redline-supervisor');
+  if (redlineSupSel) {
+    const prevRedlineSup = redlineSupSel.value;
+    redlineSupSel.innerHTML = '<option value="">— Seleccionar supervisor —<\/option>' + REDLINE_SUPERVISORES.map(s=>`<option>${s}<\/option>`).join('');
+    redlineSupSel.value = prevRedlineSup;
+  }
 }
 // Reconstruye solo las opciones de "Frente" para el sector actualmente seleccionado,
 // sin tocar partidaValores/metrados — a diferencia de onSectorChange(), no es un cambio real de sector.
@@ -2521,29 +2528,6 @@ function _softReset() {
   suppressSave = false;
 }
 
-function _standbyAccesoMin() {
-  // Restricción de acceso al frente
-  if (document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked) {
-    const rD = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
-    const rH = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
-    return _sbMinutos(rD, rH) || 0;
-  }
-  return 0;
-}
-
-function _standbyTotalCompleto() {
-  let total = 0;
-  // 1. Restricción de acceso al frente
-  total += _standbyAccesoMin();
-  // 2. Registro documentario (hito 0 Llegada → hito 3 Término llenado docs)
-  const h0 = document.getElementById('hito-0') ? document.getElementById('hito-0').value : '';
-  const h3 = document.getElementById('hito-3') ? document.getElementById('hito-3').value : '';
-  if (h0 && h3) total += _sbMinutos(h0, h3);
-  // 3. Items manuales del módulo Stand By
-  total += getStandbyTotalMin();
-  return total;
-}
-
 function _tiempoEfectivoMin() {
   // Minutos entre Inicio de actividades en piso (hito 5) y Término de jornada (hito 7), menos el Stand By del módulo.
   const inicioEl  = document.getElementById('hito-5');
@@ -2880,7 +2864,7 @@ function buildTextoWsp() {
       if (r.causa) t += `   📌 Causa: ${r.causa}\n`;
       if (r.comentario) t += `   💬 ${r.comentario}\n`;
     });
-    t += `⏰ *Total Stand By: ${_sbFmt(_standbyTotalCompleto())}*\n\n`;
+    t += `⏰ *Total Stand By: ${_sbFmt(getStandbyTotalMin())}*\n\n`;
   }
 
   // Alerta de diferencias Metrado vs Control
