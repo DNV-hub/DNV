@@ -3,7 +3,7 @@
 // en localStorage y los exports (.xlsx/.csv/.json) se generan como Blob en el propio navegador,
 // ninguno de los dos pasa por una petición de red que este Service Worker pueda tocar.
 
-const CACHE_NAME = 'rdc-cache-v4';
+const CACHE_NAME = 'rdc-cache-v5';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
