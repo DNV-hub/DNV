@@ -330,12 +330,6 @@
         <label>Supervisor Hegatrux que realizó el Redline</label>
         <select id="f-redline-supervisor">
           <option value="">— Seleccionar supervisor —</option>
-          <option>LUIS LOZANO</option>
-          <option>CAMILO CENTENO</option>
-          <option>JUAN RODRIGUEZ</option>
-          <option>JOSE SULLO</option>
-          <option>CRISTHIAN COLCA</option>
-          <option>DEREK ARIAS</option>
         </select>
       </div>
       <div class="field"><label>Descripción del Redline</label><textarea id="f-redline" placeholder="Describir los cambios: ubicación, dimensiones, materiales..."></textarea></div>
@@ -442,6 +436,22 @@
             <button onclick="agregarSupervisor()" class="btn-primary" style="padding:8px 14px">+ Agregar</button>
           </div>
           <div id="admin-sup-lista" style="font-size:12px"></div>
+        </div>
+      </div>
+
+      <!-- ACORDEÓN: Supervisores Redline -->
+      <div style="border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:10px;overflow:hidden">
+        <button type="button" onclick="_toggleAdminAccordion('suprl')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--surface2);border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--text)">
+          <span>✏️ Supervisores Redline</span>
+          <i class="ti ti-chevron-down" id="admin-acc-chev-suprl" style="transition:transform .15s"></i>
+        </button>
+        <div id="admin-acc-body-suprl" style="display:none;padding:14px">
+          <p class="note" style="margin-bottom:10px">Lista de supervisores Hegatrux que pueden figurar como responsables de un Redline (independiente de la lista de Supervisores de arriba).</p>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px">
+            <input type="text" id="admin-suprl-nombre" placeholder="Nombre del supervisor" style="font-size:13px;padding:8px;border:1px solid var(--border-md);border-radius:var(--r-sm);background:var(--surface2)">
+            <button onclick="agregarSupervisorRedline()" class="btn-primary" style="padding:8px 14px">+ Agregar</button>
+          </div>
+          <div id="admin-suprl-lista" style="font-size:12px"></div>
         </div>
       </div>
 

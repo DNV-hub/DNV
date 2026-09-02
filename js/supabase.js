@@ -38,6 +38,7 @@ const supabase = window.supabase;
 let SECTORES = {};
 let SUPERVISORES = [];
 let CAPATACES = [];
+let REDLINE_SUPERVISORES = [];
 // Codificación por frente/zona/sostenimiento (antes era la constante fija PREFIJOS_FRENTE
 // en config.js; ahora vive en la tabla "prefijos" y se administra desde el panel admin).
 // Misma forma de fila {f,z,s,p,pl} que usaba PREFIJOS_FRENTE, para no tocar rdc.js más de lo necesario.
@@ -57,6 +58,10 @@ async function cargarDatosSupabase() {
     const { data: capData } = await window.supabase.from('capataces').select('nombre').eq('estado', true).order('orden');
     CAPATACES = (capData || []).map(c => c.nombre);
     console.log('✅ Capataces:', CAPATACES);
+
+    const { data: redlineSupData } = await window.supabase.from('redline_supervisores').select('nombre').eq('estado', true).order('orden');
+    REDLINE_SUPERVISORES = (redlineSupData || []).map(s => s.nombre);
+    console.log('✅ Supervisores Redline:', REDLINE_SUPERVISORES);
 
     const { data: sectData } = await window.supabase.from('sectores').select('id, nombre').eq('estado', true).order('orden');
     const { data: frenData } = await window.supabase.from('frentes').select('nombre, sector_id').eq('estado', true).order('orden');
