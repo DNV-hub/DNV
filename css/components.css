@@ -146,7 +146,7 @@
 input[type="time"],select.time-field{
   background:var(--surface2);border:1.5px solid transparent;border-radius:var(--r-md);
   font-family:inherit;font-weight:700;font-size:14.5px;color:var(--text);
-  padding:8px 10px;width:100%;box-sizing:border-box;cursor:pointer;
+  padding:8px 10px;width:100%;min-width:0;box-sizing:border-box;cursor:pointer;
 }
 input[type="time"]:focus,select.time-field:focus{
   outline:none;background:var(--surface);border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,41,59,.12);

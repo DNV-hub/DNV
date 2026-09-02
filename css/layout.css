@@ -17,6 +17,12 @@
 .bnav-item.active{color:var(--blue);font-weight:700}
 .bnav-item.active i{background:var(--blue-bg);color:var(--blue)}
 .bnav-item.mas-open{color:var(--text1)}
+
+/* "Resumen" es el paso final (desde ahi se envia el reporte) — se resalta siempre,
+   este o no activa esa pestaña, para que se note cual es el boton de cierre. */
+#bnav-resumen i{background:var(--green-bg);color:var(--green-text)}
+#bnav-resumen.active{color:var(--green-text)}
+#bnav-resumen.active i{background:var(--green);color:#fff}
 .mas-panel{position:fixed;bottom:calc(62px + env(safe-area-inset-bottom, 0px));left:0;right:0;z-index:998;padding:0 10px 6px;max-width:720px;margin:0 auto}
 .mas-panel-inner{background:var(--surface);border:1px solid var(--border-md);border-radius:16px;overflow:hidden;box-shadow:0 -4px 24px rgba(0,0,0,.14);display:grid;grid-template-columns:repeat(5,1fr)}
 .mas-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 6px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:10px;font-weight:500;color:var(--text2);transition:background .1s;-webkit-tap-highlight-color:transparent}
