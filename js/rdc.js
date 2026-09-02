@@ -2134,10 +2134,9 @@ function _renderBitacora() {
     if (!bitacoraActiv.length && !standbyRows.length) {
       cont.innerHTML = '<div class="empty-msg">Sin registros. Agrega una actividad o un Stand By arriba.</div>';
     } else {
-      // Las actividades van ordenadas cronológicamente; los Stand By no necesitan orden
-      // cronológico (pueden liberarse en cualquier momento), así que van siempre al final.
-      const actividades = bitacoraActiv.slice().sort((a,b) => (a.hora||'zz').localeCompare(b.hora||'zz'));
-      cont.innerHTML = actividades.map(_timelineActividadHTML).join('') + standbyRows.map(_timelineStandbyHTML).join('');
+      // Las actividades se muestran en el orden en que se van llenando (orden de
+      // ingreso); los Stand By no necesitan orden cronológico, así que van siempre al final.
+      cont.innerHTML = bitacoraActiv.map(_timelineActividadHTML).join('') + standbyRows.map(_timelineStandbyHTML).join('');
     }
   }
   _renderStandbyTotal();
@@ -2159,8 +2158,13 @@ function _setTipoNuevoRegistro(tipo) {
 }
 function _updNuevoStandby(field, val) {
   _nuevoStandby[field] = val;
-  if (field === 'causa' && val !== 'OTRO') _nuevoStandby.causaOtro = '';
-  _renderFormNuevoRegistro();
+  // Solo la causa cambia qué secciones del formulario se muestran (desde/hasta vs.
+  // tiempo total, especificar otra causa); el resto solo actualiza el estado sin
+  // reconstruir el DOM, para no perder el foco mientras se escribe (ej. en horas).
+  if (field === 'causa') {
+    if (val !== 'OTRO') _nuevoStandby.causaOtro = '';
+    _renderFormNuevoRegistro();
+  }
 }
 function _renderFormNuevoRegistro() {
   const cont = document.getElementById('nuevo-registro-form');
@@ -4082,8 +4086,10 @@ function loadDraft() {
   if (data.restriccionDesc) document.getElementById('f-restriccion-desc').value = data.restriccionDesc;
   if (data.restriccionInicio) document.getElementById('f-restriccion-inicio').value = data.restriccionInicio;
   if (data.restriccionFin) document.getElementById('f-restriccion-fin').value = data.restriccionFin;
-  if (data.almuerzoSalida) document.getElementById('f-almuerzo-salida').value = data.almuerzoSalida;
-  if (data.almuerzoRetorno) document.getElementById('f-almuerzo-retorno').value = data.almuerzoRetorno;
+  // "00:00" es un valor heredado de borradores guardados antes de que estos campos
+  // dejaran de tener ese default; se trata como si no estuviera registrado.
+  if (data.almuerzoSalida && data.almuerzoSalida !== '00:00') document.getElementById('f-almuerzo-salida').value = data.almuerzoSalida;
+  if (data.almuerzoRetorno && data.almuerzoRetorno !== '00:00') document.getElementById('f-almuerzo-retorno').value = data.almuerzoRetorno;
 
   renderHitos(false);
   (data.hitos||[]).forEach((v,i)=>{ const el=document.getElementById('hito-'+i); if(el) el.value=v||''; });
