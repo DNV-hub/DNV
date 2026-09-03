@@ -3058,13 +3058,6 @@ function _buildRdcRow() {
   const almRetorno = document.getElementById('f-almuerzo-retorno').value;
   const hitosVals = currentHitos.map((h,i)=>{ const el=document.getElementById('hito-'+i); return el?el.value||'':''; });
 
-  const partidasConAvance = getPartidasEjecutadas();
-
-  const tuvoRestriccionAcceso = document.getElementById('f-truckshop').checked;
-  const restriccionAccesoDesc = (document.getElementById('f-restriccion-desc').value || '').trim();
-  const restriccionAccesoInicio = document.getElementById('f-restriccion-inicio').value || '';
-  const restriccionAccesoFin = document.getElementById('f-restriccion-fin').value || '';
-
   const comentarios = document.getElementById('f-comentarios').value || '';
   const restricciones = document.getElementById('f-restricciones').value || '';
 
@@ -3077,16 +3070,18 @@ function _buildRdcRow() {
   headers.push('N° Capataz','N° Operarios','N° Oficiales','N° Peones','N° Vigías');
   values.push(Number(personal.capataz), Number(personal.operarios), Number(personal.oficiales), Number(personal.peones), Number(personal.vigias));
 
-  headers.push('Restricción - Descripción','Restricción - Hora inicio','Restricción - Hora fin');
-  values.push(tuvoRestriccionAcceso?restriccionAccesoDesc:'', tuvoRestriccionAcceso?restriccionAccesoInicio:'', tuvoRestriccionAcceso?restriccionAccesoFin:'');
-
   currentHitos.forEach((h,i)=>{ headers.push(h); values.push(hitosVals[i]||''); });
 
   headers.push('Salida refrigerio','Retorno refrigerio');
   values.push(almSalida||'', almRetorno||'');
 
-  headers.push('N° de partidas con avance');
-  values.push(partidasConAvance.length);
+  // Maquinaria: los 10 equipos fijos (5 de perforación + 5 de soporte) + 2 columnas para equipos "Otro" fuera del catálogo
+  EQUIPOS_PERFORACION_FIJOS.forEach(nombre => { headers.push(nombre); values.push(_equipoCantidad(nombre)); });
+  EQUIPOS_SOPORTE_FIJOS.forEach(nombre => { headers.push(nombre); values.push(_equipoCantidad(nombre)); });
+  const _equiposFijosSet = new Set([...EQUIPOS_PERFORACION_FIJOS, ...EQUIPOS_SOPORTE_FIJOS]);
+  const equiposOtros = equiposLista.filter(e => !_equiposFijosSet.has(e.nombre));
+  headers.push('Otro','Otro');
+  values.push(equiposOtros.map(e=>`${e.nombre} (${e.cantidad})`).join('; '), equiposOtros.reduce((s,e)=>s+(Number(e.cantidad)||0),0));
 
   const requerimientosExp = document.getElementById('f-requerimientos') ? document.getElementById('f-requerimientos').value || '' : '';
   const redlineSupFn = document.getElementById('f-redline-supervisor') ? document.getElementById('f-redline-supervisor').value || '' : '';
@@ -3107,6 +3102,9 @@ function _buildRdcRow() {
     headers.push('Topógrafo');
     values.push(document.getElementById('f-topografo') ? parseInt(document.getElementById('f-topografo').value)||0 : 0);
   }
+
+  headers.push('Total Standby (hh:mm)');
+  values.push(_sbFmtHHMM(getStandbyTotalMin()));
 
   return { headers, values };
 }
@@ -3267,23 +3265,14 @@ function _buildBitacoraRows() {
   const headers = ['Fecha','Frente','Hora Inicio','Hora Fin','Actividad'];
   const eventos = [];
 
-  // 1. Restricción para llegar al frente
-  const tuvoRestriccion = document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked;
-  if (tuvoRestriccion) {
-    const desc = (document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '').trim();
-    const desde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
-    const hasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
-    eventos.push({ hi:desde, hf:hasta, actividad:'Restricción para llegar al frente'+(desc?': '+desc:''), sortKey:desde||'ZZ' });
-  }
-
-  // 2. Registro de jornada (hitos)
+  // 1. Registro de jornada (hitos)
   currentHitos.forEach((h,i) => {
     const el = document.getElementById('hito-'+i);
     const hora = el ? el.value : '';
     if (hora) eventos.push({ hi:hora, hf:'', actividad:h, sortKey:hora });
   });
 
-  // 3. Actividades de metrados (auto-generadas)
+  // 2. Actividades de metrados (auto-generadas)
   _buildBitacoraEntradas().forEach(e => {
     eventos.push({ hi:e.hi, hf:e.hf, actividad:e.texto, sortKey:e.hi||'ZZ' });
   });
@@ -3293,6 +3282,21 @@ function _buildBitacoraRows() {
   const rows = eventos.map(ev => [
     _parseDate(meta.fecha||''), meta.frente||'', ev.hi||'', ev.hf||'', ev.actividad
   ]);
+  return { headers, rows };
+}
+
+// Tabla aparte (dentro de la hoja/sección BITACORA) para la restricción de acceso al frente
+function _buildRestriccionesRows() {
+  const meta = getMeta();
+  const headers = ['Fecha','Frente','Descripción','Hora inicio','Hora fin'];
+  const rows = [];
+  const tuvoRestriccion = document.getElementById('f-truckshop') && document.getElementById('f-truckshop').checked;
+  if (tuvoRestriccion) {
+    const desc = (document.getElementById('f-restriccion-desc') ? document.getElementById('f-restriccion-desc').value : '').trim();
+    const desde = document.getElementById('f-restriccion-inicio') ? document.getElementById('f-restriccion-inicio').value : '';
+    const hasta = document.getElementById('f-restriccion-fin') ? document.getElementById('f-restriccion-fin').value : '';
+    rows.push([_parseDate(meta.fecha||''), meta.frente||'', desc, desde, hasta]);
+  }
   return { headers, rows };
 }
 
@@ -3521,6 +3525,21 @@ function _construirWorkbookRDC() {
     const cellRef = XLSX.utils.encode_cell({ r: r+1, c: 4 });
     if (wsBI[cellRef]) wsBI[cellRef].s = { alignment: { wrapText: true, vertical: 'top' } };
   });
+
+  // Tabla aparte (debajo, con 2 filas en blanco de separación): Restricción de acceso al frente
+  const { headers: rsHeaders, rows: rsRows } = _buildRestriccionesRows();
+  const rsStartRow = biRows.length + 3;
+  XLSX.utils.sheet_add_aoa(wsBI, [rsHeaders, ...rsRows], { origin: { r: rsStartRow, c: 0 } });
+  rsHeaders.forEach((_,i)=>{
+    const cellRef = XLSX.utils.encode_cell({r:rsStartRow, c:i});
+    if (!wsBI[cellRef]) return;
+    wsBI[cellRef].s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, name: 'Arial', sz: 10 },
+      fill: { fgColor: { rgb: '374151' } },
+      alignment: { horizontal: 'center', wrapText: true }
+    };
+  });
+
   XLSX.utils.book_append_sheet(wb, wsBI, 'BITACORA');
 
   // ===== HOJA CONTROL_SOSTENIMIENTO =====
@@ -3870,6 +3889,9 @@ function exportarCSV() {
 
   const bitacora = _buildBitacoraRows();
   addSection('BITACORA', bitacora.headers, bitacora.rows);
+
+  const restricciones = _buildRestriccionesRows();
+  addSection('BITACORA - RESTRICCIONES', restricciones.headers, restricciones.rows);
 
   const control = _buildControlSostenimientoRows();
   addSection('CONTROL_SOSTENIMIENTO', control.headers, control.rows);
